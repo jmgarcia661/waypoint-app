@@ -61,6 +61,22 @@ function HeroIllustration() {
   );
 }
 
+function ComingSoonIllustration() {
+  return (
+    <svg viewBox="0 0 200 160" className="wp-soon-svg" xmlns="http://www.w3.org/2000/svg">
+      <rect x="55" y="20" width="90" height="120" rx="4" fill="#fff" stroke="#16233B" strokeWidth="1.6" />
+      <path d="M120 20 L145 45 L120 45 Z" fill="#EDE6D4" stroke="#16233B" strokeWidth="1.2" strokeLinejoin="round" />
+      <line x1="70" y1="60" x2="130" y2="60" stroke="#16233B" strokeWidth="1.4" opacity="0.55" />
+      <line x1="70" y1="74" x2="130" y2="74" stroke="#16233B" strokeWidth="1.4" opacity="0.55" />
+      <line x1="70" y1="88" x2="112" y2="88" stroke="#16233B" strokeWidth="1.4" opacity="0.55" />
+      <line x1="70" y1="108" x2="130" y2="108" stroke="#16233B" strokeWidth="1.2" opacity="0.32" />
+      <line x1="70" y1="120" x2="120" y2="120" stroke="#16233B" strokeWidth="1.2" opacity="0.32" />
+      <circle cx="150" cy="118" r="22" fill="#C9A24B" />
+      <path d="M150 107 L150 118 L158 124" fill="none" stroke="#16233B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 /* ---------- Wikipedia thumbnail (fetched at runtime, cached in-memory) ---------- */
 const wikiImageCache = {};
 function AttractionImage({ title, alt }) {
@@ -194,9 +210,40 @@ function Waypoint() {
         .wp-day-label { font-size: 0.8rem; color: var(--accent-color); font-weight: 600; padding-top: 0.1rem; }
         .wp-day-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.2rem; }
         .wp-day-desc { font-size: 0.9rem; color: #4a4436; line-height: 1.5; }
+
+        .wp-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 0 1.3rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; flex-wrap: wrap; }
+        .wp-nav-brand { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 600; color: var(--ink); padding: 0; }
+        .wp-nav-links { display: flex; gap: 1.4rem; }
+        .wp-nav-link { background: none; border: none; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink-soft); padding: 0.3rem 0; border-bottom: 2px solid transparent; }
+        .wp-nav-link:hover { color: var(--ink); }
+        .wp-nav-link-active { color: var(--ink); border-bottom-color: var(--navy); font-weight: 600; }
+
+        .wp-about-top { display: flex; gap: 1.3rem; align-items: flex-start; flex-wrap: wrap; margin-bottom: 1rem; }
+        .wp-about-photo { width: 76px; height: 76px; border-radius: 50%; background: #fff; border: 1px solid var(--hairline); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .wp-about-bio { font-size: 0.98rem; line-height: 1.65; max-width: 56ch; margin: 0 0 1rem; }
+        .wp-about-note { font-size: 0.82rem; color: var(--ink-soft); font-style: italic; }
+
+        .wp-newsletter-card { background: #fff; border: 1px solid var(--hairline); border-radius: 4px; padding: 1.2rem; max-width: 480px; }
+
+        .wp-coming-soon { text-align: center; padding: 2.5rem 1rem 1rem; }
+        .wp-coming-soon-visual { width: 170px; margin: 0 auto; }
+        .wp-soon-svg { width: 100%; height: auto; display: block; }
       `}</style>
 
       <div className="wp-shell">
+        <nav className="wp-nav">
+          <button className="wp-nav-brand" onClick={goToContinents}>
+            <div className="wp-brand-mark" style={{ width: 24, height: 24 }}><Compass size={13} style={{ color: "#F3EDE0" }} /></div>
+            Waypoint
+          </button>
+          <div className="wp-nav-links">
+            <button className={"wp-nav-link" + ((view === "continents" || view === "countries" || view === "detail") ? " wp-nav-link-active" : "")} onClick={goToContinents}>Home</button>
+            <button className={"wp-nav-link" + (view === "articles" ? " wp-nav-link-active" : "")} onClick={() => setView("articles")}>Articles</button>
+            <button className={"wp-nav-link" + (view === "about" ? " wp-nav-link-active" : "")} onClick={() => setView("about")}>About me</button>
+            <button className={"wp-nav-link" + (view === "newsletter" ? " wp-nav-link-active" : "")} onClick={() => setView("newsletter")}>Newsletter</button>
+          </div>
+        </nav>
+
         {view === "continents" && (
           <div className="wp-hero">
             <div className="wp-hero-text">
@@ -292,6 +339,47 @@ function Waypoint() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {view === "articles" && (
+          <div className="wp-coming-soon">
+            <div className="wp-coming-soon-visual"><ComingSoonIllustration /></div>
+            <h2 className="wp-section-title" style={{ marginTop: "1rem" }}>Articles</h2>
+            <p className="wp-blurb" style={{ margin: "0 auto", textAlign: "center" }}>Long-form guides, itineraries, and travel notes are on their way — check back soon.</p>
+          </div>
+        )}
+
+        {view === "about" && (
+          <div className="wp-about">
+            <h2 className="wp-section-title">About me</h2>
+            <div className="wp-about-top">
+              <div className="wp-about-photo" aria-hidden="true"><Compass size={28} style={{ color: "#8a8272" }} /></div>
+              <div>
+                <p className="wp-about-bio">Hi, I'm the person behind Waypoint. I built this as a simple, ad-free way to explore the world one country at a time — the kind of resource I always wished existed when planning my own trips. Every entry here is something I've researched carefully, from where to go to how many days to give it.</p>
+                <p className="wp-about-bio">When I'm not adding new destinations to the site, I'm usually planning the next trip myself. If you want to follow along or get travel notes straight to your inbox, the newsletter is the best way to stay in touch.</p>
+              </div>
+            </div>
+            <p className="wp-about-note">— Replace this text with your own bio, a real photo, and links to your social channels.</p>
+          </div>
+        )}
+
+        {view === "newsletter" && (
+          <div className="wp-newsletter">
+            <h2 className="wp-section-title">Newsletter</h2>
+            <p className="wp-blurb">Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.</p>
+            <div className="wp-newsletter-card">
+              {/* Replace the src below with your own embed URL from Beehiiv: Grow -> Subscribe Forms -> Embed */}
+              <iframe
+                src="https://embeds.beehiiv.com/YOUR_PUBLICATION_ID"
+                data-test-id="beehiiv-embed"
+                width="100%"
+                height="320"
+                frameBorder="0"
+                scrolling="no"
+                style={{ borderRadius: "4px", border: "1px solid #DCD3BE", background: "transparent" }}
+              ></iframe>
             </div>
           </div>
         )}
