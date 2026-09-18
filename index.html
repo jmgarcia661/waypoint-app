@@ -328,6 +328,19 @@ function Waypoint() {
         .wp-pairs-row { display: flex; flex-wrap: wrap; gap: 0.7rem; }
         .wp-pairs-card { display: flex; align-items: center; gap: 0.5rem; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 0.9rem 0.5rem 0.7rem; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink); }
         .wp-pairs-card:hover { background: #FBF8F1; }
+
+        .wp-footer { margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid var(--hairline); }
+        .wp-footer-top { display: flex; flex-wrap: wrap; gap: 2.5rem; justify-content: space-between; margin-bottom: 1.6rem; }
+        .wp-footer-brand { display: flex; gap: 0.65rem; max-width: 340px; }
+        .wp-footer-brand-name { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .wp-footer-tagline { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.45; }
+        .wp-footer-col { display: flex; flex-direction: column; gap: 0.5rem; min-width: 120px; }
+        .wp-footer-col-title { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); margin-bottom: 0.2rem; }
+        .wp-footer-link { background: none; border: none; padding: 0; text-align: left; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink); text-decoration: none; }
+        .wp-footer-link:hover { color: var(--navy); text-decoration: underline; }
+        .wp-footer-bottom { display: flex; flex-wrap: wrap; gap: 0.5rem 1.2rem; justify-content: space-between; padding-top: 1.3rem; border-top: 1px solid var(--hairline); font-size: 0.78rem; color: var(--ink-soft); }
+        .wp-footer-org-link { color: var(--ink-soft); text-decoration: underline; }
+        .wp-footer-org-link:hover { color: var(--navy); }
       `}</style>
 
       <div className="wp-shell">
@@ -554,6 +567,38 @@ function Waypoint() {
             </div>
           </div>
         )}
+
+        <footer className="wp-footer">
+          <div className="wp-footer-top">
+            <div className="wp-footer-brand">
+              <div className="wp-brand-mark" style={{ width: 26, height: 26 }}><Compass size={14} style={{ color: "#F3EDE0" }} /></div>
+              <div>
+                <div className="wp-footer-brand-name">Waypoint</div>
+                <div className="wp-footer-tagline">A slow, ad-free way to explore the world, one country at a time.</div>
+              </div>
+            </div>
+
+            <div className="wp-footer-col">
+              <div className="wp-footer-col-title">Explore</div>
+              <button className="wp-footer-link" onClick={goToContinents}>Home</button>
+              <button className="wp-footer-link" onClick={() => setView("articles")}>Articles</button>
+              <button className="wp-footer-link" onClick={() => setView("products")}>Products</button>
+            </div>
+
+            <div className="wp-footer-col">
+              <div className="wp-footer-col-title">Connect</div>
+              <button className="wp-footer-link" onClick={() => setView("about")}>About me</button>
+              <button className="wp-footer-link" onClick={() => setView("newsletter")}>Newsletter</button>
+              {/* Add real social links here once accounts exist, e.g.: <a className="wp-footer-link" href="https://instagram.com/...">Instagram</a> */}
+            </div>
+          </div>
+
+          <div className="wp-footer-bottom">
+            <span>© {new Date().getFullYear()} Waypoint</span>
+            <span>A project by <a className="wp-footer-org-link" href="https://openforyou.org" target="_blank" rel="noopener noreferrer">OpenForYou.org</a></span>
+            <span>Built for people who plan their trips a little too carefully.</span>
+          </div>
+        </footer>
       </div>
     </div>
   );
