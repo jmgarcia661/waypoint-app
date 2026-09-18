@@ -308,9 +308,8 @@ function Waypoint() {
         .wp-nav-link-active { color: var(--ink); border-bottom-color: var(--navy); font-weight: 600; }
 
         .wp-about-top { display: flex; gap: 1.3rem; align-items: flex-start; flex-wrap: wrap; margin-bottom: 1rem; }
-        .wp-about-photo { width: 76px; height: 76px; border-radius: 50%; background: #fff; border: 1px solid var(--hairline); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .wp-about-bio { font-size: 0.98rem; line-height: 1.65; max-width: 56ch; margin: 0 0 1rem; }
-        .wp-about-note { font-size: 0.82rem; color: var(--ink-soft); font-style: italic; }
+        .wp-about-photo-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 1px solid var(--hairline); flex-shrink: 0; }
+        .wp-about-bio { font-size: 0.98rem; line-height: 1.65; max-width: 60ch; margin: 0 0 1rem; }
 
         .wp-newsletter-card { max-width: 480px; min-height: 80px; }
 
@@ -557,13 +556,17 @@ function Waypoint() {
           <div className="wp-about">
             <h2 className="wp-section-title">About me</h2>
             <div className="wp-about-top">
-              <div className="wp-about-photo" aria-hidden="true"><Compass size={28} style={{ color: "#8a8272" }} /></div>
+              <img src="foto-sobre-mim.png" alt="José Maria Garcia" className="wp-about-photo-img" />
               <div>
-                <p className="wp-about-bio">Hi, I'm the person behind Waypoint. I built this as a simple, ad-free way to explore the world one country at a time — the kind of resource I always wished existed when planning my own trips. Every entry here is something I've researched carefully, from where to go to how many days to give it.</p>
-                <p className="wp-about-bio">When I'm not adding new destinations to the site, I'm usually planning the next trip myself. If you want to follow along or get travel notes straight to your inbox, the newsletter is the best way to stay in touch.</p>
+                <p className="wp-about-bio">Hi, I'm José Maria Garcia — the person behind Waypoint.</p>
+                <p className="wp-about-bio">For as long as I can remember, I've been chasing the same question: how do we live more consciously, more aligned with who we actually are? That question has taken me through some very different worlds — engineering, theatre, leadership, and a fair amount of quiet self-exploration.</p>
+                <p className="wp-about-bio">It started at Instituto Superior Técnico in Lisbon, where engineering taught me to think in structures and take apart hard problems piece by piece. But something was missing, so I followed my curiosity into theatre and film, including a stretch in Los Angeles that was pure discovery — expression without a blueprint. Eventually I came back to tech, working my way into engineering leadership across a few telecom and technology companies. Along the way, yoga, meditation, and a lot of quiet reflection became less of a side interest and more of a daily practice — the thing that actually kept me clear-headed and present through all the pivots.</p>
+                <p className="wp-about-bio">Travel, it turns out, was never really separate from any of this. It's just another way of asking the same question in a different place.</p>
+                <p className="wp-about-bio">I've loved traveling for as long as I can remember. When I was six, I made my father a deal: he'd pay for a trip to the jungles of Borneo. He never did pay up — but I went anyway, years later, and I still bring it up every chance I get.</p>
+                <p className="wp-about-bio">Since then, a few places have stuck with me more than most. Thailand, for its warmth and color, and a kind of everyday hospitality that's hard to describe until you've experienced it. Iceland, for landscapes so raw and vast they make you feel appropriately small. Namibia, for the sheer scale of its silence — deserts and skies that put everything else in perspective.</p>
+                <p className="wp-about-bio">My mission with Waypoint is simple: to organize travel information in a way that's actually easy to use, for anyone planning a trip — no clutter, no guesswork, just what you need to go somewhere and get it right. The same clarity I've spent years chasing in everything else, I want this site to hand to you before you even land.</p>
               </div>
             </div>
-            <p className="wp-about-note">— Replace this text with your own bio, a real photo, and links to your social channels.</p>
           </div>
         )}
 
