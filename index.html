@@ -141,6 +141,24 @@ function CountryMap({ country, accentColor }) {
   return <div ref={containerRef} className="wp-map" />;
 }
 
+/* ---------- Beehiiv newsletter form (script-based embed) ---------- */
+function BeehiivForm({ formId }) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    containerRef.current.innerHTML = "";
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://subscribe-forms.beehiiv.com/v3/loader.js";
+    script.setAttribute("data-beehiiv-form", formId);
+    containerRef.current.appendChild(script);
+    return () => { if (containerRef.current) containerRef.current.innerHTML = ""; };
+  }, [formId]);
+
+  return <div ref={containerRef} className="wp-newsletter-card" />;
+}
+
 /* ---------- Wikipedia thumbnail (fetched at runtime, cached in-memory) ---------- */
 const wikiImageCache = {};
 function AttractionImage({ title, alt }) {
@@ -294,7 +312,7 @@ function Waypoint() {
         .wp-about-bio { font-size: 0.98rem; line-height: 1.65; max-width: 56ch; margin: 0 0 1rem; }
         .wp-about-note { font-size: 0.82rem; color: var(--ink-soft); font-style: italic; }
 
-        .wp-newsletter-card { background: #fff; border: 1px solid var(--hairline); border-radius: 4px; padding: 1.2rem; max-width: 480px; }
+        .wp-newsletter-card { max-width: 480px; min-height: 80px; }
 
         .wp-coming-soon { text-align: center; padding: 2.5rem 1rem 1rem; }
         .wp-coming-soon-visual { width: 170px; margin: 0 auto; }
@@ -553,18 +571,7 @@ function Waypoint() {
           <div className="wp-newsletter">
             <h2 className="wp-section-title">Newsletter</h2>
             <p className="wp-blurb">Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.</p>
-            <div className="wp-newsletter-card">
-              {/* Replace the src below with your own embed URL from Beehiiv: Grow -> Subscribe Forms -> Embed */}
-              <iframe
-                src="https://embeds.beehiiv.com/YOUR_PUBLICATION_ID"
-                data-test-id="beehiiv-embed"
-                width="100%"
-                height="320"
-                frameBorder="0"
-                scrolling="no"
-                style={{ borderRadius: "4px", border: "1px solid #DCD3BE", background: "transparent" }}
-              ></iframe>
-            </div>
+            <BeehiivForm formId="fbd55164-3ad7-472f-a951-748df3164201" />
           </div>
         )}
 
