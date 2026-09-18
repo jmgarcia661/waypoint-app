@@ -254,8 +254,8 @@ function Waypoint() {
             <button className={"wp-nav-link" + ((view === "continents" || view === "countries" || view === "detail") ? " wp-nav-link-active" : "")} onClick={goToContinents}>Home</button>
             <button className={"wp-nav-link" + (view === "articles" ? " wp-nav-link-active" : "")} onClick={() => setView("articles")}>Articles</button>
             <button className={"wp-nav-link" + (view === "products" ? " wp-nav-link-active" : "")} onClick={() => setView("products")}>Products</button>
-            <button className={"wp-nav-link" + (view === "about" ? " wp-nav-link-active" : "")} onClick={() => setView("about")}>About me</button>
             <button className={"wp-nav-link" + (view === "newsletter" ? " wp-nav-link-active" : "")} onClick={() => setView("newsletter")}>Newsletter</button>
+            <button className={"wp-nav-link" + (view === "about" ? " wp-nav-link-active" : "")} onClick={() => setView("about")}>About me</button>
           </div>
         </nav>
 
