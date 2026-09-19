@@ -12,14 +12,59 @@
 <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PZ12RZ4RMF"></script>
+<!-- Cookie consent + gated Google Analytics loading -->
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-PZ12RZ4RMF');
+(function() {
+  var GA_ID = 'G-PZ12RZ4RMF';
+  function loadGA() {
+    if (window.__wpGALoaded) return;
+    window.__wpGALoaded = true;
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function(){ dataLayer.push(arguments); };
+    gtag('js', new Date());
+    gtag('config', GA_ID);
+  }
+  var consent = localStorage.getItem('wp_cookie_consent');
+  if (consent === 'granted') { loadGA(); return; }
+  if (consent === 'denied') { return; }
+  document.addEventListener('DOMContentLoaded', function() {
+    var banner = document.createElement('div');
+    banner.id = 'wp-cookie-banner';
+    banner.innerHTML =
+      '<div class="wp-cookie-inner">' +
+        '<p>We use cookies to understand how visitors use Waypoint. See our <a href="privacy-policy.html">Privacy Policy</a>.</p>' +
+        '<div class="wp-cookie-actions">' +
+          '<button id="wp-cookie-reject" type="button">Decline</button>' +
+          '<button id="wp-cookie-accept" type="button">Accept</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(banner);
+    document.getElementById('wp-cookie-accept').addEventListener('click', function() {
+      localStorage.setItem('wp_cookie_consent', 'granted');
+      loadGA();
+      banner.remove();
+    });
+    document.getElementById('wp-cookie-reject').addEventListener('click', function() {
+      localStorage.setItem('wp_cookie_consent', 'denied');
+      banner.remove();
+    });
+  });
+})();
 </script>
+<style>
+  #wp-cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; background: #16233B; }
+  .wp-cookie-inner { max-width: 900px; margin: 0 auto; padding: 1rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; font-family: 'Work Sans', sans-serif; }
+  .wp-cookie-inner p { margin: 0; font-size: 0.85rem; line-height: 1.5; flex: 1; min-width: 220px; color: #F3EDE0; }
+  .wp-cookie-inner a { color: #F3EDE0; text-decoration: underline; }
+  .wp-cookie-actions { display: flex; gap: 0.6rem; flex-shrink: 0; }
+  .wp-cookie-actions button { font-family: 'Work Sans', sans-serif; font-size: 0.85rem; padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; border: 1px solid #F3EDE0; }
+  #wp-cookie-accept { background: #F3EDE0; color: #16233B; }
+  #wp-cookie-reject { background: transparent; color: #F3EDE0; }
+</style>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
