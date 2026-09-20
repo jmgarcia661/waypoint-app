@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/kenya.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need a visa for Kenya?","acceptedAnswer":{"@type":"Answer","text":"Technically an eTA rather than a traditional visa — apply online at least 3 days before travel (about $32.50), valid for a single entry."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Nairobi's Jomo Kenyatta International (NBO), the main gateway with onward domestic flights or road transfers to each park."}},
+{"@type":"Question","name":"Do I need a yellow fever vaccination?","acceptedAnswer":{"@type":"Answer","text":"Only if arriving from a country where yellow fever is endemic — otherwise not required, but check current guidance based on your specific travel history."}},
+{"@type":"Question","name":"How much should I tip safari guides?","acceptedAnswer":{"@type":"Answer","text":"USD 10–20 per day per guide is standard practice, generally handed directly at the end of your stay."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -186,11 +197,12 @@
     <h2 class="wp-section-title">Trip essentials</h2>
     <div class="wp-gtk-grid">
       <div><div class="wp-gtk-label">Daily budget</div><div class="wp-gtk-value">Budget: €70–100/day · Mid-range: €150–300/day · Luxury: €400+/day (safari-heavy costs)</div></div>
-      <div><div class="wp-gtk-label">Visa</div><div class="wp-gtk-value">An e-Visa is required for most nationalities and should be applied for online in advance — always confirm current rules before booking.</div></div>
+      <div><div class="wp-gtk-label">Visa</div><div class="wp-gtk-value">An Electronic Travel Authorisation (eTA) — not a traditional visa — is required in advance for most nationalities, about $32.50, applied for at least 3 days before travel — always confirm current rules before booking.</div></div>
       <div><div class="wp-gtk-label">Plug &amp; voltage</div><div class="wp-gtk-value">Type G, 240V</div></div>
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">USD 10–20/day for safari guides is standard practice</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Safaris are well organized; use reputable operators and avoid walking alone at night in cities</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">Domestic flights link parks quickly; road transfers between parks can take most of a day</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Nairobi&#x27;s Jomo Kenyatta International Airport (NBO) is the main gateway for this route, with onward domestic flights or road transfers to each park</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">7 days</span>
   </div>
+  <p class="wp-days-reason">7 days covers Maasai Mara, Amboseli, and Lake Nakuru at a good safari pace. 4–5 works for just the Mara; 10+ lets you add the Kenyan coast or slow the parks down.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–3</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Maasai Mara</div>
         <div class="wp-day-desc">Morning and evening game drives, with a full day near the Mara River during migration season.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1h flight or 5-6h drive from Nairobi</span><span class="wp-day-tag wp-day-tag-book">Book ahead</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Park entry fees run about $80–100/day for non-residents, often bundled into lodge or camp packages.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Most camps include full board; a bush breakfast set up mid-game-drive is a common, memorable touch.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Amboseli</div>
         <div class="wp-day-desc">Transfer south for elephant sightings with Kilimanjaro views.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1h flight from the Mara</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Park entry costs about $60–80/day for non-residents.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Same as the Mara — meals are typically included with your lodge stay here.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Lake Nakuru</div>
         <div class="wp-day-desc">A stop for flamingos and a chance at rhino before heading back north.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~4h drive from Amboseli via Nairobi</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Park entry costs about $50–60/day for non-residents.</div><div class="wp-day-extra"><strong>Where to eat:</strong> A packed lunch from your previous lodge is the practical choice, since this is often a transit-day stop.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Nairobi</div>
         <div class="wp-day-desc">Visit the Giraffe Centre or Sheldrick elephant orphanage before departure.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~2h drive from Lake Nakuru</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> The Sheldrick Wildlife Trust suggests a small entry donation (~$7); the Giraffe Centre costs about $12.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try a Nairobi restaurant specializing in nyama choma for a proper send-off meal before departure.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a visa for Kenya?</div>
+      <div class="wp-faq-a">Technically an eTA rather than a traditional visa — apply online at least 3 days before travel (about $32.50), valid for a single entry.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Nairobi&#x27;s Jomo Kenyatta International (NBO), the main gateway with onward domestic flights or road transfers to each park.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a yellow fever vaccination?</div>
+      <div class="wp-faq-a">Only if arriving from a country where yellow fever is endemic — otherwise not required, but check current guidance based on your specific travel history.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">How much should I tip safari guides?</div>
+      <div class="wp-faq-a">USD 10–20 per day per guide is standard practice, generally handed directly at the end of your stay.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="tanzania.html"><span>🇹🇿</span><span>Tanzania</span></a></div>
