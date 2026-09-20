@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/chile.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need a visa for Chile?","acceptedAnswer":{"@type":"Answer","text":"Not for most Western passport holders (EU, UK, US, Canada) for short stays."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Santiago's Arturo Merino Benítez International (SCL), the country's main gateway."}},
+{"@type":"Question","name":"Do I need to book Easter Island flights and park entry in advance?","acceptedAnswer":{"@type":"Answer","text":"Yes — flights are limited (mostly via Santiago) and the Rapa Nui National Park entry ticket should be arranged before you arrive."}},
+{"@type":"Question","name":"Is Chile expensive to visit?","acceptedAnswer":{"@type":"Answer","text":"Comparable to a mid-range European country — internal flights are the biggest cost given the country's length, more than daily expenses."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">10% in restaurants is standard</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Very safe; normal precautions in Santiago</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">Domestic flights are essential given Chile&#x27;s extreme length</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Santiago&#x27;s Arturo Merino Benítez International Airport (SCL) is the main gateway for this route</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">11 days</span>
   </div>
+  <p class="wp-days-reason">11 days covers Santiago, the Atacama Desert, Torres del Paine, and Easter Island — an ambitious sampler given Chile&#x27;s extreme length. 6–7 works if you drop Easter Island; 15+ makes the long internal flights feel much less rushed.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–2</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Santiago &amp; Valparaíso</div>
         <div class="wp-day-desc">The capital&#x27;s museums and a day trip to the coastal port city.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> Valparaíso&#x27;s funiculars cost a small fee each; most of the city&#x27;s famous street art is free to explore on foot.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try a completo, a Chilean hot dog loaded with avocado, tomato, and mayo, as a quick local snack.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Atacama Desert</div>
         <div class="wp-day-desc">Valle de la Luna, geysers, and salt flats around San Pedro de Atacama.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~2h flight from Santiago</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Valle de la Luna entry costs about CLP 6,000–10,000; guided stargazing tours run $30–50 given the region&#x27;s exceptionally clear skies.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try quinoa-based dishes reflecting the Andean influence in this part of Chile.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Torres del Paine</div>
         <div class="wp-day-desc">Trekking in Patagonia&#x27;s granite towers, based out of Puerto Natales.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~4h flight from Calama via Santiago</span><span class="wp-day-tag wp-day-tag-book">Book ahead</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Park entry costs about $32–45 for foreigners, multi-day; guided treks vary widely by operator and duration.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Pack supplies from Puerto Natales — options inside the park itself are limited and pricier.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Easter Island</div>
         <div class="wp-day-desc">A flight out to see the moai before closing the trip.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~5h flight from Punta Arenas via Santiago</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> The Rapa Nui National Park entry ticket costs about $80 and must be arranged before arrival.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try fresh tuna ceviche, reflecting the island&#x27;s Polynesian and Pacific influences.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a visa for Chile?</div>
+      <div class="wp-faq-a">Not for most Western passport holders (EU, UK, US, Canada) for short stays.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Santiago&#x27;s Arturo Merino Benítez International (SCL), the country&#x27;s main gateway.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need to book Easter Island flights and park entry in advance?</div>
+      <div class="wp-faq-a">Yes — flights are limited (mostly via Santiago) and the Rapa Nui National Park entry ticket should be arranged before you arrive.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Is Chile expensive to visit?</div>
+      <div class="wp-faq-a">Comparable to a mid-range European country — internal flights are the biggest cost given the country&#x27;s length, more than daily expenses.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="argentina.html"><span>🇦🇷</span><span>Argentina</span></a></div>
