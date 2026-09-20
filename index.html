@@ -1279,8 +1279,6 @@ function Waypoint() {
     }));
   };
 
-  const tripTotalCost = (trip) => trip.transits.reduce((sum, tr) => sum + (parseFloat(tr.price) || 0), 0);
-
   const addStay = (tripId, stopId, name, nights, price) => {
     if (!name.trim()) return;
     updateTrip(tripId, (t) => ({
