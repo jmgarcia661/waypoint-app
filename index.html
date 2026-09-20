@@ -191,6 +191,11 @@ const UI_STRINGS = {
     emailLabel: "Email", passwordLabel: "Password",
     authSubmitSignIn: "Sign in", authSubmitSignUp: "Create account",
     authSwitchToSignUp: "Don't have an account? Create one", authSwitchToSignIn: "Already have an account? Sign in",
+    nudgeTitle: "Welcome to Waypoint!", nudgeSubtitle: "Want the newsletter too? Same great trips, straight to your inbox.",
+    nudgeSkip: "Maybe later",
+    newsletterSubscribeBtn: "Subscribe", newsletterBusy: "Subscribing…",
+    newsletterSuccess: "You're in! Watch your inbox for the next issue.",
+    newsletterError: "Something went wrong — check the email and try again.",
     authModalTitleIn: "Welcome back", authModalTitleUp: "Create your account",
     authModalSubtitle: "Track which countries you've visited and which you want to see next.",
     markVisited: "Visited", markWantToVisit: "Want to visit",
@@ -236,6 +241,11 @@ const UI_STRINGS = {
     emailLabel: "Email", passwordLabel: "Palavra-passe",
     authSubmitSignIn: "Entrar", authSubmitSignUp: "Criar conta",
     authSwitchToSignUp: "Não tens conta? Cria uma", authSwitchToSignIn: "Já tens conta? Entra",
+    nudgeTitle: "Bem-vindo ao Waypoint!", nudgeSubtitle: "Queres também a newsletter? As mesmas viagens, direto ao teu email.",
+    nudgeSkip: "Talvez mais tarde",
+    newsletterSubscribeBtn: "Subscrever", newsletterBusy: "A subscrever…",
+    newsletterSuccess: "Feito! Fica atento à caixa de entrada para a próxima edição.",
+    newsletterError: "Algo correu mal — confirma o email e tenta de novo.",
     authModalTitleIn: "Bem-vindo de volta", authModalTitleUp: "Cria a tua conta",
     authModalSubtitle: "Acompanha os países que já visitaste e os que queres conhecer a seguir.",
     markVisited: "Visitado", markWantToVisit: "Quero visitar",
@@ -459,22 +469,51 @@ function CountryMap({ country, accentColor }) {
   return <div ref={containerRef} className="wp-map" />;
 }
 
-/* ---------- Beehiiv newsletter form (script-based embed) ---------- */
-function BeehiivForm({ formId }) {
-  const containerRef = useRef(null);
+/* ---------- Newsletter signup, backed by Firestore (single source of truth) ---------- */
+function NewsletterSignupForm({ user, T }) {
+  const [email, setEmail] = useState(user ? (user.email || "") : "");
+  const [status, setStatus] = useState("idle"); // idle | busy | done | error
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    containerRef.current.innerHTML = "";
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = "https://subscribe-forms.beehiiv.com/v3/loader.js";
-    script.setAttribute("data-beehiiv-form", formId);
-    containerRef.current.appendChild(script);
-    return () => { if (containerRef.current) containerRef.current.innerHTML = ""; };
-  }, [formId]);
+  const submit = () => {
+    const trimmed = (email || "").trim().toLowerCase();
+    if (!trimmed || trimmed.indexOf("@") < 1 || !window.firebase) { setStatus("error"); return; }
+    setStatus("busy");
+    const docId = trimmed.replace(/[^a-z0-9@._-]/g, "_");
+    const payload = {
+      email: trimmed,
+      subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      uid: user ? user.uid : null,
+    };
+    firebase.firestore().collection("newsletter_subscribers").doc(docId).set(payload, { merge: true })
+      .then(() => {
+        if (user) {
+          firebase.firestore().collection("users").doc(user.uid).set({ newsletterSubscribed: true }, { merge: true }).catch(() => {});
+        }
+        setStatus("done");
+      })
+      .catch(() => setStatus("error"));
+  };
 
-  return <div ref={containerRef} className="wp-newsletter-card" />;
+  if (status === "done") {
+    return <p className="wp-newsletter-success">{T.newsletterSuccess}</p>;
+  }
+
+  return (
+    <div className="wp-newsletter-form">
+      <input
+        type="email"
+        className="wp-auth-input"
+        placeholder={T.emailLabel}
+        value={email}
+        onChange={(e) => { setEmail(e.target.value); setStatus("idle"); }}
+        onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
+      />
+      {status === "error" && <p className="wp-auth-error">{T.newsletterError}</p>}
+      <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ width: "100%", justifyContent: "center" }} onClick={submit} disabled={status === "busy"}>
+        {status === "busy" ? T.newsletterBusy : T.newsletterSubscribeBtn}
+      </button>
+    </div>
+  );
 }
 
 /* ---------- Wikipedia thumbnail (fetched at runtime, cached in-memory) ---------- */
@@ -766,6 +805,7 @@ function Waypoint() {
   const [authLoading, setAuthLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState("signin");
+  const [showNewsletterNudge, setShowNewsletterNudge] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authError, setAuthError] = useState("");
@@ -947,23 +987,34 @@ function Waypoint() {
   }, [firebaseReady]);
 
   const openAuthModal = (mode) => { setAuthMode(mode || "signin"); setAuthError(""); setAuthEmail(""); setAuthPassword(""); setShowAuthModal(true); };
-  const closeAuthModal = () => { setShowAuthModal(false); setAuthError(""); setAuthBusy(false); };
+  const closeAuthModal = () => { setShowAuthModal(false); setAuthError(""); setAuthBusy(false); setShowNewsletterNudge(false); };
 
   const signInWithGoogle = () => {
     if (!firebaseReady) return;
     setAuthError(""); setAuthBusy(true);
     const provider = new firebase.auth.GoogleAuthProvider();
     firebase.auth().signInWithPopup(provider)
-      .then(() => closeAuthModal())
+      .then((result) => {
+        setAuthBusy(false);
+        if (result && result.additionalUserInfo && result.additionalUserInfo.isNewUser) {
+          setShowNewsletterNudge(true);
+        } else {
+          closeAuthModal();
+        }
+      })
       .catch((e) => { setAuthError(e.message); setAuthBusy(false); });
   };
   const submitAuthForm = () => {
     if (!firebaseReady) return;
     setAuthError(""); setAuthBusy(true);
-    const action = authMode === "signup"
+    const wasSignup = authMode === "signup";
+    const action = wasSignup
       ? firebase.auth().createUserWithEmailAndPassword(authEmail, authPassword)
       : firebase.auth().signInWithEmailAndPassword(authEmail, authPassword);
-    action.then(() => closeAuthModal()).catch((e) => { setAuthError(e.message); setAuthBusy(false); });
+    action.then(() => {
+      setAuthBusy(false);
+      if (wasSignup) setShowNewsletterNudge(true); else closeAuthModal();
+    }).catch((e) => { setAuthError(e.message); setAuthBusy(false); });
   };
   const signOutUser = () => { setShowUserMenu(false); if (firebaseReady) firebase.auth().signOut(); };
 
@@ -1213,6 +1264,8 @@ function Waypoint() {
         .wp-about-bio { font-size: 0.98rem; line-height: 1.65; max-width: 60ch; margin: 0 0 1rem; }
 
         .wp-newsletter-card { max-width: 480px; min-height: 80px; }
+        .wp-newsletter-form { max-width: 420px; display: flex; flex-direction: column; }
+        .wp-newsletter-success { max-width: 420px; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 1rem 1.2rem; color: var(--ink); font-size: 0.95rem; }
 
         .wp-coming-soon { text-align: center; padding: 2.5rem 1rem 1rem; }
         .wp-coming-soon-visual { width: 170px; margin: 0 auto; }
@@ -1839,7 +1892,7 @@ function Waypoint() {
           <div className="wp-newsletter">
             <h2 className="wp-section-title">{T.newsletter}</h2>
             <p className="wp-blurb">{T.newsletterIntro}</p>
-            <BeehiivForm formId="fbd55164-3ad7-472f-a951-748df3164201" />
+            <NewsletterSignupForm user={user} T={T} />
           </div>
         )}
 
@@ -1880,39 +1933,50 @@ function Waypoint() {
           <div className="wp-modal-overlay" onClick={closeAuthModal}>
             <div className="wp-auth-modal" onClick={(e) => e.stopPropagation()}>
               <button className="wp-modal-close" onClick={closeAuthModal} aria-label="Close"><X size={16} /></button>
-              <h2 className="wp-auth-title">{authMode === "signup" ? T.authModalTitleUp : T.authModalTitleIn}</h2>
-              <p className="wp-auth-subtitle">{T.authModalSubtitle}</p>
+              {showNewsletterNudge ? (
+                <div>
+                  <h2 className="wp-auth-title">{T.nudgeTitle}</h2>
+                  <p className="wp-auth-subtitle">{T.nudgeSubtitle}</p>
+                  <NewsletterSignupForm user={user} T={T} />
+                  <button className="wp-auth-switch" onClick={closeAuthModal}>{T.nudgeSkip}</button>
+                </div>
+              ) : (
+                <div>
+                  <h2 className="wp-auth-title">{authMode === "signup" ? T.authModalTitleUp : T.authModalTitleIn}</h2>
+                  <p className="wp-auth-subtitle">{T.authModalSubtitle}</p>
 
-              <button className="wp-google-btn" onClick={signInWithGoogle} disabled={authBusy}>
-                <GoogleG size={16} /> {T.continueWithGoogle}
-              </button>
+                  <button className="wp-google-btn" onClick={signInWithGoogle} disabled={authBusy}>
+                    <GoogleG size={16} /> {T.continueWithGoogle}
+                  </button>
 
-              <div className="wp-auth-divider"><span>{T.orDivider}</span></div>
+                  <div className="wp-auth-divider"><span>{T.orDivider}</span></div>
 
-              <input
-                type="email"
-                className="wp-auth-input"
-                placeholder={T.emailLabel}
-                value={authEmail}
-                onChange={(e) => setAuthEmail(e.target.value)}
-              />
-              <input
-                type="password"
-                className="wp-auth-input"
-                placeholder={T.passwordLabel}
-                value={authPassword}
-                onChange={(e) => setAuthPassword(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") submitAuthForm(); }}
-              />
-              {authError && <p className="wp-auth-error">{authError}</p>}
+                  <input
+                    type="email"
+                    className="wp-auth-input"
+                    placeholder={T.emailLabel}
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                  />
+                  <input
+                    type="password"
+                    className="wp-auth-input"
+                    placeholder={T.passwordLabel}
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") submitAuthForm(); }}
+                  />
+                  {authError && <p className="wp-auth-error">{authError}</p>}
 
-              <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ width: "100%", justifyContent: "center", marginTop: "0.4rem" }} onClick={submitAuthForm} disabled={authBusy}>
-                {authMode === "signup" ? T.authSubmitSignUp : T.authSubmitSignIn}
-              </button>
+                  <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ width: "100%", justifyContent: "center", marginTop: "0.4rem" }} onClick={submitAuthForm} disabled={authBusy}>
+                    {authMode === "signup" ? T.authSubmitSignUp : T.authSubmitSignIn}
+                  </button>
 
-              <button className="wp-auth-switch" onClick={() => { setAuthMode(authMode === "signup" ? "signin" : "signup"); setAuthError(""); }}>
-                {authMode === "signup" ? T.authSwitchToSignIn : T.authSwitchToSignUp}
-              </button>
+                  <button className="wp-auth-switch" onClick={() => { setAuthMode(authMode === "signup" ? "signin" : "signup"); setAuthError(""); }}>
+                    {authMode === "signup" ? T.authSwitchToSignIn : T.authSwitchToSignUp}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
