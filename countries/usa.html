@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/usa.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need a visa for the USA?","acceptedAnswer":{"@type":"Answer","text":"Most Western passport holders can use the ESTA (visa waiver, apply online at least 72 hours ahead, valid 2 years) instead of a full visa — check eligibility for your specific passport before booking."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Las Vegas (LAS) for this route; Phoenix (PHX) works well as your exit point at the other end."}},
+{"@type":"Question","name":"Do I need to book national park entry in advance?","acceptedAnswer":{"@type":"Answer","text":"Some require timed-entry reservations in peak season, particularly Zion's Angels Landing permit — check each park's current system before you go."}},
+{"@type":"Question","name":"Is tipping really necessary in the US?","acceptedAnswer":{"@type":"Answer","text":"Yes, genuinely expected (15–20% at restaurants) — service staff wages are often built around receiving tips."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">15–20% in restaurants is standard and expected</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Very safe in national parks and tourist areas; normal city precautions</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">A rental car is essential for this Southwest route</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Las Vegas Harry Reid International (LAS) works well as the start of this loop; Phoenix Sky Harbor (PHX) is the natural exit point at the other end</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">8 days</span>
   </div>
+  <p class="wp-days-reason">8 days covers Las Vegas and the Southwest national parks loop without rushing. 5–6 works if you drop one stop; 10–12 lets you slow down or add the North Rim.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–2</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Las Vegas</div>
         <div class="wp-day-desc">Arrive and adjust, with an optional day trip to Hoover Dam.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> A Hoover Dam guided tour costs about $30; many Vegas attractions like the fountains are free to see.</div><div class="wp-day-extra"><strong>Where to eat:</strong> An all-you-can-eat buffet is a Vegas institution worth doing once, even if pricier than a regular meal.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Grand Canyon</div>
         <div class="wp-day-desc">Drive to the South Rim for sunset and sunrise viewpoints.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~4.5h drive from Las Vegas</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> National park entry costs $35 per vehicle, valid for 7 days.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Pack a picnic — dining options at the rim are limited and overpriced for what they are.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Zion &amp; Bryce Canyon</div>
         <div class="wp-day-desc">Hike Angels Landing or the Narrows, then continue to Bryce&#x27;s amphitheater.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~2.5h drive from the Grand Canyon</span><span class="wp-day-tag wp-day-tag-book">Book ahead</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Zion entry costs $35 per vehicle; the Angels Landing permit adds a small lottery fee.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Springdale, just outside Zion&#x27;s gate, has surprisingly good casual dining for a small park town.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Sedona &amp; Phoenix</div>
         <div class="wp-day-desc">Red rock hikes before flying out of Phoenix.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~4.5h drive from Bryce Canyon</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Many Sedona trailheads require a $5 Red Rock Pass, sold at trailheads.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try a prickly pear-flavored treat, a distinctly Southwest specialty found in Sedona&#x27;s shops and cafes.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a visa for the USA?</div>
+      <div class="wp-faq-a">Most Western passport holders can use the ESTA (visa waiver, apply online at least 72 hours ahead, valid 2 years) instead of a full visa — check eligibility for your specific passport before booking.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Las Vegas (LAS) for this route; Phoenix (PHX) works well as your exit point at the other end.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need to book national park entry in advance?</div>
+      <div class="wp-faq-a">Some require timed-entry reservations in peak season, particularly Zion&#x27;s Angels Landing permit — check each park&#x27;s current system before you go.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Is tipping really necessary in the US?</div>
+      <div class="wp-faq-a">Yes, genuinely expected (15–20% at restaurants) — service staff wages are often built around receiving tips.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="canada.html"><span>🇨🇦</span><span>Canada</span></a></div>
