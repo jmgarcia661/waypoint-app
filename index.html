@@ -150,6 +150,7 @@ const UserIcon = (p) => <IconBase {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 
 const CheckCircle = (p) => <IconBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="M22 4L12 14.01l-3-3" /></IconBase>;
 const StarIcon = (p) => <IconBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></IconBase>;
 const LogOutIcon = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></IconBase>;
+const PlusIcon = (p) => <IconBase {...p}><path d="M12 5v14" /><path d="M5 12h14" /></IconBase>;
 const GoogleG = (p) => (
   <svg width={p.size || 16} height={p.size || 16} viewBox="0 0 18 18">
     <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.79 2.73v2.27h2.9c1.7-1.56 2.68-3.87 2.68-6.64z" />
@@ -204,6 +205,17 @@ const UI_STRINGS = {
     mapLegendVisited: "Visited", mapLegendWant: "Want to visit", mapLegendNone: "Not marked",
     mapSignInPrompt: "Sign in to start marking countries on your map.",
     mapVisitedListTitle: "Visited", mapWantListTitle: "Want to visit", mapListEmpty: "Nothing here yet.",
+    myTrips: "Trips", tripsSubtitle: "Plan your next trip, day by day.",
+    tripsSignInPrompt: "Sign in to start planning a trip.", noTripsYet: "No trips yet — start planning your next one.",
+    newTrip: "New trip", tripNameLabel: "name", tripNamePlaceholder: "e.g. Thailand 2027",
+    tripCountryLabel: "country", tripDatesLabel: "dates", daysWillBeCreated: "days will be created automatically",
+    createTrip: "Create trip", tripStatusPlanning: "planning", tripStatusDone: "done",
+    days: "days", stops: "stops", estimatedCost: "estimated cost", perDay: "per day",
+    cityPlaceholder: "city or region", day: "day", addHighlightPlaceholder: "add a highlight",
+    addStop: "Add stop", chooseTransit: "choose transit", transitFlight: "flight", transitTrain: "train",
+    transitBus: "bus", transitCar: "car", transitBoat: "boat", transitDuration: "duration, e.g. 12h",
+    transitPrice: "price, e.g. €25", markTripDone: "Mark trip as done", deleteTrip: "Delete trip",
+    confirmDeleteTrip: "Delete this trip? This can't be undone.",
     articlesComingSoon: "Long-form guides, itineraries, and travel notes are on their way — check back soon.",
     productsComingSoon: "Downloadable guides, packing lists, and planning tools are on their way — check back soon.",
     newsletterIntro: "Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.",
@@ -254,6 +266,17 @@ const UI_STRINGS = {
     mapLegendVisited: "Visitado", mapLegendWant: "Quero visitar", mapLegendNone: "Não marcado",
     mapSignInPrompt: "Entra para começares a marcar países no teu mapa.",
     mapVisitedListTitle: "Visitados", mapWantListTitle: "Quero visitar", mapListEmpty: "Ainda nada aqui.",
+    myTrips: "Viagens", tripsSubtitle: "Planeia a tua próxima viagem, dia a dia.",
+    tripsSignInPrompt: "Entra para começares a planear uma viagem.", noTripsYet: "Ainda sem viagens — começa a planear a próxima.",
+    newTrip: "Nova viagem", tripNameLabel: "nome", tripNamePlaceholder: "ex: Tailândia 2027",
+    tripCountryLabel: "país", tripDatesLabel: "datas", daysWillBeCreated: "dias serão criados automaticamente",
+    createTrip: "Criar viagem", tripStatusPlanning: "a planear", tripStatusDone: "feita",
+    days: "dias", stops: "paragens", estimatedCost: "custo estimado", perDay: "por dia",
+    cityPlaceholder: "cidade ou região", day: "dia", addHighlightPlaceholder: "adicionar highlight",
+    addStop: "Adicionar paragem", chooseTransit: "escolher ligação", transitFlight: "avião", transitTrain: "comboio",
+    transitBus: "autocarro", transitCar: "carro", transitBoat: "barco", transitDuration: "duração, ex: 12h",
+    transitPrice: "preço, ex: €25", markTripDone: "Marcar viagem como feita", deleteTrip: "Eliminar viagem",
+    confirmDeleteTrip: "Eliminar esta viagem? Não é possível desfazer.",
     articlesComingSoon: "Guias mais longos, itinerários e notas de viagem estão a caminho — volta em breve.",
     productsComingSoon: "Guias para descarregar, listas de bagagem e ferramentas de planeamento estão a caminho — volta em breve.",
     newsletterIntro: "Recebe um novo destino no teu email todas as semanas — ideias de itinerários reais e notas de viagem, sem spam.",
@@ -870,6 +893,15 @@ function Waypoint() {
   const [authError, setAuthError] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
   const [countryStatuses, setCountryStatuses] = useState({});
+  const [trips, setTrips] = useState({});
+  const [activeTripId, setActiveTripId] = useState(null);
+  const [showNewTripForm, setShowNewTripForm] = useState(false);
+  const [newTripName, setNewTripName] = useState("");
+  const [newTripCountryQuery, setNewTripCountryQuery] = useState("");
+  const [newTripCountryId, setNewTripCountryId] = useState(null);
+  const [newTripStart, setNewTripStart] = useState("");
+  const [newTripEnd, setNewTripEnd] = useState("");
+  const [highlightDrafts, setHighlightDrafts] = useState({});
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const normalize = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -1050,10 +1082,15 @@ function Waypoint() {
       setAuthLoading(false);
       if (u) {
         firebase.firestore().collection("users").doc(u.uid).get()
-          .then((doc) => setCountryStatuses(doc.exists ? (doc.data().countries || {}) : {}))
-          .catch(() => setCountryStatuses({}));
+          .then((doc) => {
+            const data = doc.exists ? doc.data() : {};
+            setCountryStatuses(data.countries || {});
+            setTrips(data.trips || {});
+          })
+          .catch(() => { setCountryStatuses({}); setTrips({}); });
       } else {
         setCountryStatuses({});
+        setTrips({});
       }
     });
     return () => unsub();
@@ -1097,7 +1134,118 @@ function Waypoint() {
     if (!status || next[countryId] === status) delete next[countryId];
     else next[countryId] = status;
     setCountryStatuses(next);
-    firebase.firestore().collection("users").doc(user.uid).set({ countries: next }).catch(() => {});
+    firebase.firestore().collection("users").doc(user.uid).set({ countries: next }, { merge: true }).catch(() => {});
+  };
+
+  const saveTrips = (next) => {
+    setTrips(next);
+    if (user) firebase.firestore().collection("users").doc(user.uid).set({ trips: next }, { merge: true }).catch(() => {});
+  };
+
+  const dayCount = (start, end) => {
+    if (!start || !end) return 1;
+    const diff = Math.round((new Date(end) - new Date(start)) / 86400000) + 1;
+    return diff > 0 ? diff : 1;
+  };
+
+  const openNewTripForm = () => {
+    if (!user) { openAuthModal("signin"); return; }
+    setNewTripName(""); setNewTripCountryQuery(""); setNewTripCountryId(null);
+    setNewTripStart(""); setNewTripEnd(""); setShowNewTripForm(true);
+  };
+
+  const createTrip = () => {
+    if (!newTripCountryId || !newTripName.trim()) return;
+    const cty = allCountriesForMap.find((c) => c.id === newTripCountryId);
+    if (!cty) return;
+    const id = "trip_" + Date.now();
+    const total = dayCount(newTripStart, newTripEnd);
+    const trip = {
+      id,
+      name: newTripName.trim(),
+      countryId: cty.id,
+      countryName: cty.name,
+      flag: cty.flag,
+      startDate: newTripStart,
+      endDate: newTripEnd,
+      status: "planning",
+      stops: [{ id: "stop_" + Date.now(), city: "", dayStart: 1, dayEnd: total, highlights: [] }],
+      transits: [],
+      createdAt: new Date().toISOString(),
+    };
+    saveTrips({ ...trips, [id]: trip });
+    setShowNewTripForm(false);
+    setActiveTripId(id);
+    setView("trip-detail");
+  };
+
+  const deleteTrip = (tripId) => {
+    const next = { ...trips };
+    delete next[tripId];
+    saveTrips(next);
+    setActiveTripId(null);
+    setView("trips");
+  };
+
+  const updateTrip = (tripId, updater) => {
+    const current = trips[tripId];
+    if (!current) return;
+    saveTrips({ ...trips, [tripId]: updater(current) });
+  };
+
+  const addStop = (tripId) => {
+    updateTrip(tripId, (t) => {
+      const lastStop = t.stops[t.stops.length - 1];
+      const nextDay = lastStop ? lastStop.dayEnd + 1 : 1;
+      const total = dayCount(t.startDate, t.endDate);
+      const newStop = { id: "stop_" + Date.now(), city: "", dayStart: Math.min(nextDay, total), dayEnd: total, highlights: [] };
+      return { ...t, stops: [...t.stops, newStop], transits: [...t.transits, { afterStopId: lastStop ? lastStop.id : null, mode: "", duration: "", price: "" }] };
+    });
+  };
+
+  const removeStop = (tripId, stopId) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.filter((s) => s.id !== stopId),
+      transits: t.transits.filter((tr) => tr.afterStopId !== stopId),
+    }));
+  };
+
+  const updateStopField = (tripId, stopId, field, value) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, [field]: value } : s)),
+    }));
+  };
+
+  const addHighlight = (tripId, stopId, text, source) => {
+    if (!text.trim()) return;
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, highlights: [...s.highlights, { id: "h_" + Date.now(), text: text.trim(), source: source || "" }] } : s)),
+    }));
+  };
+
+  const removeHighlight = (tripId, stopId, highlightId) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, highlights: s.highlights.filter((h) => h.id !== highlightId) } : s)),
+    }));
+  };
+
+  const updateTransit = (tripId, afterStopId, field, value) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      transits: t.transits.map((tr) => (tr.afterStopId === afterStopId ? { ...tr, [field]: value } : tr)),
+    }));
+  };
+
+  const tripTotalCost = (trip) => trip.transits.reduce((sum, tr) => sum + (parseFloat(tr.price) || 0), 0);
+
+  const markTripDone = (tripId) => {
+    updateTrip(tripId, (t) => ({ ...t, status: "done" }));
+    const trip = trips[tripId];
+    if (trip) setCountryStatus(trip.countryId, "visited");
   };
 
   return (
@@ -1316,6 +1464,51 @@ function Waypoint() {
         .wp-map-list-group { margin-bottom: 1rem; }
         .wp-map-list-continent { font-size: 0.75rem; font-weight: 600; text-transform: none; color: var(--ink-soft); margin-bottom: 0.3rem; }
         .wp-map-list-row { display: flex; align-items: center; gap: 0.5rem; width: 100%; text-align: left; background: none; border: none; padding: 0.35rem 0; font-family: 'Work Sans', sans-serif; font-size: 0.92rem; color: var(--ink); cursor: pointer; }
+
+        .wp-trips-page { max-width: 640px; }
+        .wp-trip-card { display: block; width: 100%; text-align: left; background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.9rem 1.1rem; margin-bottom: 0.7rem; cursor: pointer; }
+        .wp-trip-card:hover { border-color: var(--gold); }
+        .wp-trip-card-top { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; }
+        .wp-trip-card-name { font-family: 'Fraunces', serif; font-size: 1.02rem; display: flex; align-items: center; gap: 0.5rem; }
+        .wp-trip-card-meta { font-size: 0.82rem; color: var(--ink-soft); margin: 0.3rem 0 0; }
+        .wp-trip-status-badge { font-size: 0.72rem; background: var(--parchment); color: var(--ink-soft); padding: 0.2rem 0.6rem; border-radius: 999px; white-space: nowrap; }
+        .wp-trip-status-done { background: #E3EDE1; color: #3E6B3A; }
+        .wp-field-label { display: block; font-size: 0.75rem; color: var(--ink-soft); margin: 0.7rem 0 0.25rem; }
+        .wp-trip-country-results { background: #fff; border: 1px solid var(--hairline); border-radius: 10px; margin-top: -0.2rem; margin-bottom: 0.3rem; overflow: hidden; }
+        .wp-trip-country-row { display: flex; align-items: center; gap: 0.5rem; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid var(--hairline); padding: 0.5rem 0.7rem; font-size: 0.88rem; cursor: pointer; }
+        .wp-trip-country-row:first-child { border-top: none; }
+        .wp-trip-country-row:hover { background: var(--parchment); }
+        .wp-trip-date-row { display: flex; gap: 0.5rem; }
+        .wp-trip-days-hint { font-size: 0.78rem; color: var(--ink-soft); margin: 0.3rem 0 0; }
+        .wp-trip-back { display: flex; align-items: center; gap: 0.3rem; background: none; border: none; font-size: 0.85rem; color: var(--ink-soft); cursor: pointer; padding: 0; margin-bottom: 1rem; }
+        .wp-trip-detail-header { margin-bottom: 1rem; }
+        .wp-trip-cost-row { display: flex; gap: 0.7rem; margin-bottom: 1.2rem; }
+        .wp-trip-cost-box { flex: 1; background: var(--parchment); border-radius: 10px; padding: 0.6rem 0.8rem; }
+        .wp-trip-cost-label { font-size: 0.7rem; color: var(--ink-soft); margin: 0; }
+        .wp-trip-cost-value { font-family: 'Fraunces', serif; font-size: 1.2rem; margin: 0.1rem 0 0; }
+        .wp-trip-stop-card { background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.8rem 1rem; margin-bottom: 0.4rem; }
+        .wp-trip-stop-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
+        .wp-trip-city-input { flex: 1; border: none; border-bottom: 1px solid var(--hairline); font-family: 'Fraunces', serif; font-size: 0.98rem; padding: 0.2rem 0; background: none; }
+        .wp-trip-city-input:focus { outline: none; border-color: var(--gold); }
+        .wp-trip-day-range { font-size: 0.75rem; color: var(--ink-soft); white-space: nowrap; }
+        .wp-trip-remove-btn { background: none; border: none; color: var(--ink-soft); cursor: pointer; padding: 0.15rem; display: flex; flex-shrink: 0; }
+        .wp-trip-remove-btn:hover { color: #B5453D; }
+        .wp-trip-highlight-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0; border-top: 1px solid var(--hairline); }
+        .wp-trip-highlight-text { flex: 1; font-size: 0.85rem; }
+        .wp-trip-add-highlight-row { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
+        .wp-trip-highlight-input { flex: 1; font-size: 0.85rem; padding: 0.4rem 0.6rem; border: 1px solid var(--hairline); border-radius: 8px; }
+        .wp-trip-add-btn { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; }
+        .wp-trip-suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+        .wp-trip-suggestion-chip { display: flex; align-items: center; gap: 0.25rem; font-size: 0.76rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.25rem 0.6rem; cursor: pointer; color: var(--ink-soft); }
+        .wp-trip-suggestion-chip:hover { border-color: var(--gold); color: var(--ink); }
+        .wp-trip-transit-row { display: flex; gap: 0.4rem; padding: 0.5rem 0.2rem; margin-left: 1rem; border-left: 2px dashed var(--hairline); }
+        .wp-trip-transit-select, .wp-trip-transit-input { font-size: 0.78rem; padding: 0.35rem 0.5rem; border: 1px solid var(--hairline); border-radius: 8px; background: #fff; }
+        .wp-trip-transit-select { flex: 0 0 auto; }
+        .wp-trip-transit-input { flex: 1; min-width: 0; }
+        .wp-trip-add-stop-btn { display: flex; align-items: center; justify-content: center; gap: 0.4rem; width: 100%; background: none; border: 1px dashed var(--hairline); border-radius: 10px; padding: 0.6rem; font-size: 0.85rem; color: var(--ink-soft); cursor: pointer; margin: 0.6rem 0 1.2rem; }
+        .wp-trip-add-stop-btn:hover { border-color: var(--gold); color: var(--ink); }
+        .wp-trip-footer-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+        .wp-trip-delete-btn { background: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.55rem 1.1rem; font-size: 0.85rem; color: #B5453D; cursor: pointer; }
         .wp-map-list-row:hover { text-decoration: underline; }
 
         .wp-modal-overlay { position: fixed; inset: 0; background: rgba(20,32,53,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.2rem; }
@@ -1406,6 +1599,9 @@ function Waypoint() {
             <button className={"wp-nav-link" + ((view === "continents" || view === "countries" || view === "detail") ? " wp-nav-link-active" : "")} onClick={goToContinents}>{T.home}</button>
             {firebaseReady && !authLoading && (
               <button className={"wp-nav-link" + (view === "map" ? " wp-nav-link-active" : "")} onClick={() => goToStatic("map")}>{T.myMap}</button>
+            )}
+            {firebaseReady && !authLoading && (
+              <button className={"wp-nav-link" + ((view === "trips" || view === "trip-detail") ? " wp-nav-link-active" : "")} onClick={() => { setActiveTripId(null); goToStatic("trips"); }}>{T.myTrips}</button>
             )}
             <button className={"wp-nav-link" + (view === "articles" ? " wp-nav-link-active" : "")} onClick={() => goToStatic("articles")}>{T.articles}</button>
             <button className={"wp-nav-link" + (view === "products" ? " wp-nav-link-active" : "")} onClick={() => goToStatic("products")}>{T.products}</button>
@@ -1939,6 +2135,237 @@ function Waypoint() {
             </div>
           </div>
         )}
+
+        {view === "trips" && (
+          <div className="wp-trips-page">
+            <h2 className="wp-section-title" style={{ marginBottom: "0.2rem" }}>{T.myTrips}</h2>
+            <p className="wp-now-subtitle" style={{ marginBottom: "1.2rem" }}>{T.tripsSubtitle}</p>
+
+            {!user && (
+              <div className="wp-map-signin-banner">
+                <span>{T.tripsSignInPrompt}</span>
+                <button className="wp-signin-btn" style={{ marginLeft: 0 }} onClick={() => openAuthModal("signin")}>{T.signIn}</button>
+              </div>
+            )}
+
+            {user && Object.keys(trips).length === 0 && (
+              <p className="wp-map-list-empty" style={{ marginBottom: "1rem" }}>{T.noTripsYet}</p>
+            )}
+
+            {user && Object.values(trips).map((trip) => (
+              <button
+                key={trip.id}
+                className="wp-trip-card"
+                onClick={() => { setActiveTripId(trip.id); setView("trip-detail"); window.scrollTo(0, 0); }}
+              >
+                <div className="wp-trip-card-top">
+                  <span className="wp-trip-card-name"><span>{trip.flag}</span>{trip.name}</span>
+                  <span className={"wp-trip-status-badge" + (trip.status === "done" ? " wp-trip-status-done" : "")}>
+                    {trip.status === "done" ? T.tripStatusDone : T.tripStatusPlanning}
+                  </span>
+                </div>
+                <p className="wp-trip-card-meta">
+                  {trip.startDate || "?"} – {trip.endDate || "?"} · {dayCount(trip.startDate, trip.endDate)} {T.days} · {trip.stops.length} {T.stops}
+                </p>
+              </button>
+            ))}
+
+            {user && (
+              <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ marginTop: "0.6rem" }} onClick={openNewTripForm}>
+                <PlusIcon size={15} /> {T.newTrip}
+              </button>
+            )}
+
+            {showNewTripForm && (
+              <div className="wp-modal-overlay" onClick={() => setShowNewTripForm(false)}>
+                <div className="wp-auth-modal" onClick={(e) => e.stopPropagation()}>
+                  <button className="wp-modal-close" onClick={() => setShowNewTripForm(false)} aria-label="Close"><X size={16} /></button>
+                  <h2 className="wp-auth-title">{T.newTrip}</h2>
+
+                  <label className="wp-field-label">{T.tripNameLabel}</label>
+                  <input type="text" className="wp-auth-input" placeholder={T.tripNamePlaceholder} value={newTripName} onChange={(e) => setNewTripName(e.target.value)} />
+
+                  <label className="wp-field-label">{T.tripCountryLabel}</label>
+                  <input
+                    type="text"
+                    className="wp-auth-input"
+                    placeholder={T.searchHome}
+                    value={newTripCountryQuery}
+                    onChange={(e) => { setNewTripCountryQuery(e.target.value); setNewTripCountryId(null); }}
+                  />
+                  {newTripCountryQuery.trim() && !newTripCountryId && (
+                    <div className="wp-trip-country-results">
+                      {allCountriesForMap.filter((c) => normalize(c.name).includes(normalize(newTripCountryQuery))).slice(0, 6).map((c) => (
+                        <button key={c.id} className="wp-trip-country-row" onClick={() => { setNewTripCountryId(c.id); setNewTripCountryQuery(c.name); }}>
+                          <span>{c.flag}</span>{c.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <label className="wp-field-label">{T.tripDatesLabel}</label>
+                  <div className="wp-trip-date-row">
+                    <input type="date" className="wp-auth-input" value={newTripStart} onChange={(e) => setNewTripStart(e.target.value)} />
+                    <input type="date" className="wp-auth-input" value={newTripEnd} onChange={(e) => setNewTripEnd(e.target.value)} />
+                  </div>
+                  {newTripStart && newTripEnd && (
+                    <p className="wp-trip-days-hint">{dayCount(newTripStart, newTripEnd)} {T.daysWillBeCreated}</p>
+                  )}
+
+                  <button
+                    className="wp-quiz-btn wp-quiz-btn-primary"
+                    style={{ width: "100%", justifyContent: "center", marginTop: "0.6rem" }}
+                    disabled={!newTripCountryId || !newTripName.trim()}
+                    onClick={createTrip}
+                  >
+                    {T.createTrip}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {view === "trip-detail" && activeTripId && trips[activeTripId] && (() => {
+          const trip = trips[activeTripId];
+          const total = dayCount(trip.startDate, trip.endDate);
+          const cost = tripTotalCost(trip);
+          const countryData = allCountriesFlat.find((c) => c.id === trip.countryId);
+          const suggestions = countryData && countryData.attractions ? countryData.attractions.map((a) => a.name) : [];
+          return (
+            <div className="wp-trips-page">
+              <button className="wp-trip-back" onClick={() => { setActiveTripId(null); goToStatic("trips"); }}>
+                <ChevronRight size={15} style={{ transform: "rotate(180deg)" }} /> {T.myTrips}
+              </button>
+
+              <div className="wp-trip-detail-header">
+                <div className="wp-trip-card-top">
+                  <span className="wp-trip-card-name"><span>{trip.flag}</span>{trip.name}</span>
+                  <span className={"wp-trip-status-badge" + (trip.status === "done" ? " wp-trip-status-done" : "")}>
+                    {trip.status === "done" ? T.tripStatusDone : T.tripStatusPlanning}
+                  </span>
+                </div>
+                <p className="wp-trip-card-meta">{trip.startDate || "?"} – {trip.endDate || "?"} · {total} {T.days} · {trip.stops.length} {T.stops}</p>
+              </div>
+
+              <div className="wp-trip-cost-row">
+                <div className="wp-trip-cost-box">
+                  <p className="wp-trip-cost-label">{T.estimatedCost}</p>
+                  <p className="wp-trip-cost-value">€{cost.toFixed(0)}</p>
+                </div>
+                <div className="wp-trip-cost-box">
+                  <p className="wp-trip-cost-label">{T.perDay}</p>
+                  <p className="wp-trip-cost-value">€{(cost / total).toFixed(0)}</p>
+                </div>
+              </div>
+
+              {trip.stops.map((stop, i) => (
+                <div key={stop.id}>
+                  <div className="wp-trip-stop-card">
+                    <div className="wp-trip-stop-top">
+                      <input
+                        type="text"
+                        className="wp-trip-city-input"
+                        placeholder={T.cityPlaceholder}
+                        value={stop.city}
+                        onChange={(e) => updateStopField(trip.id, stop.id, "city", e.target.value)}
+                      />
+                      <span className="wp-trip-day-range">{T.day} {stop.dayStart}-{stop.dayEnd}</span>
+                      {trip.stops.length > 1 && (
+                        <button className="wp-trip-remove-btn" onClick={() => removeStop(trip.id, stop.id)} aria-label="Remove stop"><X size={14} /></button>
+                      )}
+                    </div>
+
+                    {stop.highlights.map((h) => (
+                      <div key={h.id} className="wp-trip-highlight-row">
+                        <CheckCircle size={14} style={{ color: "#6B9E68", flexShrink: 0 }} />
+                        <span className="wp-trip-highlight-text">{h.text}</span>
+                        <button className="wp-trip-remove-btn" onClick={() => removeHighlight(trip.id, stop.id, h.id)} aria-label="Remove"><X size={12} /></button>
+                      </div>
+                    ))}
+
+                    <div className="wp-trip-add-highlight-row">
+                      <input
+                        type="text"
+                        className="wp-trip-highlight-input"
+                        placeholder={T.addHighlightPlaceholder}
+                        value={highlightDrafts[stop.id] || ""}
+                        onChange={(e) => setHighlightDrafts({ ...highlightDrafts, [stop.id]: e.target.value })}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && (highlightDrafts[stop.id] || "").trim()) {
+                            addHighlight(trip.id, stop.id, highlightDrafts[stop.id], "custom");
+                            setHighlightDrafts({ ...highlightDrafts, [stop.id]: "" });
+                          }
+                        }}
+                      />
+                      <button
+                        className="wp-trip-add-btn"
+                        onClick={() => {
+                          if ((highlightDrafts[stop.id] || "").trim()) {
+                            addHighlight(trip.id, stop.id, highlightDrafts[stop.id], "custom");
+                            setHighlightDrafts({ ...highlightDrafts, [stop.id]: "" });
+                          }
+                        }}
+                      ><PlusIcon size={14} /></button>
+                    </div>
+
+                    {suggestions.length > 0 && (
+                      <div className="wp-trip-suggestions">
+                        {suggestions.filter((s) => !stop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => (
+                          <button key={s} className="wp-trip-suggestion-chip" onClick={() => addHighlight(trip.id, stop.id, s, "attraction")}>
+                            <PlusIcon size={11} /> {s}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {i < trip.stops.length - 1 && trip.transits.find((tr) => tr.afterStopId === stop.id) && (
+                    <div className="wp-trip-transit-row">
+                      <select
+                        className="wp-trip-transit-select"
+                        value={trip.transits.find((tr) => tr.afterStopId === stop.id).mode}
+                        onChange={(e) => updateTransit(trip.id, stop.id, "mode", e.target.value)}
+                      >
+                        <option value="">{T.chooseTransit}</option>
+                        <option value="flight">{T.transitFlight}</option>
+                        <option value="train">{T.transitTrain}</option>
+                        <option value="bus">{T.transitBus}</option>
+                        <option value="car">{T.transitCar}</option>
+                        <option value="boat">{T.transitBoat}</option>
+                      </select>
+                      <input
+                        type="text"
+                        className="wp-trip-transit-input"
+                        placeholder={T.transitDuration}
+                        value={trip.transits.find((tr) => tr.afterStopId === stop.id).duration}
+                        onChange={(e) => updateTransit(trip.id, stop.id, "duration", e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        className="wp-trip-transit-input"
+                        placeholder={T.transitPrice}
+                        value={trip.transits.find((tr) => tr.afterStopId === stop.id).price}
+                        onChange={(e) => updateTransit(trip.id, stop.id, "price", e.target.value)}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              <button className="wp-trip-add-stop-btn" onClick={() => addStop(trip.id)}>
+                <PlusIcon size={15} /> {T.addStop}
+              </button>
+
+              <div className="wp-trip-footer-actions">
+                {trip.status !== "done" && (
+                  <button className="wp-quiz-btn wp-quiz-btn-primary" onClick={() => markTripDone(trip.id)}>{T.markTripDone}</button>
+                )}
+                <button className="wp-trip-delete-btn" onClick={() => { if (window.confirm(T.confirmDeleteTrip)) deleteTrip(trip.id); }}>{T.deleteTrip}</button>
+              </div>
+            </div>
+          );
+        })()}
 
         {view === "articles" && (
           <div>
