@@ -877,7 +877,7 @@ function Waypoint() {
         .wp-footer-brand-name { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 600; margin-bottom: 0.25rem; }
         .wp-footer-tagline { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.45; }
         .wp-footer-col { display: flex; flex-direction: column; gap: 0.5rem; min-width: 120px; }
-        .wp-footer-col-title { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); margin-bottom: 0.2rem; }
+        .wp-footer-col-title { font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 0.2rem; }
         .wp-footer-link { background: none; border: none; padding: 0; text-align: left; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink); text-decoration: none; }
         .wp-footer-link:hover { color: var(--navy); text-decoration: underline; }
         .wp-footer-bottom { display: flex; flex-wrap: wrap; gap: 0.5rem 1.2rem; justify-content: space-between; padding-top: 1.3rem; border-top: 1px solid var(--hairline); font-size: 0.78rem; color: var(--ink-soft); }
@@ -1238,30 +1238,30 @@ function Waypoint() {
         {view === "articles" && (
           <div>
             <h2 className="wp-section-title" style={{ marginBottom: "1.3rem" }}>{T.articles}</h2>
-            <a href="articles/namibia-solo-road-trip.html" style={{ display: "block", background: "#fff", border: "1px solid var(--hairline)", borderRadius: "4px", padding: "1.3rem 1.4rem", textDecoration: "none", color: "var(--ink)", marginBottom: "1rem" }}>
-              <div style={{ fontSize: "0.76rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#B0552E", fontWeight: 600, marginBottom: "0.5rem" }}>Trip report · Namibia</div>
-              <div style={{ fontFamily: "'Fraunces', serif", fontSize: "1.25rem", fontWeight: 500, marginBottom: "0.5rem" }}>Ten Days of Silence: A Solo Self-Drive Through Namibia</div>
+            <a href="articles/namibia-solo-road-trip.html" style={{ display: "block", background: "#fff", border: "1px solid var(--hairline)", borderRadius: "10px", padding: "1.3rem 1.4rem", textDecoration: "none", color: "var(--ink)", marginBottom: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--gold)", fontWeight: 600, marginBottom: "0.6rem" }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }}></span>Trip report · Namibia</div>
+              <div style={{ fontFamily: "'Fraunces', serif", fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.5rem" }}>Ten Days of Silence: A Solo Self-Drive Through Namibia</div>
               <div style={{ fontSize: "0.92rem", color: "#4a4436", lineHeight: 1.55 }}>A practical, honest account of driving myself across Namibia — Etosha's waterholes, Cape Cross's seals, sleeping on the roof of a 4x4, and everything I'd do again.</div>
             </a>
-            <p className="wp-blurb" style={{ color: "#8a8272", fontSize: "0.88rem" }}>More articles are on their way — check back soon.</p>
+            <p className="wp-blurb" style={{ color: "var(--ink-soft)", fontSize: "0.88rem" }}>More articles are on their way — check back soon.</p>
           </div>
         )}
 
         {view === "products" && (
           <div>
             <h2 className="wp-section-title" style={{ marginBottom: "1.3rem" }}>{T.products}</h2>
-            <div style={{ background: "#fff", border: "1px solid var(--hairline)", borderRadius: "4px", padding: "1.5rem 1.6rem", marginBottom: "1rem" }}>
-              <div style={{ fontSize: "0.76rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#B0552E", fontWeight: 600, marginBottom: "0.5rem" }}>Free download</div>
-              <div style={{ fontFamily: "'Fraunces', serif", fontSize: "1.3rem", fontWeight: 500, marginBottom: "0.6rem" }}>Namibia Self-Drive Checklist &amp; Planner</div>
+            <div style={{ background: "#fff", border: "1px solid var(--hairline)", borderRadius: "10px", padding: "1.5rem 1.6rem", marginBottom: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--gold)", fontWeight: 600, marginBottom: "0.6rem" }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }}></span>Free download</div>
+              <div style={{ fontFamily: "'Fraunces', serif", fontSize: "1.3rem", fontWeight: 600, marginBottom: "0.6rem" }}>Namibia Self-Drive Checklist &amp; Planner</div>
               <p style={{ fontSize: "0.95rem", color: "#4a4436", lineHeight: 1.6, marginBottom: "1.1rem" }}>The route at a glance, what to book months ahead, offline driving apps that actually work, and a gear checklist — everything from the Namibia trip report, organized into a printable planner.</p>
               <button
                 onClick={() => goToStatic("newsletter")}
-                style={{ display: "inline-block", background: "var(--navy)", color: "#F3EDE0", border: "none", cursor: "pointer", padding: "0.7rem 1.4rem", borderRadius: "999px", fontSize: "0.9rem", fontFamily: "'Work Sans', sans-serif" }}
+                style={{ display: "inline-block", background: "var(--navy)", color: "#F6F2E8", border: "none", cursor: "pointer", padding: "0.7rem 1.4rem", borderRadius: "999px", fontSize: "0.9rem", fontWeight: 600, fontFamily: "'Work Sans', sans-serif" }}
               >
-                Get it free via the newsletter →
+                Get it free via the newsletter
               </button>
             </div>
-            <p className="wp-blurb" style={{ color: "#8a8272", fontSize: "0.88rem" }}>More guides and planning tools are on their way — check back soon.</p>
+            <p className="wp-blurb" style={{ color: "var(--ink-soft)", fontSize: "0.88rem" }}>More guides and planning tools are on their way — check back soon.</p>
           </div>
         )}
 
