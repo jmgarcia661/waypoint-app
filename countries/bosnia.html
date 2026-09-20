@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#F6F2E8" />
 <title>Bosnia and Herzegovina Travel Guide: Itinerary, Attractions &amp; Budget | Waypoint</title>
 <meta name="description" content="Bosnia and Herzegovina travel guide: Bosnia and Herzegovina&#x27;s layered history, Ottoman, Austro-Hungarian, and the more recent 1990s war, shows up directly in…" />
 <link rel="canonical" href="https://hellowaypoint.com/countries/bosnia.html" />
@@ -66,13 +67,13 @@
 })();
 </script>
 <style>
-  #wp-cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; background: #142035; }
+  #wp-cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; background: #142035; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .wp-cookie-inner { max-width: 900px; margin: 0 auto; padding: 1rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; font-family: 'Work Sans', sans-serif; }
   .wp-cookie-inner p { margin: 0; font-size: 0.85rem; line-height: 1.5; flex: 1; min-width: 220px; color: #F6F2E8; }
   .wp-cookie-inner a { color: #F6F2E8; text-decoration: underline; }
   .wp-cookie-actions { display: flex; gap: 0.6rem; flex-shrink: 0; }
   .wp-cookie-actions button { font-family: 'Work Sans', sans-serif; font-size: 0.85rem; padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; border: 1px solid #F6F2E8; }
-  #wp-cookie-accept { background: #F6F2E8; color: #142035; }
+  #wp-cookie-accept { background: #B8863E; color: #142035; border-color: #B8863E; font-weight: 600; }
   #wp-cookie-reject { background: transparent; color: #F6F2E8; }
 </style>
 
@@ -97,7 +98,7 @@
   * { box-sizing: border-box; }
   html,body { margin:0; padding:0; }
   body { font-family:'Work Sans',sans-serif; background:var(--parchment); color:var(--ink); }
-  .wp-shell { max-width: 780px; margin:0 auto; padding: 1.75rem 1.25rem 4rem; }
+  .wp-shell { max-width: 780px; margin:0 auto; padding: calc(env(safe-area-inset-top, 0px) + 1.75rem) 1.25rem 4rem; }
   .wp-nav { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0 0 1.3rem; border-bottom:1px solid var(--hairline); margin-bottom:1.6rem; flex-wrap:wrap; }
   .wp-nav-brand { display:flex; align-items:center; gap:0.5rem; text-decoration:none; font-family:'Fraunces',serif; font-size:1.05rem; font-weight:600; color:var(--ink); }
   .wp-brand-mark { width:26px; height:26px; border-radius:50%; background:var(--navy); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -323,6 +324,11 @@
 (function() {
   document.querySelectorAll('.wp-attraction-img[data-wiki]').forEach(function(el) {
     var title = el.getAttribute('data-wiki');
+    function showEmpty() {
+      el.classList.remove('wp-attraction-img-loading');
+      el.classList.add('wp-attraction-img-empty');
+      el.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c9bfa6" stroke-width="2"><path d="M3 3l18 18"/><path d="M21 15V5a2 2 0 0 0-2-2H9"/><path d="M3 8v11a2 2 0 0 0 2 2h13"/><circle cx="9" cy="9" r="1.5"/></svg>';
+    }
     fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title))
       .then(function(r) { return r.ok ? r.json() : null; })
       .then(function(data) {
@@ -334,9 +340,11 @@
           img.className = 'wp-attraction-img';
           img.loading = 'lazy';
           el.replaceWith(img);
+        } else {
+          showEmpty();
         }
       })
-      .catch(function() {});
+      .catch(showEmpty);
   });
 })();
 </script>

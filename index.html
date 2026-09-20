@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#F6F2E8" />
 <title>Waypoint — a country explorer</title>
 <meta name="description" content="Explore the world one country at a time: real itineraries, budgets, food, and practical tips for 72 countries, all in one place." />
 <link rel="canonical" href="https://hellowaypoint.com/" />
@@ -69,14 +70,14 @@
 })();
 </script>
 <style>
-  #wp-cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; background: #16233B; }
+  #wp-cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; background: #142035; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .wp-cookie-inner { max-width: 900px; margin: 0 auto; padding: 1rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; font-family: 'Work Sans', sans-serif; }
-  .wp-cookie-inner p { margin: 0; font-size: 0.85rem; line-height: 1.5; flex: 1; min-width: 220px; color: #F3EDE0; }
-  .wp-cookie-inner a { color: #F3EDE0; text-decoration: underline; }
+  .wp-cookie-inner p { margin: 0; font-size: 0.85rem; line-height: 1.5; flex: 1; min-width: 220px; color: #F6F2E8; }
+  .wp-cookie-inner a { color: #F6F2E8; text-decoration: underline; }
   .wp-cookie-actions { display: flex; gap: 0.6rem; flex-shrink: 0; }
-  .wp-cookie-actions button { font-family: 'Work Sans', sans-serif; font-size: 0.85rem; padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; border: 1px solid #F3EDE0; }
-  #wp-cookie-accept { background: #F3EDE0; color: #16233B; }
-  #wp-cookie-reject { background: transparent; color: #F3EDE0; }
+  .wp-cookie-actions button { font-family: 'Work Sans', sans-serif; font-size: 0.85rem; padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; border: 1px solid #F6F2E8; }
+  #wp-cookie-accept { background: #B8863E; color: #142035; border-color: #B8863E; font-weight: 600; }
+  #wp-cookie-reject { background: transparent; color: #F6F2E8; }
 </style>
 
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -130,7 +131,7 @@ const UI_STRINGS = {
     heroTagline: "Explore the world one continent at a time — pick a place, and find what to see and how many days to give it.",
     statsCountries: "countries", statsAttractions: "attractions", statsLanguages: "languages",
     allContinents: "All continents", countries: "countries", capital: "Capital",
-    topAttractions: "Top attractions", suggestedItinerary: "Suggested itinerary", days: "days",
+    topAttractions: "Top attractions", suggestedItinerary: "Suggested itinerary", days: "days", day: "day",
     tripEssentials: "Trip essentials", dailyBudget: "Daily budget", visa: "Visa",
     plugVoltage: "Plug & voltage", tipping: "Tipping", safety: "Safety", gettingAround: "Getting around",
     gettingThere: "Getting there", cost: "Cost", eat: "Where to eat", faqTitle: "Frequently asked questions",
@@ -162,7 +163,7 @@ const UI_STRINGS = {
     heroTagline: "Explora o mundo continente a continente — escolhe um lugar e descobre o que ver e quantos dias dedicar-lhe.",
     statsCountries: "países", statsAttractions: "atrações", statsLanguages: "línguas",
     allContinents: "Todos os continentes", countries: "países", capital: "Capital",
-    topAttractions: "Principais atrações", suggestedItinerary: "Itinerário sugerido", days: "dias",
+    topAttractions: "Principais atrações", suggestedItinerary: "Itinerário sugerido", days: "dias", day: "dia",
     tripEssentials: "Essenciais da viagem", dailyBudget: "Orçamento diário", visa: "Visto",
     plugVoltage: "Tomada e voltagem", tipping: "Gorjetas", safety: "Segurança", gettingAround: "Como circular",
     gettingThere: "Como chegar", cost: "Custo", eat: "Onde comer", faqTitle: "Perguntas frequentes",
@@ -351,36 +352,6 @@ function HeroIllustration() {
   );
 }
 
-function ComingSoonIllustration() {
-  return (
-    <svg viewBox="0 0 200 160" className="wp-soon-svg" xmlns="http://www.w3.org/2000/svg">
-      <rect x="55" y="20" width="90" height="120" rx="4" fill="#fff" stroke="#16233B" strokeWidth="1.6" />
-      <path d="M120 20 L145 45 L120 45 Z" fill="#EDE6D4" stroke="#16233B" strokeWidth="1.2" strokeLinejoin="round" />
-      <line x1="70" y1="60" x2="130" y2="60" stroke="#16233B" strokeWidth="1.4" opacity="0.55" />
-      <line x1="70" y1="74" x2="130" y2="74" stroke="#16233B" strokeWidth="1.4" opacity="0.55" />
-      <line x1="70" y1="88" x2="112" y2="88" stroke="#16233B" strokeWidth="1.4" opacity="0.55" />
-      <line x1="70" y1="108" x2="130" y2="108" stroke="#16233B" strokeWidth="1.2" opacity="0.32" />
-      <line x1="70" y1="120" x2="120" y2="120" stroke="#16233B" strokeWidth="1.2" opacity="0.32" />
-      <circle cx="150" cy="118" r="22" fill="#C9A24B" />
-      <path d="M150 107 L150 118 L158 124" fill="none" stroke="#16233B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ProductsComingSoonIllustration() {
-  return (
-    <svg viewBox="0 0 200 160" className="wp-soon-svg" xmlns="http://www.w3.org/2000/svg">
-      <path d="M60 55 L75 30 H125 L140 55" fill="none" stroke="#16233B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="50" y="55" width="100" height="85" rx="4" fill="#fff" stroke="#16233B" strokeWidth="1.6" />
-      <line x1="65" y1="75" x2="100" y2="75" stroke="#16233B" strokeWidth="1.4" opacity="0.5" />
-      <line x1="65" y1="90" x2="115" y2="90" stroke="#16233B" strokeWidth="1.4" opacity="0.5" />
-      <line x1="65" y1="105" x2="95" y2="105" stroke="#16233B" strokeWidth="1.2" opacity="0.32" />
-      <circle cx="150" cy="118" r="22" fill="#C9A24B" />
-      <path d="M150 107 L150 118 L158 124" fill="none" stroke="#16233B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 /* ---------- country map with itinerary route (Leaflet + free CartoDB tiles) ---------- */
 function CountryMap({ country, accentColor }) {
   const containerRef = useRef(null);
@@ -480,7 +451,7 @@ function AttractionImage({ title, alt }) {
   if (state === "empty" || !src) {
     return (
       <div className="wp-attraction-img wp-attraction-img-empty">
-        <ImageOff size={18} style={{ color: "#c9bfa6" }} />
+        <ImageOff size={32} style={{ color: "#c9bfa6" }} />
       </div>
     );
   }
@@ -1182,7 +1153,7 @@ function Waypoint() {
             <div className="wp-itinerary-wrap">
               <div className="wp-itinerary-head">
                 <h3 className="wp-section-title" style={{ marginBottom: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><MapPinIcon size={18} style={{ color: continent.color }} /> {T.suggestedItinerary}</h3>
-                <span className="wp-itinerary-total">{country.itineraryDays} {T.days}</span>
+                <span className="wp-itinerary-total">{country.itineraryDays} {country.itineraryDays === 1 ? T.day : T.days}</span>
               </div>
               {country.daysReason && <p className="wp-days-reason">{country.daysReason}</p>}
 
