@@ -1016,7 +1016,7 @@ function Waypoint() {
         .wp-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 0.5rem; vertical-align: middle; }
         .wp-status-dot-visited { background: #6B9E68; }
         .wp-status-dot-want { background: var(--gold); }
-        .wp-status-dot-none { background: #D8CDB0; }
+        .wp-status-dot-none { background: #FFFFFF; border: 1px solid var(--hairline); box-sizing: border-box; }
 
         .wp-map-signin-banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.9rem 1.2rem; margin-bottom: 1.2rem; font-size: 0.9rem; color: var(--ink-soft); }
         .wp-map-legend { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-bottom: 1rem; font-size: 0.85rem; color: var(--ink-soft); }
@@ -1024,12 +1024,13 @@ function Waypoint() {
         .wp-map-legend-item .wp-status-dot { margin-left: 0; margin-right: 0.45rem; }
         .wp-map-frame { background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.8rem; overflow: hidden; }
         .wp-world-map { width: 100%; height: auto; display: block; }
-        .wp-map-country { stroke: #F6F2E8; stroke-width: 1; cursor: pointer; transition: opacity 0.12s ease; }
+        .wp-map-country { stroke: var(--hairline); stroke-width: 1; cursor: pointer; transition: opacity 0.12s ease, fill 0.12s ease; }
         .wp-map-country:hover { opacity: 0.75; }
-        .wp-map-status-none { fill: #D8CDB0; }
+        .wp-map-status-none { fill: #FFFFFF; }
         .wp-map-status-visited { fill: #6B9E68; }
         .wp-map-status-want { fill: var(--gold); }
-        .wp-map-marker { stroke: #F6F2E8; stroke-width: 1.5; }
+        .wp-map-marker { stroke: var(--hairline); stroke-width: 1.5; }
+        .wp-map-status-none:hover { fill: #F6F2E8; }
 
         .wp-modal-overlay { position: fixed; inset: 0; background: rgba(20,32,53,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.2rem; }
         .wp-auth-modal { position: relative; background: #fff; border-radius: 14px; padding: 2rem 1.8rem; max-width: 380px; width: 100%; box-shadow: 0 20px 50px rgba(20,32,53,0.25); }
