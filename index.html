@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Waypoint — a country explorer</title>
 <meta name="description" content="Explore the world one country at a time: real itineraries, budgets, food, and practical tips for 72 countries, all in one place." />
 <link rel="canonical" href="https://hellowaypoint.com/" />
@@ -499,8 +499,6 @@ function StatBlock({ icon: Icon, label, value, accent }) {
   );
 }
 
-const CONTINENT_AREA = { europe: "europe", asia: "asia", africa: "africa", "north-america": "namerica", "south-america": "samerica", oceania: "oceania" };
-
 function ContinentIcon({ id, size = 28 }) {
   const stroke = "currentColor";
   const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke, strokeWidth: 1.6 };
@@ -674,7 +672,8 @@ function Waypoint() {
         .wp-root {
           --parchment: #F6F2E8; --ink: #1F1B14; --ink-soft: #83795F; --hairline: #E1D6BC; --navy: #142035; --gold: #B8863E;
           font-family: 'Work Sans', sans-serif; background: var(--parchment); color: var(--ink);
-          min-height: 100vh; width: 100%; box-sizing: border-box; padding: 1.75rem 1.25rem 4rem;
+          min-height: 100vh; width: 100%; box-sizing: border-box;
+          padding: calc(env(safe-area-inset-top, 0px) + 1.75rem) 1.25rem 4rem;
         }
         .wp-root * { box-sizing: border-box; }
         .wp-shell { max-width: 780px; margin: 0 auto; }
@@ -702,6 +701,12 @@ function Waypoint() {
             grid-template-columns: repeat(3, 1fr);
             grid-template-areas: "europe europe asia" "africa namerica samerica" "oceania oceania oceania";
           }
+          .wp-cont-europe { grid-area: europe; }
+          .wp-cont-asia { grid-area: asia; }
+          .wp-cont-africa { grid-area: africa; }
+          .wp-cont-north-america { grid-area: namerica; }
+          .wp-cont-south-america { grid-area: samerica; }
+          .wp-cont-oceania { grid-area: oceania; }
         }
         .wp-continent-tile {
           background: color-mix(in srgb, var(--tile-color) 9%, #fff);
@@ -954,8 +959,8 @@ function Waypoint() {
             {continents.map((c) => (
               <button
                 key={c.id}
-                className={"wp-continent-tile" + (c.id === "europe" ? " wp-tile-big" : c.id === "oceania" ? " wp-tile-wide" : "")}
-                style={{ "--tile-color": c.color, gridArea: CONTINENT_AREA[c.id] }}
+                className={"wp-continent-tile wp-cont-" + c.id + (c.id === "europe" ? " wp-tile-big" : c.id === "oceania" ? " wp-tile-wide" : "")}
+                style={{ "--tile-color": c.color }}
                 onClick={() => goToCountries(c.id)}
               >
                 <div className="wp-continent-icon"><ContinentIcon id={c.id} /></div>
