@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/argentina.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need a visa for Argentina?","acceptedAnswer":{"@type":"Answer","text":"Not for most Western passport holders (EU, UK, US, Canada, Australia) for short stays."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Buenos Aires' Ezeiza International (EZE), the country's main gateway."}},
+{"@type":"Question","name":"Is Argentina expensive to visit?","acceptedAnswer":{"@type":"Answer","text":"Prices have been volatile due to inflation and currency fluctuations — check current exchange rates close to your trip, since the effective cost for foreign visitors can shift quickly."}},
+{"@type":"Question","name":"Do I need to book Patagonia glacier viewing in advance?","acceptedAnswer":{"@type":"Answer","text":"Recommended in peak season (November–March) for boat trips and popular walking trails near Perito Moreno, though the main viewing platforms themselves don't require advance booking."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">10% in restaurants is standard</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Very safe overall; normal city caution in Buenos Aires</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">Domestic flights are necessary given Argentina&#x27;s length; buses are a comfortable, cheaper option</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Buenos Aires&#x27; Ezeiza International (EZE) is the main gateway for this route</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">10 days</span>
   </div>
+  <p class="wp-days-reason">10 days covers Buenos Aires, Mendoza, Patagonia, and Iguazu Falls — a broad sampler given Argentina&#x27;s length. 6–7 works if you drop one region; 14+ lets you slow the Patagonia leg down considerably, which rewards more time.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–3</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Buenos Aires</div>
         <div class="wp-day-desc">La Boca, Recoleta, and an evening tango show.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> A tango show with dinner runs $40–80 depending on the venue; wandering La Boca and Recoleta itself is free.</div><div class="wp-day-extra"><strong>Where to eat:</strong> A proper asado at a traditional parrilla is the essential Buenos Aires meal — go where locals go, not the tourist-strip spots.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Mendoza</div>
         <div class="wp-day-desc">Vineyard tours in the shadow of the Andes.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~2h flight from Buenos Aires</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> A half-day guided vineyard tour with tastings runs $50–100 depending on the wineries visited.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Pair a Malbec with a full asado lunch at a vineyard restaurant — a classic Mendoza combination.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Patagonia</div>
         <div class="wp-day-desc">El Calafate and the Perito Moreno Glacier&#x27;s viewing platforms.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~3.5h flight from Mendoza</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Perito Moreno Glacier park entry costs about $30; boat trips near the glacier face run an additional $30–60.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try Patagonian lamb, slow-roasted the traditional way, at a restaurant in El Calafate.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Iguazu Falls</div>
         <div class="wp-day-desc">Close the trip with the falls&#x27; Argentine-side walkways.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~3.5h flight from El Calafate via Buenos Aires</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Argentine-side park entry costs about $30 for foreigners.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Grab a quick empanada near the park entrance — a practical, tasty option between walkways.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a visa for Argentina?</div>
+      <div class="wp-faq-a">Not for most Western passport holders (EU, UK, US, Canada, Australia) for short stays.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Buenos Aires&#x27; Ezeiza International (EZE), the country&#x27;s main gateway.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Is Argentina expensive to visit?</div>
+      <div class="wp-faq-a">Prices have been volatile due to inflation and currency fluctuations — check current exchange rates close to your trip, since the effective cost for foreign visitors can shift quickly.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need to book Patagonia glacier viewing in advance?</div>
+      <div class="wp-faq-a">Recommended in peak season (November–March) for boat trips and popular walking trails near Perito Moreno, though the main viewing platforms themselves don&#x27;t require advance booking.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="chile.html"><span>🇨🇱</span><span>Chile</span></a></div>

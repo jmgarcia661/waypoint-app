@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/colombia.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need a visa for Colombia?","acceptedAnswer":{"@type":"Answer","text":"Not for most Western passport holders (EU, UK, US, Canada) for short stays."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Bogotá's El Dorado International (BOG), the country's main gateway."}},
+{"@type":"Question","name":"Is Colombia safe to visit now?","acceptedAnswer":{"@type":"Answer","text":"Tourist areas and this itinerary's route are considered safe with normal precautions. Colombia's safety situation has improved substantially over the past two decades, though it's worth checking current advisories for specific regions outside this route."}},
+{"@type":"Question","name":"Do I need to acclimatize to altitude in Bogotá?","acceptedAnswer":{"@type":"Answer","text":"Some travelers feel it briefly — Bogotá sits at over 2,600m. Take your first day easy and stay hydrated; it typically passes within a day or two."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">10% is often already included as a service charge</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Tourist areas are safe; use normal city precautions, especially in Bogotá at night</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">Domestic flights save considerable time between regions</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Bogotá&#x27;s El Dorado International (BOG) is the main gateway for this route</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">11 days</span>
   </div>
+  <p class="wp-days-reason">11 days covers Bogotá, the Coffee Triangle, Medellín, and Cartagena/Tayrona without rushing. 7–8 works if you drop one region; 14+ lets you slow down or add San Andrés.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–3</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Bogotá</div>
         <div class="wp-day-desc">The historic La Candelaria district and a day trip to the Salt Cathedral of Zipaquirá.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> The Salt Cathedral of Zipaquirá costs about COP 65,000 (~$16) including a guided tour.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try ajiaco, Bogotá&#x27;s signature chicken and potato soup, at a traditional restaurant in La Candelaria.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Coffee Triangle</div>
         <div class="wp-day-desc">Farm tours and the Cocora Valley&#x27;s towering wax palms.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1h flight from Bogotá</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> A coffee farm tour with tastings costs about COP 40,000–80,000 (~$10–20).</div><div class="wp-day-extra"><strong>Where to eat:</strong> Drink the coffee at its source — a proper cup here tastes noticeably different from what&#x27;s typically exported.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Medellín</div>
         <div class="wp-day-desc">Comuna 13&#x27;s transformation and the city&#x27;s mild, spring-like climate.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1h drive from the Coffee Triangle</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> The Comuna 13 graffiti tour, often including the outdoor escalators, costs about COP 60,000–100,000 with a local guide.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try bandeja paisa, the enormous regional platter, at a traditional Medellín restaurant — meant to be shared or very hungry.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Cartagena &amp; Tayrona</div>
         <div class="wp-day-desc">The walled old city and beach time in Tayrona National Park.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1.5h flight from Medellín</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Tayrona National Park entry costs about COP 77,500 (~$19) for foreigners.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Fresh coconut lemonade from a street vendor in Cartagena&#x27;s old town is a simple, essential refreshment in the heat.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a visa for Colombia?</div>
+      <div class="wp-faq-a">Not for most Western passport holders (EU, UK, US, Canada) for short stays.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Bogotá&#x27;s El Dorado International (BOG), the country&#x27;s main gateway.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Is Colombia safe to visit now?</div>
+      <div class="wp-faq-a">Tourist areas and this itinerary&#x27;s route are considered safe with normal precautions. Colombia&#x27;s safety situation has improved substantially over the past two decades, though it&#x27;s worth checking current advisories for specific regions outside this route.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need to acclimatize to altitude in Bogotá?</div>
+      <div class="wp-faq-a">Some travelers feel it briefly — Bogotá sits at over 2,600m. Take your first day easy and stay hydrated; it typically passes within a day or two.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="ecuador.html"><span>🇪🇨</span><span>Ecuador</span></a></div>
