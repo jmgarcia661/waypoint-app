@@ -66,14 +66,14 @@
 })();
 </script>
 <style>
-  #wp-cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; background: #16233B; }
+  #wp-cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; background: #142035; }
   .wp-cookie-inner { max-width: 900px; margin: 0 auto; padding: 1rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; font-family: 'Work Sans', sans-serif; }
-  .wp-cookie-inner p { margin: 0; font-size: 0.85rem; line-height: 1.5; flex: 1; min-width: 220px; color: #F3EDE0; }
-  .wp-cookie-inner a { color: #F3EDE0; text-decoration: underline; }
+  .wp-cookie-inner p { margin: 0; font-size: 0.85rem; line-height: 1.5; flex: 1; min-width: 220px; color: #F6F2E8; }
+  .wp-cookie-inner a { color: #F6F2E8; text-decoration: underline; }
   .wp-cookie-actions { display: flex; gap: 0.6rem; flex-shrink: 0; }
-  .wp-cookie-actions button { font-family: 'Work Sans', sans-serif; font-size: 0.85rem; padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; border: 1px solid #F3EDE0; }
-  #wp-cookie-accept { background: #F3EDE0; color: #16233B; }
-  #wp-cookie-reject { background: transparent; color: #F3EDE0; }
+  .wp-cookie-actions button { font-family: 'Work Sans', sans-serif; font-size: 0.85rem; padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; border: 1px solid #F6F2E8; }
+  #wp-cookie-accept { background: #F6F2E8; color: #142035; }
+  #wp-cookie-reject { background: transparent; color: #F6F2E8; }
 </style>
 
 <script type="application/ld+json">
@@ -93,7 +93,7 @@
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
-  :root { --parchment:#F3EDE0; --ink:#262119; --ink-soft:#8a8272; --hairline:#DCD3BE; --navy:#16233B; --accent:#2F5D62; }
+  :root { --parchment:#F6F2E8; --ink:#1F1B14; --ink-soft:#83795F; --hairline:#E1D6BC; --navy:#142035; --gold:#B8863E; --accent:#2F5D62; }
   * { box-sizing: border-box; }
   html,body { margin:0; padding:0; }
   body { font-family:'Work Sans',sans-serif; background:var(--parchment); color:var(--ink); }
@@ -108,52 +108,55 @@
   .wp-back:hover { color:var(--ink); }
   .wp-detail-name { font-family:'Fraunces',serif; font-size:2.1rem; font-weight:600; margin:0 0 0.2rem; letter-spacing:-0.01em; }
   .wp-detail-sub { font-size:0.92rem; color:var(--ink-soft); }
-  .wp-detail-tagline { font-family:'Fraunces',serif; font-style:italic; font-size:1.1rem; color:#4a4436; margin:0.4rem 0 0.8rem; max-width:52ch; }
+  .wp-detail-tagline { font-family:'Fraunces',serif; font-style:italic; font-weight:500; font-size:1.25rem; color:#463F30; margin:0.5rem 0 1rem; max-width:50ch; line-height:1.45; }
   .wp-chip-row { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem; }
   .wp-chip { background:#fff; border:1px solid var(--hairline); border-radius:999px; padding:0.3rem 0.8rem; font-size:0.8rem; }
-  .wp-stat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.1rem; background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:1.1rem 1.2rem; margin:1.6rem 0; }
+  .wp-stat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.1rem; background:#fff; border:1px solid var(--hairline); border-radius:8px; padding:1.1rem 1.2rem; margin:1.6rem 0; }
   @media (min-width:520px) { .wp-stat-grid { grid-template-columns:repeat(4,1fr); } }
   .wp-stat-label { font-size:0.78rem; color:var(--ink-soft); margin-top:0.15rem; }
   .wp-stat-value { font-size:0.95rem; font-weight:500; }
   .wp-section-title { font-family:'Fraunces',serif; font-size:1.25rem; font-weight:500; margin:0 0 0.9rem; }
   .wp-blurb { font-size:0.98rem; line-height:1.6; margin-bottom:1.9rem; max-width:62ch; }
-  .wp-good-to-know { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:1.1rem 1.2rem; margin-bottom:1.9rem; }
+  .wp-good-to-know { background:#fff; border:1px solid var(--hairline); border-radius:8px; padding:1.1rem 1.2rem; margin-bottom:1.9rem; }
   .wp-gtk-grid { display:grid; grid-template-columns:1fr; gap:1rem 1.4rem; margin-top:0.7rem; }
   @media (min-width:520px) { .wp-gtk-grid { grid-template-columns:repeat(2,1fr); } }
   @media (min-width:760px) { .wp-gtk-grid { grid-template-columns:repeat(3,1fr); } }
-  .wp-gtk-label { font-size:0.76rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:0.15rem; }
+  .wp-gtk-label { font-size:0.78rem; color:var(--ink-soft); margin-bottom:0.2rem; }
   .wp-gtk-value { font-size:0.9rem; line-height:1.45; }
   .wp-food-grid { display:grid; grid-template-columns:1fr; gap:0.8rem; margin-bottom:1.9rem; }
   @media (min-width:560px) { .wp-food-grid { grid-template-columns:repeat(2,1fr); } }
-  .wp-food-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.85rem 1rem; }
+  .wp-food-item { background:#fff; border:1px solid var(--hairline); border-radius:8px; padding:0.85rem 1rem; }
   .wp-food-name { font-weight:600; font-size:0.92rem; margin-bottom:0.25rem; }
   .wp-food-desc { font-size:0.86rem; color:#4a4436; line-height:1.5; }
-  .wp-attraction { display:flex; gap:0.9rem; padding:0.95rem 0; border-top:1px solid var(--hairline); align-items:flex-start; }
-  .wp-attraction:last-child { border-bottom:1px solid var(--hairline); }
-  .wp-attraction-img { width:84px; height:64px; object-fit:cover; border-radius:3px; flex-shrink:0; background:#EDE6D4; }
+  .wp-attractions-grid { display:grid; grid-template-columns:1fr; gap:1.8rem; margin-bottom:1.9rem; }
+  @media (min-width:620px) { .wp-attractions-grid { grid-template-columns:1fr 1fr; } }
+  .wp-attraction-img { width:100%; height:180px; object-fit:cover; border-radius:8px; background:#EDE6D4; margin-bottom:0.8rem; display:block; }
   .wp-attraction-img-empty { display:flex; align-items:center; justify-content:center; }
-  .wp-attraction-body { flex:1; min-width:0; }
-  .wp-attraction-name { font-weight:600; font-size:0.95rem; margin-bottom:0.25rem; }
+  .wp-attraction-name { font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; margin-bottom:0.35rem; }
   .wp-attraction-desc { font-size:0.88rem; color:#4a4436; line-height:1.55; }
   .wp-itinerary-head { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
   .wp-itinerary-total { font-size:0.85rem; color:var(--ink-soft); white-space:nowrap; }
-  .wp-day { display:grid; grid-template-columns:88px 1fr; gap:1rem; padding:0.9rem 0; border-top:1px solid var(--hairline); }
-  .wp-day:last-child { border-bottom:1px solid var(--hairline); }
-  .wp-day-label { font-size:0.8rem; color:var(--accent); font-weight:600; padding-top:0.1rem; }
-  .wp-day-title { font-weight:600; font-size:0.95rem; margin-bottom:0.2rem; }
+  .wp-route { position:relative; padding-left:2.4rem; margin-top:1.6rem; }
+  .wp-route::before { content:""; position:absolute; left:9px; top:6px; bottom:26px; width:1.5px; background-image:linear-gradient(var(--gold),var(--gold)); background-size:2px 9px; background-repeat:repeat-y; opacity:0.6; }
+  .wp-day { position:relative; padding:0 0 1.9rem; }
+  .wp-day::before { content:""; position:absolute; left:-2.4rem; top:3px; width:11px; height:11px; border-radius:50%; background:var(--accent); border:3px solid var(--parchment); box-shadow:0 0 0 1.5px var(--gold); }
+  .wp-day:last-child::before { background:var(--gold); }
+  .wp-day:last-child { padding-bottom:0; }
+  .wp-day-label { font-size:0.8rem; color:var(--gold); font-weight:600; margin-bottom:0.2rem; display:block; }
+  .wp-day-title { font-family:'Fraunces',serif; font-weight:600; font-size:1.12rem; margin-bottom:0.3rem; }
   .wp-day-desc { font-size:0.9rem; color:#4a4436; line-height:1.5; }
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
-  .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-tag-book { background:var(--navy); color:#F6F2E8; }
   .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
   .wp-day-extra strong { color:var(--ink); }
   .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
   .wp-faq-wrap { margin-top:2rem; }
-  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:8px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
   .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
   .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
-  .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
-  .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
+  .wp-cta { background:var(--navy); border:none; border-radius:10px; padding:1.5rem; margin:2rem 0; text-align:center; color:#EFE9DA; }
+  .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--gold); color:var(--navy); text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; font-weight:600; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
   .wp-pairs-card { display:flex; align-items:center; gap:0.5rem; background:#fff; border:1px solid var(--hairline); border-radius:999px; padding:0.5rem 0.9rem; text-decoration:none; color:var(--ink); font-size:0.88rem; }
   .wp-pairs-card:hover { background:#FBF8F1; }
@@ -165,7 +168,7 @@
 <div class="wp-shell">
   <nav class="wp-nav">
     <a class="wp-nav-brand" href="../index.html">
-      <span class="wp-brand-mark"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F3EDE0" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
+      <span class="wp-brand-mark"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F6F2E8" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
       Waypoint
     </a>
     <div class="wp-nav-links">
@@ -226,48 +229,36 @@
     </div></div>
 
   <h2 class="wp-section-title">Top attractions</h2>
-  <div>
-    <div class="wp-attraction">
+  <div class="wp-attractions-grid">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Stari_Most" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Stari Most, Mostar</div>
-        <div class="wp-attraction-desc">An arched Ottoman-era bridge over the Neretva River, destroyed during the 1990s war and rebuilt using original construction techniques and reopened in 2004. Local divers still jump from its highest point into the cold river below, a tradition dating back centuries. The old town&#x27;s cobbled streets and river views make it one of the most photographed spots in the Balkans.</div>
-      </div>
+      <div class="wp-attraction-name">Stari Most, Mostar</div>
+      <div class="wp-attraction-desc">An arched Ottoman-era bridge over the Neretva River, destroyed during the 1990s war and rebuilt using original construction techniques and reopened in 2004. Local divers still jump from its highest point into the cold river below, a tradition dating back centuries. The old town&#x27;s cobbled streets and river views make it one of the most photographed spots in the Balkans.</div>
     </div>
-    <div class="wp-attraction">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Baščaršija" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Baščaršija, Sarajevo</div>
-        <div class="wp-attraction-desc">Sarajevo&#x27;s old Ottoman bazaar quarter, its narrow lanes filled with copper workshops, mosques, and cafes serving traditional Bosnian coffee. It sits at a point in the city sometimes described as where East meets West, with Ottoman and Austro-Hungarian architecture visible within a short walk of each other. Evening is a particularly lively time to explore.</div>
-      </div>
+      <div class="wp-attraction-name">Baščaršija, Sarajevo</div>
+      <div class="wp-attraction-desc">Sarajevo&#x27;s old Ottoman bazaar quarter, its narrow lanes filled with copper workshops, mosques, and cafes serving traditional Bosnian coffee. It sits at a point in the city sometimes described as where East meets West, with Ottoman and Austro-Hungarian architecture visible within a short walk of each other. Evening is a particularly lively time to explore.</div>
     </div>
-    <div class="wp-attraction">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Sarajevo_Tunnel" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Sarajevo War Tunnel</div>
-        <div class="wp-attraction-desc">A hand-dug tunnel beneath the airport runway that served as Sarajevo&#x27;s only lifeline during the nearly four-year siege of the city in the 1990s. A preserved section is now a small museum, offering a direct, sobering account of how the besieged city survived. It&#x27;s widely considered an essential stop for understanding recent Bosnian history.</div>
-      </div>
+      <div class="wp-attraction-name">Sarajevo War Tunnel</div>
+      <div class="wp-attraction-desc">A hand-dug tunnel beneath the airport runway that served as Sarajevo&#x27;s only lifeline during the nearly four-year siege of the city in the 1990s. A preserved section is now a small museum, offering a direct, sobering account of how the besieged city survived. It&#x27;s widely considered an essential stop for understanding recent Bosnian history.</div>
     </div>
-    <div class="wp-attraction">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Kravice_waterfalls" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Kravice Waterfalls</div>
-        <div class="wp-attraction-desc">A wide, tiered waterfall on the Trebižat River near Mostar, its curtain of cascades dropping into a large natural pool popular for swimming in summer. The setting, ringed by forest, feels remote despite being an easy day trip from the coast or Mostar. It&#x27;s often compared favorably to more famous waterfalls elsewhere in the Balkans.</div>
-      </div>
+      <div class="wp-attraction-name">Kravice Waterfalls</div>
+      <div class="wp-attraction-desc">A wide, tiered waterfall on the Trebižat River near Mostar, its curtain of cascades dropping into a large natural pool popular for swimming in summer. The setting, ringed by forest, feels remote despite being an easy day trip from the coast or Mostar. It&#x27;s often compared favorably to more famous waterfalls elsewhere in the Balkans.</div>
     </div>
-    <div class="wp-attraction">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Latin_Bridge" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Latin Bridge, Sarajevo</div>
-        <div class="wp-attraction-desc">A modest Ottoman-era bridge over the Miljacka River, notable as the site of the 1914 assassination of Archduke Franz Ferdinand, the event that triggered the First World War. A small museum on the corner covers the assassination and its context in detail. It&#x27;s an easy stop within Sarajevo&#x27;s compact historic center.</div>
-      </div>
+      <div class="wp-attraction-name">Latin Bridge, Sarajevo</div>
+      <div class="wp-attraction-desc">A modest Ottoman-era bridge over the Miljacka River, notable as the site of the 1914 assassination of Archduke Franz Ferdinand, the event that triggered the First World War. A small museum on the corner covers the assassination and its context in detail. It&#x27;s an easy stop within Sarajevo&#x27;s compact historic center.</div>
     </div>
-    <div class="wp-attraction">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Blagaj_Tekke" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Blagaj Tekke</div>
-        <div class="wp-attraction-desc">A 16th-century Dervish monastery built directly into a cliff face at the source of the Buna River, one of the strongest natural springs in Europe. The combination of turquoise spring water, a dramatic rock overhang, and the monastery&#x27;s traditional architecture makes it a striking, peaceful stop. It&#x27;s a short drive from Mostar.</div>
-      </div>
+      <div class="wp-attraction-name">Blagaj Tekke</div>
+      <div class="wp-attraction-desc">A 16th-century Dervish monastery built directly into a cliff face at the source of the Buna River, one of the strongest natural springs in Europe. The combination of turquoise spring water, a dramatic rock overhang, and the monastery&#x27;s traditional architecture makes it a striking, peaceful stop. It&#x27;s a short drive from Mostar.</div>
     </div></div>
 
   <div class="wp-itinerary-head">
@@ -275,33 +266,27 @@
     <span class="wp-itinerary-total">6 days</span>
   </div>
   <p class="wp-days-reason">6 days covers Sarajevo, Mostar, and the Kravice Waterfalls without rushing. 3–4 works for just Sarajevo and Mostar; 8+ lets you add Trebinje or the Neretva Valley properly.</p>
-  <div>
+  <div class="wp-route">
     <div class="wp-day">
-      <div class="wp-day-label">1. Days 1–3</div>
-      <div>
-        <div class="wp-day-title">Sarajevo</div>
-        <div class="wp-day-desc">Baščaršija&#x27;s old bazaar, the Latin Bridge, and the War Tunnel Museum.</div>
-        
-        <div class="wp-day-extra"><strong>Cost:</strong> The War Tunnel Museum costs about BAM 10; a Bosnian coffee at a Baščaršija cafe costs a couple of marks.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try ćevapi at a traditional Baščaršija grill — it&#x27;s the essential Sarajevo meal, best eaten simply.</div>
-      </div>
+      <span class="wp-day-label">1. Days 1–3</span>
+      <div class="wp-day-title">Sarajevo</div>
+      <div class="wp-day-desc">Baščaršija&#x27;s old bazaar, the Latin Bridge, and the War Tunnel Museum.</div>
+      
+      <div class="wp-day-extra"><strong>Cost:</strong> The War Tunnel Museum costs about BAM 10; a Bosnian coffee at a Baščaršija cafe costs a couple of marks.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try ćevapi at a traditional Baščaršija grill — it&#x27;s the essential Sarajevo meal, best eaten simply.</div>
     </div>
     <div class="wp-day">
-      <div class="wp-day-label">2. Days 4–5</div>
-      <div>
-        <div class="wp-day-title">Mostar</div>
-        <div class="wp-day-desc">Stari Most and its old town, plus a side trip to Blagaj Tekke.</div>
-        <div class="wp-day-tags"><span class="wp-day-tag">~2.5h drive from Sarajevo</span></div>
-        <div class="wp-day-extra"><strong>Cost:</strong> Climbing the Stari Most bridge tower costs a small fee; Blagaj Tekke entry is similarly modest.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try dolma at a riverside restaurant with a view of the famous bridge.</div>
-      </div>
+      <span class="wp-day-label">2. Days 4–5</span>
+      <div class="wp-day-title">Mostar</div>
+      <div class="wp-day-desc">Stari Most and its old town, plus a side trip to Blagaj Tekke.</div>
+      <div class="wp-day-tags"><span class="wp-day-tag">~2.5h drive from Sarajevo</span></div>
+      <div class="wp-day-extra"><strong>Cost:</strong> Climbing the Stari Most bridge tower costs a small fee; Blagaj Tekke entry is similarly modest.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try dolma at a riverside restaurant with a view of the famous bridge.</div>
     </div>
     <div class="wp-day">
-      <div class="wp-day-label">3. Day 6</div>
-      <div>
-        <div class="wp-day-title">Kravice Waterfalls</div>
-        <div class="wp-day-desc">A swim at the waterfalls before returning to the coast or capital for departure.</div>
-        <div class="wp-day-tags"><span class="wp-day-tag">~40min drive from Mostar</span></div>
-        <div class="wp-day-extra"><strong>Cost:</strong> Entry costs a few marks; swimming in the pools is included.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Pack a picnic — food options directly at the falls are limited.</div>
-      </div>
+      <span class="wp-day-label">3. Day 6</span>
+      <div class="wp-day-title">Kravice Waterfalls</div>
+      <div class="wp-day-desc">A swim at the waterfalls before returning to the coast or capital for departure.</div>
+      <div class="wp-day-tags"><span class="wp-day-tag">~40min drive from Mostar</span></div>
+      <div class="wp-day-extra"><strong>Cost:</strong> Entry costs a few marks; swimming in the pools is included.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Pack a picnic — food options directly at the falls are limited.</div>
     </div></div>
 
   <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>

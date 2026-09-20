@@ -126,7 +126,9 @@ const Copy = (p) => <IconBase {...p}><rect x="9" y="9" width="13" height="13" rx
 const UI_STRINGS = {
   en: {
     home: "Home", articles: "Articles", products: "Products", newsletter: "Newsletter", aboutMe: "About me",
+    heroHeadline: "Explore the world, one waypoint at a time.",
     heroTagline: "Explore the world one continent at a time — pick a place, and find what to see and how many days to give it.",
+    statsCountries: "countries", statsAttractions: "attractions", statsLanguages: "languages",
     allContinents: "All continents", countries: "countries", capital: "Capital",
     topAttractions: "Top attractions", suggestedItinerary: "Suggested itinerary", days: "days",
     tripEssentials: "Trip essentials", dailyBudget: "Daily budget", visa: "Visa",
@@ -156,7 +158,9 @@ const UI_STRINGS = {
   },
   pt: {
     home: "Início", articles: "Artigos", products: "Produtos", newsletter: "Newsletter", aboutMe: "Sobre mim",
+    heroHeadline: "Explora o mundo, um waypoint de cada vez.",
     heroTagline: "Explora o mundo continente a continente — escolhe um lugar e descobre o que ver e quantos dias dedicar-lhe.",
+    statsCountries: "países", statsAttractions: "atrações", statsLanguages: "línguas",
     allContinents: "Todos os continentes", countries: "países", capital: "Capital",
     topAttractions: "Principais atrações", suggestedItinerary: "Itinerário sugerido", days: "dias",
     tripEssentials: "Essenciais da viagem", dailyBudget: "Orçamento diário", visa: "Visto",
@@ -327,22 +331,12 @@ function localizeContinent(cont, lang) {
 /* ---------- decorative homepage hero: globe + plane ---------- */
 function HeroIllustration() {
   return (
-    <svg viewBox="0 0 400 190" className="wp-hero-svg" xmlns="http://www.w3.org/2000/svg">
-      <g opacity="0.9">
-        <circle cx="140" cy="100" r="72" fill="none" stroke="#16233B" strokeWidth="1.6" />
-        <ellipse cx="140" cy="100" rx="72" ry="24" fill="none" stroke="#16233B" strokeWidth="1" opacity="0.55" />
-        <ellipse cx="140" cy="100" rx="72" ry="48" fill="none" stroke="#16233B" strokeWidth="1" opacity="0.4" />
-        <ellipse cx="140" cy="100" rx="24" ry="72" fill="none" stroke="#16233B" strokeWidth="1" opacity="0.55" />
-        <line x1="68" y1="100" x2="212" y2="100" stroke="#16233B" strokeWidth="1" opacity="0.4" />
-        <circle cx="112" cy="72" r="2.6" fill="#B0552E" />
-        <circle cx="168" cy="120" r="2.6" fill="#C9A24B" />
-        <circle cx="122" cy="132" r="2.6" fill="#2F5D62" />
-        <circle cx="178" cy="66" r="2.6" fill="#7A4E5C" />
-      </g>
-      <path d="M40 150 C 100 60, 220 40, 330 55" fill="none" stroke="#C9A24B" strokeWidth="1.4" strokeDasharray="1 7" strokeLinecap="round" />
-      <g transform="translate(318,46) rotate(28)">
-        <path d="M0 8 L26 2 L34 5 L27 9 L20 22 L15 21 L17 10 L8 12 L4 18 L0 16 L3 9 Z" fill="#16233B" />
-      </g>
+    <svg viewBox="0 0 220 160" className="wp-hero-svg" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <path d="M10 140 C 60 120, 70 60, 120 50 S 190 20, 210 15" stroke="#B8863E" strokeWidth="1.5" strokeDasharray="1 7" strokeLinecap="round" />
+      <circle cx="10" cy="140" r="4" fill="#142035" />
+      <circle cx="120" cy="50" r="4" fill="#142035" />
+      <circle cx="210" cy="15" r="5" fill="#B8863E" />
+      <path d="M205 8 L216 12 L206 20 Z" fill="#142035" />
     </svg>
   );
 }
@@ -495,6 +489,18 @@ function StatBlock({ icon: Icon, label, value, accent }) {
   );
 }
 
+function ContinentIcon({ id, size = 28 }) {
+  const stroke = "currentColor";
+  const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke, strokeWidth: 1.6 };
+  if (id === "europe") return <svg {...common}><path d="M6 20 V12 Q6 5 12 4 Q18 5 18 12 V20" /><path d="M6 20 H18" /></svg>;
+  if (id === "asia") return <svg {...common}><path d="M4 20 V8 M20 20 V8" /><path d="M2 8 L22 8" /><path d="M4 11.5 L20 11.5" /></svg>;
+  if (id === "africa") return <svg {...common}><circle cx="12" cy="11" r="4.5" /><path d="M12 3 V5.5 M4.5 7 L6.3 8.5 M19.5 7 L17.7 8.5" /><path d="M3 19 H21" /></svg>;
+  if (id === "north-america") return <svg {...common}><path d="M2 20 V15 H6 V11 H11 V16 H15 V12 H22 V20 Z" /></svg>;
+  if (id === "south-america") return <svg {...common}><path d="M12 4 L19 20 H5 Z" /><circle cx="12" cy="9" r="1.5" fill={stroke} stroke="none" /></svg>;
+  if (id === "oceania") return <svg {...common}><path d="M2 15 Q 6 11 10 15 T 18 15 T 22 15" /><path d="M2 19 Q 6 15 10 19 T 18 19 T 22 19" /><circle cx="17" cy="7" r="3" /></svg>;
+  return null;
+}
+
 function Waypoint() {
   const [view, setView] = useState("continents");
   const [continentId, setContinentId] = useState(null);
@@ -531,6 +537,7 @@ function Waypoint() {
   const goToStatic = (page) => { setView(page); setContinentId(null); setCountryId(null); window.scrollTo(0, 0); setHash(page); };
 
   const allCountriesFlat = continents.flatMap((c) => c.countries.map((cty) => ({ ...cty, continentId: c.id, continentName: c.name, continentColor: c.color })));
+  const totalAttractions = allCountriesFlat.reduce((sum, cty) => sum + (cty.attractions ? cty.attractions.length : 0), 0);
   const currentMonth = new Date().getMonth() + 1;
   const nowPicks = (WHERE_TO_GO_NOW[currentMonth] || [])
     .map((pick) => {
@@ -653,7 +660,7 @@ function Waypoint() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
         .wp-root {
-          --parchment: #F3EDE0; --ink: #262119; --ink-soft: #8a8272; --hairline: #DCD3BE; --navy: #16233B;
+          --parchment: #F6F2E8; --ink: #1F1B14; --ink-soft: #83795F; --hairline: #E1D6BC; --navy: #142035; --gold: #B8863E;
           font-family: 'Work Sans', sans-serif; background: var(--parchment); color: var(--ink);
           min-height: 100vh; width: 100%; box-sizing: border-box; padding: 1.75rem 1.25rem 4rem;
         }
@@ -667,22 +674,45 @@ function Waypoint() {
         .wp-brand { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.4rem; }
         .wp-brand-mark { width: 30px; height: 30px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .wp-title { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
-        .wp-tagline { font-size: 0.96rem; color: var(--ink-soft); margin: 0; max-width: 42ch; line-height: 1.5; }
+        .wp-hero-headline { font-family: 'Fraunces', serif; font-size: 2.6rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.04; margin: 0 0 0.9rem; }
+        @media (min-width: 600px) { .wp-hero-headline { font-size: 3.1rem; } }
+        .wp-tagline { font-size: 0.96rem; color: var(--ink-soft); margin: 0 0 1.1rem; max-width: 42ch; line-height: 1.5; }
+        .wp-hero-stats { display: flex; gap: 1.7rem; }
+        .wp-hero-stat b { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; display: block; line-height: 1.2; }
+        .wp-hero-stat span { font-size: 0.76rem; color: var(--ink-soft); }
 
         .wp-back { display: inline-flex; align-items: center; gap: 0.4rem; background: none; border: none; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink-soft); padding: 0.3rem 0; margin-bottom: 1.1rem; }
         .wp-back:hover { color: var(--ink); }
 
-        .wp-continent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.9rem; }
+        .wp-continent-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem; margin-bottom: 0.5rem; }
         @media (min-width: 560px) { .wp-continent-grid { grid-template-columns: repeat(3, 1fr); } }
-        .wp-continent-tile { background: #fff; border: 1px solid var(--hairline); border-bottom: 4px solid var(--tile-color); border-radius: 3px; padding: 1.1rem 1rem; text-align: left; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; gap: 0.55rem; transition: transform 0.15s ease, box-shadow 0.15s ease; min-height: 118px; }
-        .wp-continent-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(38,33,25,0.08); }
-        .wp-continent-name { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 500; }
-        .wp-continent-tagline { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.35; flex-grow: 1; }
-        .wp-continent-count { font-size: 0.75rem; color: var(--tile-color); font-weight: 600; }
+        .wp-continent-tile {
+          background: color-mix(in srgb, var(--tile-color) 9%, #fff);
+          border: 1px solid color-mix(in srgb, var(--tile-color) 28%, var(--hairline));
+          border-radius: 12px; padding: 1.2rem 1.3rem; text-align: left; cursor: pointer; font-family: inherit;
+          display: flex; flex-direction: column; justify-content: space-between; gap: 0.7rem;
+          min-height: 148px; transition: transform 0.16s ease, box-shadow 0.16s ease;
+        }
+        .wp-continent-tile:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(31,27,20,0.1); }
+        .wp-continent-icon { color: var(--tile-color); opacity: 0.9; }
+        .wp-continent-name { font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 600; }
+        .wp-continent-tagline { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.35; margin-top: 0.2rem; }
+        .wp-continent-count { font-family: 'Fraunces', serif; font-size: 0.95rem; color: var(--tile-color); }
+        .wp-continent-count b { font-size: 1.5rem; font-weight: 700; margin-right: 0.3rem; }
+        .wp-tile-big { grid-column: span 2; }
+        .wp-tile-big .wp-continent-name { font-size: 1.55rem; }
+        @media (min-width: 560px) { .wp-tile-wide { grid-column: span 3; flex-direction: row; align-items: center; min-height: auto; padding: 1.3rem 1.6rem; } }
+        .wp-tile-wide .wp-continent-body { flex: 1; }
 
         .wp-quiz-section { margin-bottom: 1.8rem; }
-        .wp-quiz-card { background: #fff; border: 1px solid var(--hairline); border-radius: 4px; padding: 1.5rem 1.4rem; }
-        .wp-quiz-intro { text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .wp-quiz-card { background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 1.5rem 1.4rem; }
+        .wp-quiz-intro { text-align: center; display: flex; flex-direction: column; align-items: center; background: var(--navy); border: none; color: #EFE9DA; position: relative; overflow: hidden; padding: 2.2rem 1.8rem; }
+        .wp-quiz-intro::before { content: ""; position: absolute; top: -35%; right: -12%; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(184,134,62,0.4), transparent 70%); pointer-events: none; }
+        .wp-quiz-intro > * { position: relative; }
+        .wp-quiz-intro .wp-section-title { color: #fff; }
+        .wp-quiz-intro .wp-now-subtitle { color: #B7BECC; }
+        .wp-quiz-intro .wp-quiz-btn-primary { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+        .wp-quiz-intro .wp-quiz-btn:not(.wp-quiz-btn-primary) { background: transparent; border-color: rgba(239,233,218,0.4); color: #EFE9DA; }
         .wp-quiz-progress { font-size: 0.8rem; color: var(--ink-soft); font-weight: 600; margin-bottom: 0.9rem; }
         .wp-quiz-clue-wrap { min-height: 70px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; }
         .wp-quiz-flag-big { font-size: 3.5rem; line-height: 1; }
@@ -698,25 +728,26 @@ function Waypoint() {
         .wp-quiz-option-wrong { background: #F5E2E0; border-color: #C1665F; }
         .wp-quiz-btn { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.65rem 1.4rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--ink); display: inline-flex; align-items: center; gap: 0.4rem; }
         .wp-quiz-btn-primary { background: var(--navy); color: #F3EDE0; border-color: var(--navy); }
-        .wp-quiz-score { font-family: 'Fraunces', serif; font-size: 2.6rem; font-weight: 600; margin: 0.5rem 0 0.15rem; }
-        .wp-quiz-rank { font-size: 1rem; color: var(--ink-soft); margin-bottom: 1.2rem; }
+        .wp-quiz-score { font-family: 'Fraunces', serif; font-size: 2.6rem; font-weight: 600; margin: 0.5rem 0 0.15rem; color: #fff; }
+        .wp-quiz-rank { font-size: 1rem; color: #B7BECC; margin-bottom: 1.2rem; }
         .wp-quiz-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
 
-        .wp-monthly-wrap { background: #FBF6EA; border: 1px solid var(--hairline); border-radius: 4px; padding: 1.6rem 1.5rem 1.8rem; margin-bottom: 1.8rem; }
-        .wp-monthly-eyebrow { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--navy); background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.32rem 0.75rem; margin-bottom: 1.2rem; }
+        .wp-monthly-wrap { border-top: 2px solid var(--ink); padding-top: 1.8rem; margin-bottom: 1.8rem; }
+        .wp-monthly-eyebrow { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--gold); font-weight: 600; margin-bottom: 1.2rem; }
+        .wp-monthly-eyebrow .wp-monthly-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
         .wp-now-section + .wp-quiz-section { border-top: 1px solid var(--hairline); padding-top: 1.6rem; margin-top: 0.4rem; }
 
         .wp-now-section { margin-bottom: 1.8rem; }
         .wp-now-subtitle { font-size: 0.86rem; color: var(--ink-soft); margin: 0 0 1rem; }
         .wp-now-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.9rem; }
-        .wp-now-card { background: #fff; border: 1px solid var(--hairline); border-top: 3px solid var(--now-color); border-radius: 3px; padding: 1rem 1.1rem; text-align: left; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; gap: 0.35rem; transition: transform 0.15s ease, box-shadow 0.15s ease; }
-        .wp-now-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(38,33,25,0.08); }
-        .wp-now-flag { font-size: 1.4rem; line-height: 1; }
-        .wp-now-name { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 500; }
-        .wp-now-reason { font-size: 0.85rem; color: #4a4436; line-height: 1.45; }
+        .wp-now-card { text-align: left; cursor: pointer; font-family: inherit; background: none; border: none; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+        .wp-now-flag { font-size: 1.5rem; line-height: 1; }
+        .wp-now-name { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 600; border-bottom: 2px solid transparent; display: inline-block; width: fit-content; transition: border-color 0.15s ease; }
+        .wp-now-card:hover .wp-now-name { border-bottom-color: var(--gold); }
+        .wp-now-reason { font-size: 0.85rem; color: #4a4436; line-height: 1.5; }
 
         .wp-search-wrap { margin-bottom: 1.3rem; }
-        .wp-search-box { display: flex; align-items: center; gap: 0.6rem; background: #fff; border: 1px solid var(--hairline); border-radius: 3px; padding: 0.75rem 0.95rem; }
+        .wp-search-box { display: flex; align-items: center; gap: 0.65rem; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.85rem 1.3rem; box-shadow: 0 1px 2px rgba(31,27,20,0.04); }
         .wp-search-icon { color: var(--ink-soft); flex-shrink: 0; }
         .wp-search-input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: 'Work Sans', sans-serif; font-size: 0.95rem; color: var(--ink); }
         .wp-search-input::placeholder { color: var(--ink-soft); }
@@ -739,24 +770,27 @@ function Waypoint() {
         .wp-section-title { font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 500; margin: 0 0 0.9rem; }
         .wp-blurb { font-size: 0.98rem; line-height: 1.6; margin-bottom: 1.9rem; max-width: 62ch; }
 
-        .wp-attraction { display: flex; gap: 0.9rem; padding: 0.95rem 0; border-top: 1px solid var(--hairline); align-items: flex-start; }
-        .wp-attraction:last-child { border-bottom: 1px solid var(--hairline); }
-        .wp-attraction-img { width: 84px; height: 64px; object-fit: cover; border-radius: 3px; flex-shrink: 0; background: #EDE6D4; }
+        .wp-attractions-grid { display: grid; grid-template-columns: 1fr; gap: 1.8rem; margin-bottom: 1.9rem; }
+        @media (min-width: 620px) { .wp-attractions-grid { grid-template-columns: 1fr 1fr; } }
+        .wp-attraction-img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; background: #EDE6D4; margin-bottom: 0.8rem; display: block; }
         .wp-attraction-img-loading { background: linear-gradient(90deg, #EDE6D4 25%, #F5F0E3 37%, #EDE6D4 63%); background-size: 400% 100%; animation: wp-shimmer 1.4s ease infinite; }
         @keyframes wp-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
         .wp-attraction-img-empty { display: flex; align-items: center; justify-content: center; }
-        .wp-attraction-body { flex: 1; min-width: 0; }
-        .wp-attraction-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+        .wp-attraction-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.05rem; margin-bottom: 0.35rem; }
         .wp-attraction-desc { font-size: 0.88rem; color: #4a4436; line-height: 1.55; }
 
         .wp-itinerary-wrap { margin-top: 1.9rem; margin-bottom: 0.5rem; }
         .wp-itinerary-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
         .wp-itinerary-total { font-size: 0.85rem; color: var(--ink-soft); white-space: nowrap; }
 
-        .wp-day { display: grid; grid-template-columns: 88px 1fr; gap: 1rem; padding: 0.9rem 0; border-top: 1px solid var(--hairline); }
-        .wp-day:last-child { border-bottom: 1px solid var(--hairline); }
-        .wp-day-label { font-size: 0.8rem; color: var(--accent-color); font-weight: 600; padding-top: 0.1rem; }
-        .wp-day-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.2rem; }
+        .wp-route { position: relative; padding-left: 2.4rem; margin-top: 1.6rem; }
+        .wp-route::before { content: ""; position: absolute; left: 9px; top: 6px; bottom: 26px; width: 1.5px; background-image: linear-gradient(var(--gold), var(--gold)); background-size: 2px 9px; background-repeat: repeat-y; opacity: 0.6; }
+        .wp-day { position: relative; padding: 0 0 1.9rem; }
+        .wp-day::before { content: ""; position: absolute; left: -2.4rem; top: 3px; width: 11px; height: 11px; border-radius: 50%; background: var(--accent-color); border: 3px solid var(--parchment); box-shadow: 0 0 0 1.5px var(--gold); }
+        .wp-day:last-child::before { background: var(--gold); }
+        .wp-day:last-child { padding-bottom: 0; }
+        .wp-day-label { font-size: 0.8rem; color: var(--gold); font-weight: 600; margin-bottom: 0.2rem; display: block; }
+        .wp-day-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.12rem; margin-bottom: 0.3rem; }
         .wp-day-desc { font-size: 0.9rem; color: #4a4436; line-height: 1.5; }
 
         .wp-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 0 1.3rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; flex-wrap: wrap; }
@@ -781,7 +815,7 @@ function Waypoint() {
         .wp-coming-soon-visual { width: 170px; margin: 0 auto; }
         .wp-soon-svg { width: 100%; height: auto; display: block; }
 
-        .wp-detail-tagline { font-family: 'Fraunces', serif; font-style: italic; font-size: 1.1rem; color: #4a4436; margin: 0.4rem 0 0.8rem; max-width: 52ch; }
+        .wp-detail-tagline { font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 1.3rem; color: #463F30; margin: 0.5rem 0 1rem; max-width: 50ch; line-height: 1.45; }
         .wp-chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
         .wp-chip { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.3rem 0.8rem; font-size: 0.8rem; color: var(--ink); }
 
@@ -789,7 +823,7 @@ function Waypoint() {
         .wp-gtk-grid { display: grid; grid-template-columns: 1fr; gap: 1rem 1.4rem; margin-top: 0.7rem; }
         @media (min-width: 520px) { .wp-gtk-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 760px) { .wp-gtk-grid { grid-template-columns: repeat(3, 1fr); } }
-        .wp-gtk-label { font-size: 0.76rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.15rem; }
+        .wp-gtk-label { font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 0.2rem; }
         .wp-gtk-value { font-size: 0.9rem; line-height: 1.45; }
 
         .wp-food-grid { display: grid; grid-template-columns: 1fr; gap: 0.8rem; }
@@ -856,11 +890,13 @@ function Waypoint() {
         {view === "continents" && (
           <div className="wp-hero">
             <div className="wp-hero-text">
-              <div className="wp-brand">
-                <div className="wp-brand-mark"><Compass size={16} style={{ color: "#F3EDE0" }} /></div>
-                <h1 className="wp-title">Waypoint</h1>
-              </div>
+              <h1 className="wp-hero-headline">{T.heroHeadline}</h1>
               <p className="wp-tagline">{T.heroTagline}</p>
+              <div className="wp-hero-stats">
+                <div className="wp-hero-stat"><b>{allCountriesFlat.length}</b><span>{T.statsCountries}</span></div>
+                <div className="wp-hero-stat"><b>{totalAttractions}+</b><span>{T.statsAttractions}</span></div>
+                <div className="wp-hero-stat"><b>2</b><span>{T.statsLanguages}</span></div>
+              </div>
             </div>
             <div className="wp-hero-visual"><HeroIllustration /></div>
           </div>
@@ -898,10 +934,18 @@ function Waypoint() {
         {view === "continents" && !homeQuery.trim() && (
           <div className="wp-continent-grid">
             {continents.map((c) => (
-              <button key={c.id} className="wp-continent-tile" style={{ "--tile-color": c.color }} onClick={() => goToCountries(c.id)}>
-                <div className="wp-continent-name">{c.name}</div>
-                <div className="wp-continent-tagline">{c.tagline}</div>
-                <div className="wp-continent-count">{c.countries.length} {T.countries}</div>
+              <button
+                key={c.id}
+                className={"wp-continent-tile" + (c.id === "europe" ? " wp-tile-big" : c.id === "oceania" ? " wp-tile-wide" : "")}
+                style={{ "--tile-color": c.color }}
+                onClick={() => goToCountries(c.id)}
+              >
+                <div className="wp-continent-icon"><ContinentIcon id={c.id} /></div>
+                <div className="wp-continent-body">
+                  <div className="wp-continent-name">{c.name}</div>
+                  <div className="wp-continent-tagline">{c.tagline}</div>
+                </div>
+                <div className="wp-continent-count"><b>{c.countries.length}</b> {T.countries}</div>
               </button>
             ))}
           </div>
@@ -927,7 +971,7 @@ function Waypoint() {
 
         {view === "continents" && (nowPicks.length > 0 || quizQuestions.length > 0) && (
           <div className="wp-monthly-wrap">
-            <div className="wp-monthly-eyebrow"><CalendarClock size={13} /> {T.monthlyEyebrow}</div>
+            <div className="wp-monthly-eyebrow"><span className="wp-monthly-dot"></span> {T.monthlyEyebrow}</div>
 
             {nowPicks.length > 0 && (
               <div className="wp-now-section">
@@ -949,7 +993,7 @@ function Waypoint() {
               <div className="wp-quiz-section">
                 {!quizStarted && (
                   <div className="wp-quiz-card wp-quiz-intro">
-                    <Award size={26} style={{ color: "var(--navy)" }} />
+                    <Award size={26} style={{ color: "#B8863E" }} />
                     <h2 className="wp-section-title" style={{ margin: "0.6rem 0 0.2rem" }}>{T.quizTitle}</h2>
                     <p className="wp-now-subtitle" style={{ marginBottom: "1rem" }}>{T.quizSubtitle}</p>
                     <button className="wp-quiz-btn wp-quiz-btn-primary" onClick={startQuiz}>{T.quizStart}</button>
@@ -995,7 +1039,7 @@ function Waypoint() {
 
                 {quizFinished && (
                   <div className="wp-quiz-card wp-quiz-intro">
-                    <Award size={30} style={{ color: "var(--navy)" }} />
+                    <Award size={30} style={{ color: "#B8863E" }} />
                     <div className="wp-quiz-score">{quizScore}/{quizQuestions.length}</div>
                     <div className="wp-quiz-rank">{quizRank(quizScore)}</div>
                     <div className="wp-quiz-actions">
@@ -1102,14 +1146,12 @@ function Waypoint() {
             )}
 
             <h3 className="wp-section-title">{T.topAttractions}</h3>
-            <div style={{ marginBottom: "1.9rem" }}>
+            <div className="wp-attractions-grid">
               {country.attractions.map((a, i) => (
-                <div className="wp-attraction" key={i}>
+                <div key={i}>
                   <AttractionImage title={a.wiki} alt={a.name} />
-                  <div className="wp-attraction-body">
-                    <div className="wp-attraction-name">{a.name}</div>
-                    <div className="wp-attraction-desc">{a.desc}</div>
-                  </div>
+                  <div className="wp-attraction-name">{a.name}</div>
+                  <div className="wp-attraction-desc">{a.desc}</div>
                 </div>
               ))}
             </div>
@@ -1123,10 +1165,10 @@ function Waypoint() {
 
               <CountryMap country={country} accentColor={continent.color} />
 
-              {country.itinerary.map((step, i) => (
-                <div className="wp-day" style={{ "--accent-color": continent.color }} key={i}>
-                  <div className="wp-day-label">{country.itinerary.some((s) => typeof s.lat === "number") ? (i + 1) + ". " : ""}{step.label}</div>
-                  <div>
+              <div className="wp-route">
+                {country.itinerary.map((step, i) => (
+                  <div className="wp-day" style={{ "--accent-color": continent.color }} key={i}>
+                    <span className="wp-day-label">{country.itinerary.some((s) => typeof s.lat === "number") ? (i + 1) + ". " : ""}{step.label}</span>
                     <div className="wp-day-title">{step.title}</div>
                     <div className="wp-day-desc">{step.desc}</div>
                     {(step.logistics || step.bookAhead) && (
@@ -1138,8 +1180,8 @@ function Waypoint() {
                     {step.cost && <div className="wp-day-extra"><strong>{T.cost}:</strong> {step.cost}</div>}
                     {step.food && <div className="wp-day-extra"><strong>{T.eat}:</strong> {step.food}</div>}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {country.faq && country.faq.length > 0 && (

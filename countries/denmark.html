@@ -66,14 +66,14 @@
 })();
 </script>
 <style>
-  #wp-cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; background: #16233B; }
+  #wp-cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; background: #142035; }
   .wp-cookie-inner { max-width: 900px; margin: 0 auto; padding: 1rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; font-family: 'Work Sans', sans-serif; }
-  .wp-cookie-inner p { margin: 0; font-size: 0.85rem; line-height: 1.5; flex: 1; min-width: 220px; color: #F3EDE0; }
-  .wp-cookie-inner a { color: #F3EDE0; text-decoration: underline; }
+  .wp-cookie-inner p { margin: 0; font-size: 0.85rem; line-height: 1.5; flex: 1; min-width: 220px; color: #F6F2E8; }
+  .wp-cookie-inner a { color: #F6F2E8; text-decoration: underline; }
   .wp-cookie-actions { display: flex; gap: 0.6rem; flex-shrink: 0; }
-  .wp-cookie-actions button { font-family: 'Work Sans', sans-serif; font-size: 0.85rem; padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; border: 1px solid #F3EDE0; }
-  #wp-cookie-accept { background: #F3EDE0; color: #16233B; }
-  #wp-cookie-reject { background: transparent; color: #F3EDE0; }
+  .wp-cookie-actions button { font-family: 'Work Sans', sans-serif; font-size: 0.85rem; padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; border: 1px solid #F6F2E8; }
+  #wp-cookie-accept { background: #F6F2E8; color: #142035; }
+  #wp-cookie-reject { background: transparent; color: #F6F2E8; }
 </style>
 
 <script type="application/ld+json">
@@ -93,7 +93,7 @@
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
-  :root { --parchment:#F3EDE0; --ink:#262119; --ink-soft:#8a8272; --hairline:#DCD3BE; --navy:#16233B; --accent:#2F5D62; }
+  :root { --parchment:#F6F2E8; --ink:#1F1B14; --ink-soft:#83795F; --hairline:#E1D6BC; --navy:#142035; --gold:#B8863E; --accent:#2F5D62; }
   * { box-sizing: border-box; }
   html,body { margin:0; padding:0; }
   body { font-family:'Work Sans',sans-serif; background:var(--parchment); color:var(--ink); }
@@ -108,52 +108,55 @@
   .wp-back:hover { color:var(--ink); }
   .wp-detail-name { font-family:'Fraunces',serif; font-size:2.1rem; font-weight:600; margin:0 0 0.2rem; letter-spacing:-0.01em; }
   .wp-detail-sub { font-size:0.92rem; color:var(--ink-soft); }
-  .wp-detail-tagline { font-family:'Fraunces',serif; font-style:italic; font-size:1.1rem; color:#4a4436; margin:0.4rem 0 0.8rem; max-width:52ch; }
+  .wp-detail-tagline { font-family:'Fraunces',serif; font-style:italic; font-weight:500; font-size:1.25rem; color:#463F30; margin:0.5rem 0 1rem; max-width:50ch; line-height:1.45; }
   .wp-chip-row { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem; }
   .wp-chip { background:#fff; border:1px solid var(--hairline); border-radius:999px; padding:0.3rem 0.8rem; font-size:0.8rem; }
-  .wp-stat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.1rem; background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:1.1rem 1.2rem; margin:1.6rem 0; }
+  .wp-stat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.1rem; background:#fff; border:1px solid var(--hairline); border-radius:8px; padding:1.1rem 1.2rem; margin:1.6rem 0; }
   @media (min-width:520px) { .wp-stat-grid { grid-template-columns:repeat(4,1fr); } }
   .wp-stat-label { font-size:0.78rem; color:var(--ink-soft); margin-top:0.15rem; }
   .wp-stat-value { font-size:0.95rem; font-weight:500; }
   .wp-section-title { font-family:'Fraunces',serif; font-size:1.25rem; font-weight:500; margin:0 0 0.9rem; }
   .wp-blurb { font-size:0.98rem; line-height:1.6; margin-bottom:1.9rem; max-width:62ch; }
-  .wp-good-to-know { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:1.1rem 1.2rem; margin-bottom:1.9rem; }
+  .wp-good-to-know { background:#fff; border:1px solid var(--hairline); border-radius:8px; padding:1.1rem 1.2rem; margin-bottom:1.9rem; }
   .wp-gtk-grid { display:grid; grid-template-columns:1fr; gap:1rem 1.4rem; margin-top:0.7rem; }
   @media (min-width:520px) { .wp-gtk-grid { grid-template-columns:repeat(2,1fr); } }
   @media (min-width:760px) { .wp-gtk-grid { grid-template-columns:repeat(3,1fr); } }
-  .wp-gtk-label { font-size:0.76rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:0.15rem; }
+  .wp-gtk-label { font-size:0.78rem; color:var(--ink-soft); margin-bottom:0.2rem; }
   .wp-gtk-value { font-size:0.9rem; line-height:1.45; }
   .wp-food-grid { display:grid; grid-template-columns:1fr; gap:0.8rem; margin-bottom:1.9rem; }
   @media (min-width:560px) { .wp-food-grid { grid-template-columns:repeat(2,1fr); } }
-  .wp-food-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.85rem 1rem; }
+  .wp-food-item { background:#fff; border:1px solid var(--hairline); border-radius:8px; padding:0.85rem 1rem; }
   .wp-food-name { font-weight:600; font-size:0.92rem; margin-bottom:0.25rem; }
   .wp-food-desc { font-size:0.86rem; color:#4a4436; line-height:1.5; }
-  .wp-attraction { display:flex; gap:0.9rem; padding:0.95rem 0; border-top:1px solid var(--hairline); align-items:flex-start; }
-  .wp-attraction:last-child { border-bottom:1px solid var(--hairline); }
-  .wp-attraction-img { width:84px; height:64px; object-fit:cover; border-radius:3px; flex-shrink:0; background:#EDE6D4; }
+  .wp-attractions-grid { display:grid; grid-template-columns:1fr; gap:1.8rem; margin-bottom:1.9rem; }
+  @media (min-width:620px) { .wp-attractions-grid { grid-template-columns:1fr 1fr; } }
+  .wp-attraction-img { width:100%; height:180px; object-fit:cover; border-radius:8px; background:#EDE6D4; margin-bottom:0.8rem; display:block; }
   .wp-attraction-img-empty { display:flex; align-items:center; justify-content:center; }
-  .wp-attraction-body { flex:1; min-width:0; }
-  .wp-attraction-name { font-weight:600; font-size:0.95rem; margin-bottom:0.25rem; }
+  .wp-attraction-name { font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; margin-bottom:0.35rem; }
   .wp-attraction-desc { font-size:0.88rem; color:#4a4436; line-height:1.55; }
   .wp-itinerary-head { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
   .wp-itinerary-total { font-size:0.85rem; color:var(--ink-soft); white-space:nowrap; }
-  .wp-day { display:grid; grid-template-columns:88px 1fr; gap:1rem; padding:0.9rem 0; border-top:1px solid var(--hairline); }
-  .wp-day:last-child { border-bottom:1px solid var(--hairline); }
-  .wp-day-label { font-size:0.8rem; color:var(--accent); font-weight:600; padding-top:0.1rem; }
-  .wp-day-title { font-weight:600; font-size:0.95rem; margin-bottom:0.2rem; }
+  .wp-route { position:relative; padding-left:2.4rem; margin-top:1.6rem; }
+  .wp-route::before { content:""; position:absolute; left:9px; top:6px; bottom:26px; width:1.5px; background-image:linear-gradient(var(--gold),var(--gold)); background-size:2px 9px; background-repeat:repeat-y; opacity:0.6; }
+  .wp-day { position:relative; padding:0 0 1.9rem; }
+  .wp-day::before { content:""; position:absolute; left:-2.4rem; top:3px; width:11px; height:11px; border-radius:50%; background:var(--accent); border:3px solid var(--parchment); box-shadow:0 0 0 1.5px var(--gold); }
+  .wp-day:last-child::before { background:var(--gold); }
+  .wp-day:last-child { padding-bottom:0; }
+  .wp-day-label { font-size:0.8rem; color:var(--gold); font-weight:600; margin-bottom:0.2rem; display:block; }
+  .wp-day-title { font-family:'Fraunces',serif; font-weight:600; font-size:1.12rem; margin-bottom:0.3rem; }
   .wp-day-desc { font-size:0.9rem; color:#4a4436; line-height:1.5; }
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
-  .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-tag-book { background:var(--navy); color:#F6F2E8; }
   .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
   .wp-day-extra strong { color:var(--ink); }
   .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
   .wp-faq-wrap { margin-top:2rem; }
-  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:8px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
   .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
   .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
-  .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
-  .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
+  .wp-cta { background:var(--navy); border:none; border-radius:10px; padding:1.5rem; margin:2rem 0; text-align:center; color:#EFE9DA; }
+  .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--gold); color:var(--navy); text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; font-weight:600; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
   .wp-pairs-card { display:flex; align-items:center; gap:0.5rem; background:#fff; border:1px solid var(--hairline); border-radius:999px; padding:0.5rem 0.9rem; text-decoration:none; color:var(--ink); font-size:0.88rem; }
   .wp-pairs-card:hover { background:#FBF8F1; }
@@ -165,7 +168,7 @@
 <div class="wp-shell">
   <nav class="wp-nav">
     <a class="wp-nav-brand" href="../index.html">
-      <span class="wp-brand-mark"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F3EDE0" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
+      <span class="wp-brand-mark"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F6F2E8" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
       Waypoint
     </a>
     <div class="wp-nav-links">
@@ -226,48 +229,36 @@
     </div></div>
 
   <h2 class="wp-section-title">Top attractions</h2>
-  <div>
-    <div class="wp-attraction">
+  <div class="wp-attractions-grid">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Nyhavn" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Nyhavn, Copenhagen</div>
-        <div class="wp-attraction-desc">A 17th-century harbor lined with brightly colored townhouses, now filled with outdoor cafes and moored wooden boats. It&#x27;s Copenhagen&#x27;s most photographed spot and a popular starting point for canal tours around the city&#x27;s waterways. Hans Christian Andersen once lived at several addresses along this same stretch.</div>
-      </div>
+      <div class="wp-attraction-name">Nyhavn, Copenhagen</div>
+      <div class="wp-attraction-desc">A 17th-century harbor lined with brightly colored townhouses, now filled with outdoor cafes and moored wooden boats. It&#x27;s Copenhagen&#x27;s most photographed spot and a popular starting point for canal tours around the city&#x27;s waterways. Hans Christian Andersen once lived at several addresses along this same stretch.</div>
     </div>
-    <div class="wp-attraction">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Tivoli_Gardens" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Tivoli Gardens</div>
-        <div class="wp-attraction-desc">One of the oldest amusement parks in the world, opened in 1843, its landscaped gardens, historic wooden roller coaster, and nightly illuminations helped inspire Walt Disney&#x27;s vision for Disneyland. It sits right in the city center, within walking distance of the main train station. Seasonal festivals, including an elaborate Christmas market, keep it lively year-round.</div>
-      </div>
+      <div class="wp-attraction-name">Tivoli Gardens</div>
+      <div class="wp-attraction-desc">One of the oldest amusement parks in the world, opened in 1843, its landscaped gardens, historic wooden roller coaster, and nightly illuminations helped inspire Walt Disney&#x27;s vision for Disneyland. It sits right in the city center, within walking distance of the main train station. Seasonal festivals, including an elaborate Christmas market, keep it lively year-round.</div>
     </div>
-    <div class="wp-attraction">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Kronborg" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Kronborg Castle, Helsingør</div>
-        <div class="wp-attraction-desc">A Renaissance castle on the narrowest point of the Øresund strait, better known to literature fans as the setting for Shakespeare&#x27;s Hamlet. Its fortified walls once controlled a toll on all ships passing between Denmark and Sweden. The town of Helsingør around it makes for an easy half-day trip from Copenhagen.</div>
-      </div>
+      <div class="wp-attraction-name">Kronborg Castle, Helsingør</div>
+      <div class="wp-attraction-desc">A Renaissance castle on the narrowest point of the Øresund strait, better known to literature fans as the setting for Shakespeare&#x27;s Hamlet. Its fortified walls once controlled a toll on all ships passing between Denmark and Sweden. The town of Helsingør around it makes for an easy half-day trip from Copenhagen.</div>
     </div>
-    <div class="wp-attraction">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="The_Little_Mermaid_(statue)" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">The Little Mermaid statue</div>
-        <div class="wp-attraction-desc">A small bronze statue perched on a rock along Copenhagen&#x27;s harbor, inspired by Hans Christian Andersen&#x27;s fairy tale and unveiled in 1913. Its modest size often surprises first-time visitors expecting something grander, but it remains one of the city&#x27;s most visited landmarks. The surrounding Langelinie promenade makes for a pleasant waterfront walk.</div>
-      </div>
+      <div class="wp-attraction-name">The Little Mermaid statue</div>
+      <div class="wp-attraction-desc">A small bronze statue perched on a rock along Copenhagen&#x27;s harbor, inspired by Hans Christian Andersen&#x27;s fairy tale and unveiled in 1913. Its modest size often surprises first-time visitors expecting something grander, but it remains one of the city&#x27;s most visited landmarks. The surrounding Langelinie promenade makes for a pleasant waterfront walk.</div>
     </div>
-    <div class="wp-attraction">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Rosenborg_Castle" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Rosenborg Castle</div>
-        <div class="wp-attraction-desc">A Renaissance castle built by King Christian IV, now housing the Danish crown jewels and royal regalia in a heavily guarded treasury. Its surrounding King&#x27;s Garden is one of the oldest and most visited parks in Copenhagen. The castle&#x27;s turrets and moat give it a distinctly fairy-tale appearance in the middle of the city.</div>
-      </div>
+      <div class="wp-attraction-name">Rosenborg Castle</div>
+      <div class="wp-attraction-desc">A Renaissance castle built by King Christian IV, now housing the Danish crown jewels and royal regalia in a heavily guarded treasury. Its surrounding King&#x27;s Garden is one of the oldest and most visited parks in Copenhagen. The castle&#x27;s turrets and moat give it a distinctly fairy-tale appearance in the middle of the city.</div>
     </div>
-    <div class="wp-attraction">
+    <div>
       <div class="wp-attraction-img wp-attraction-img-empty" data-wiki="Den_Gamle_By" aria-hidden="true"></div>
-      <div class="wp-attraction-body">
-        <div class="wp-attraction-name">Aarhus&#x27;s Den Gamle By</div>
-        <div class="wp-attraction-desc">An open-air museum in Denmark&#x27;s second city, recreating a historic Danish town using over 75 original relocated buildings spanning several centuries. Costumed staff and period-accurate shops give a lived-in sense of daily life through different eras. It&#x27;s a worthwhile stop on a longer trip beyond Copenhagen.</div>
-      </div>
+      <div class="wp-attraction-name">Aarhus&#x27;s Den Gamle By</div>
+      <div class="wp-attraction-desc">An open-air museum in Denmark&#x27;s second city, recreating a historic Danish town using over 75 original relocated buildings spanning several centuries. Costumed staff and period-accurate shops give a lived-in sense of daily life through different eras. It&#x27;s a worthwhile stop on a longer trip beyond Copenhagen.</div>
     </div></div>
 
   <div class="wp-itinerary-head">
@@ -275,42 +266,34 @@
     <span class="wp-itinerary-total">6 days</span>
   </div>
   <p class="wp-days-reason">6 days covers Copenhagen and easy day trips to Kronborg and Aarhus without rushing. 3 works for just Copenhagen; 8–9 lets you add Odense or slow the pace down.</p>
-  <div>
+  <div class="wp-route">
     <div class="wp-day">
-      <div class="wp-day-label">1. Days 1–2</div>
-      <div>
-        <div class="wp-day-title">Copenhagen city center</div>
-        <div class="wp-day-desc">Nyhavn, Tivoli Gardens, and the Little Mermaid statue along the harbor.</div>
-        
-        <div class="wp-day-extra"><strong>Cost:</strong> Tivoli Gardens entry costs about DKK 145, plus separate ride tickets or a wristband.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try a proper smørrebrød lunch at a traditional spot — it&#x27;s meant to be an assortment, not just one slice.</div>
-      </div>
+      <span class="wp-day-label">1. Days 1–2</span>
+      <div class="wp-day-title">Copenhagen city center</div>
+      <div class="wp-day-desc">Nyhavn, Tivoli Gardens, and the Little Mermaid statue along the harbor.</div>
+      
+      <div class="wp-day-extra"><strong>Cost:</strong> Tivoli Gardens entry costs about DKK 145, plus separate ride tickets or a wristband.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try a proper smørrebrød lunch at a traditional spot — it&#x27;s meant to be an assortment, not just one slice.</div>
     </div>
     <div class="wp-day">
-      <div class="wp-day-label">2. Day 3</div>
-      <div>
-        <div class="wp-day-title">Rosenborg &amp; the palaces</div>
-        <div class="wp-day-desc">The crown jewels and a walk through the King&#x27;s Garden.</div>
-        <div class="wp-day-tags"><span class="wp-day-tag">Short walk within Copenhagen</span></div>
-        <div class="wp-day-extra"><strong>Cost:</strong> Rosenborg Castle entry, with the crown jewels, costs about DKK 130.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Grab a hot dog from a classic pølsevogn street cart — a genuine Copenhagen institution.</div>
-      </div>
+      <span class="wp-day-label">2. Day 3</span>
+      <div class="wp-day-title">Rosenborg &amp; the palaces</div>
+      <div class="wp-day-desc">The crown jewels and a walk through the King&#x27;s Garden.</div>
+      <div class="wp-day-tags"><span class="wp-day-tag">Short walk within Copenhagen</span></div>
+      <div class="wp-day-extra"><strong>Cost:</strong> Rosenborg Castle entry, with the crown jewels, costs about DKK 130.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Grab a hot dog from a classic pølsevogn street cart — a genuine Copenhagen institution.</div>
     </div>
     <div class="wp-day">
-      <div class="wp-day-label">3. Day 4</div>
-      <div>
-        <div class="wp-day-title">Kronborg Castle</div>
-        <div class="wp-day-desc">A day trip north to Hamlet&#x27;s castle and the town of Helsingør.</div>
-        <div class="wp-day-tags"><span class="wp-day-tag">~45min by train from Copenhagen</span></div>
-        <div class="wp-day-extra"><strong>Cost:</strong> Entry costs about DKK 145.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Helsingør&#x27;s harbor has casual seafood spots worth a stop before heading back.</div>
-      </div>
+      <span class="wp-day-label">3. Day 4</span>
+      <div class="wp-day-title">Kronborg Castle</div>
+      <div class="wp-day-desc">A day trip north to Hamlet&#x27;s castle and the town of Helsingør.</div>
+      <div class="wp-day-tags"><span class="wp-day-tag">~45min by train from Copenhagen</span></div>
+      <div class="wp-day-extra"><strong>Cost:</strong> Entry costs about DKK 145.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Helsingør&#x27;s harbor has casual seafood spots worth a stop before heading back.</div>
     </div>
     <div class="wp-day">
-      <div class="wp-day-label">4. Days 5–6</div>
-      <div>
-        <div class="wp-day-title">Aarhus</div>
-        <div class="wp-day-desc">A train to Denmark&#x27;s second city for its open-air history museum.</div>
-        <div class="wp-day-tags"><span class="wp-day-tag">~3h by train from Copenhagen</span></div>
-        <div class="wp-day-extra"><strong>Cost:</strong> The ARoS Art Museum, with its rainbow rooftop walkway, costs about DKK 160.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try a modern take on smørrebrød at one of Aarhus&#x27;s food halls, reflecting the city&#x27;s growing culinary scene.</div>
-      </div>
+      <span class="wp-day-label">4. Days 5–6</span>
+      <div class="wp-day-title">Aarhus</div>
+      <div class="wp-day-desc">A train to Denmark&#x27;s second city for its open-air history museum.</div>
+      <div class="wp-day-tags"><span class="wp-day-tag">~3h by train from Copenhagen</span></div>
+      <div class="wp-day-extra"><strong>Cost:</strong> The ARoS Art Museum, with its rainbow rooftop walkway, costs about DKK 160.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try a modern take on smørrebrød at one of Aarhus&#x27;s food halls, reflecting the city&#x27;s growing culinary scene.</div>
     </div></div>
 
   <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
