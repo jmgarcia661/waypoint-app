@@ -221,6 +221,7 @@ const UI_STRINGS = {
     whereToSleep: "Where to sleep", whereToEat: "Where to eat", nights: "nights",
     stayNamePlaceholder: "hotel or place name", nightsPlaceholder: "nights", addMealPlaceholder: "restaurant or dish",
     exportPdf: "Export PDF", typicalRange: "typical range",
+    insertStopHere: "insert stop here", hoursLabel: "hours", minutesLabel: "min",
     articlesComingSoon: "Long-form guides, itineraries, and travel notes are on their way — check back soon.",
     productsComingSoon: "Downloadable guides, packing lists, and planning tools are on their way — check back soon.",
     newsletterIntro: "Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.",
@@ -285,6 +286,7 @@ const UI_STRINGS = {
     whereToSleep: "Onde dormir", whereToEat: "Onde comer", nights: "noites",
     stayNamePlaceholder: "nome do hotel ou lugar", nightsPlaceholder: "noites", addMealPlaceholder: "restaurante ou prato",
     exportPdf: "Exportar PDF", typicalRange: "intervalo típico",
+    insertStopHere: "inserir paragem aqui", hoursLabel: "horas", minutesLabel: "min",
     articlesComingSoon: "Guias mais longos, itinerários e notas de viagem estão a caminho — volta em breve.",
     productsComingSoon: "Guias para descarregar, listas de bagagem e ferramentas de planeamento estão a caminho — volta em breve.",
     newsletterIntro: "Recebe um novo destino no teu email todas as semanas — ideias de itinerários reais e notas de viagem, sem spam.",
@@ -1158,10 +1160,13 @@ function Waypoint() {
     return diff > 0 ? diff : 1;
   };
 
+  const toISODate = (d) => d.toISOString().slice(0, 10);
   const openNewTripForm = () => {
     if (!user) { openAuthModal("signin"); return; }
+    const today = new Date();
+    const weekLater = new Date(today.getTime() + 7 * 86400000);
     setNewTripName(""); setNewTripCountryQuery(""); setNewTripCountryId(null);
-    setNewTripStart(""); setNewTripEnd(""); setShowNewTripForm(true);
+    setNewTripStart(toISODate(today)); setNewTripEnd(toISODate(weekLater)); setShowNewTripForm(true);
   };
 
   const createTrip = () => {
@@ -1203,22 +1208,46 @@ function Waypoint() {
     saveTrips({ ...trips, [tripId]: updater(current) });
   };
 
+  const reconcileTransits = (stops, transits) => {
+    const byAfter = {};
+    transits.forEach((tr) => { byAfter[tr.afterStopId] = tr; });
+    const next = [];
+    for (let i = 0; i < stops.length - 1; i++) {
+      const key = stops[i].id;
+      next.push(byAfter[key] || { afterStopId: key, mode: "", durationHours: "", durationMinutes: "", price: "" });
+    }
+    return next;
+  };
+
+  const makeBlankStop = (dayStart, dayEnd) => ({ id: "stop_" + Date.now() + "_" + Math.floor(Math.random() * 1000), city: "", dayStart, dayEnd, highlights: [], stays: [], meals: [] });
+
   const addStop = (tripId) => {
     updateTrip(tripId, (t) => {
       const lastStop = t.stops[t.stops.length - 1];
       const nextDay = lastStop ? lastStop.dayEnd + 1 : 1;
       const total = dayCount(t.startDate, t.endDate);
-      const newStop = { id: "stop_" + Date.now(), city: "", dayStart: Math.min(nextDay, total), dayEnd: total, highlights: [], stays: [], meals: [] };
-      return { ...t, stops: [...t.stops, newStop], transits: [...t.transits, { afterStopId: lastStop ? lastStop.id : null, mode: "", duration: "", price: "" }] };
+      const newStop = makeBlankStop(Math.min(nextDay, total), total);
+      const stops = [...t.stops, newStop];
+      return { ...t, stops, transits: reconcileTransits(stops, t.transits) };
+    });
+  };
+
+  const insertStopBefore = (tripId, beforeStopId) => {
+    updateTrip(tripId, (t) => {
+      const idx = beforeStopId ? t.stops.findIndex((s) => s.id === beforeStopId) : 0;
+      const refDay = idx >= 0 && t.stops[idx] ? t.stops[idx].dayStart : 1;
+      const newStop = makeBlankStop(refDay, refDay);
+      const stops = [...t.stops];
+      stops.splice(idx < 0 ? 0 : idx, 0, newStop);
+      return { ...t, stops, transits: reconcileTransits(stops, t.transits) };
     });
   };
 
   const removeStop = (tripId, stopId) => {
-    updateTrip(tripId, (t) => ({
-      ...t,
-      stops: t.stops.filter((s) => s.id !== stopId),
-      transits: t.transits.filter((tr) => tr.afterStopId !== stopId),
-    }));
+    updateTrip(tripId, (t) => {
+      const stops = t.stops.filter((s) => s.id !== stopId);
+      return { ...t, stops, transits: reconcileTransits(stops, t.transits) };
+    });
   };
 
   const updateStopField = (tripId, stopId, field, value) => {
@@ -1311,7 +1340,10 @@ function Waypoint() {
       (stop.stays || []).forEach((st) => { doc.text("🏨 " + st.name + (st.nights ? " · " + st.nights + " " + T.days : "") + (st.price ? " · " + st.price : ""), 20, y); y += 5.5; });
       (stop.meals || []).forEach((m) => { doc.text("🍽 " + m.name + (m.price ? " · " + m.price : ""), 20, y); y += 5.5; });
       const transit = trip.transits.find((tr) => tr.afterStopId === stop.id);
-      if (transit && transit.mode) { y += 1; doc.setTextColor(140); doc.text("→ " + transit.mode + (transit.duration ? " · " + transit.duration : "") + (transit.price ? " · " + transit.price : ""), 15, y); doc.setTextColor(0); y += 7; }
+      if (transit && transit.mode) {
+        const durTxt = (transit.durationHours || transit.durationMinutes) ? " · " + (transit.durationHours || 0) + "h" + (transit.durationMinutes ? (transit.durationMinutes) + "m" : "") : "";
+        y += 1; doc.setTextColor(140); doc.text("→ " + transit.mode + durTxt + (transit.price ? " · " + transit.price : ""), 15, y); doc.setTextColor(0); y += 7;
+      }
       y += 3;
     });
     y += 4;
@@ -1591,6 +1623,11 @@ function Waypoint() {
         .wp-trip-typical-hint { font-size: 0.72rem; color: var(--ink-soft); margin: 0.2rem 0 0.6rem 1.2rem; }
         .wp-trip-export-btn { display: flex; align-items: center; gap: 0.4rem; background: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 1rem; font-size: 0.82rem; color: var(--ink); cursor: pointer; margin-bottom: 1.2rem; }
         .wp-trip-export-btn:hover { border-color: var(--gold); }
+        .wp-trip-insert-before-btn { display: flex; align-items: center; gap: 0.3rem; width: 100%; background: none; border: none; font-size: 0.7rem; color: var(--ink-soft); cursor: pointer; padding: 0.25rem 0.4rem; opacity: 0.55; }
+        .wp-trip-insert-before-btn:hover { opacity: 1; color: var(--gold); }
+        .wp-trip-day-range-edit { display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--ink-soft); white-space: nowrap; }
+        .wp-trip-day-num { width: 2.6rem; font-size: 0.75rem; padding: 0.2rem 0.3rem; border: 1px solid var(--hairline); border-radius: 6px; text-align: center; }
+        .wp-trip-transit-num { flex: 0 0 3.4rem; text-align: center; }
         .wp-map-list-row:hover { text-decoration: underline; }
 
         .wp-modal-overlay { position: fixed; inset: 0; background: rgba(20,32,53,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.2rem; }
@@ -2347,6 +2384,9 @@ function Waypoint() {
 
               {trip.stops.map((stop, i) => (
                 <div key={stop.id}>
+                  <button className="wp-trip-insert-before-btn" onClick={() => insertStopBefore(trip.id, stop.id)}>
+                    <PlusIcon size={11} /> {T.insertStopHere}
+                  </button>
                   <div className="wp-trip-stop-card">
                     <div className="wp-trip-stop-top">
                       <input
@@ -2356,7 +2396,12 @@ function Waypoint() {
                         value={stop.city}
                         onChange={(e) => updateStopField(trip.id, stop.id, "city", e.target.value)}
                       />
-                      <span className="wp-trip-day-range">{T.day} {stop.dayStart}-{stop.dayEnd}</span>
+                      <span className="wp-trip-day-range-edit">
+                        {T.day}
+                        <input type="number" min="1" className="wp-trip-day-num" value={stop.dayStart} onChange={(e) => updateStopField(trip.id, stop.id, "dayStart", parseInt(e.target.value) || 1)} />
+                        -
+                        <input type="number" min="1" className="wp-trip-day-num" value={stop.dayEnd} onChange={(e) => updateStopField(trip.id, stop.id, "dayEnd", parseInt(e.target.value) || 1)} />
+                      </span>
                       {trip.stops.length > 1 && (
                         <button className="wp-trip-remove-btn" onClick={() => removeStop(trip.id, stop.id)} aria-label="Remove stop"><X size={14} /></button>
                       )}
@@ -2481,11 +2526,21 @@ function Waypoint() {
                         <option value="boat">{T.transitBoat}</option>
                       </select>
                       <input
-                        type="text"
-                        className="wp-trip-transit-input"
-                        placeholder={T.transitDuration}
-                        value={trip.transits.find((tr) => tr.afterStopId === stop.id).duration}
-                        onChange={(e) => updateTransit(trip.id, stop.id, "duration", e.target.value)}
+                        type="number"
+                        min="0"
+                        className="wp-trip-transit-input wp-trip-transit-num"
+                        placeholder={T.hoursLabel}
+                        value={trip.transits.find((tr) => tr.afterStopId === stop.id).durationHours}
+                        onChange={(e) => updateTransit(trip.id, stop.id, "durationHours", e.target.value)}
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        className="wp-trip-transit-input wp-trip-transit-num"
+                        placeholder={T.minutesLabel}
+                        value={trip.transits.find((tr) => tr.afterStopId === stop.id).durationMinutes}
+                        onChange={(e) => updateTransit(trip.id, stop.id, "durationMinutes", e.target.value)}
                       />
                       <input
                         type="text"
