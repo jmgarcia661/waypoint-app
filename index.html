@@ -85,6 +85,30 @@
 <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Firebase (auth + per-user country tracking). Replace the placeholder values below with
+     your real Firebase project config (Project settings > General > Your apps > Web app).
+     These values are safe to be public -- access control is enforced by Firestore Security Rules. -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+  window.__WP_FIREBASE_CONFIG__ = {
+    apiKey: "AIzaSyAkYhhZ69wD7PZx3tKrhvaJVA73Y_gZ3lQ",
+    authDomain: "waypoint-b2b20.firebaseapp.com",
+    projectId: "waypoint-b2b20",
+    storageBucket: "waypoint-b2b20.firebasestorage.app",
+    messagingSenderId: "924267231843",
+    appId: "1:924267231843:web:ac1ff67be19fe6210b9656"
+  };
+  (function() {
+    try {
+      if (window.firebase && window.__WP_FIREBASE_CONFIG__.apiKey !== "REPLACE_ME") {
+        firebase.initializeApp(window.__WP_FIREBASE_CONFIG__);
+      }
+    } catch (e) { /* Firebase not configured yet -- account features simply stay hidden */ }
+  })();
+</script>
 <style>
   html, body { margin: 0; padding: 0; }
   #root { min-height: 100vh; }
@@ -122,6 +146,18 @@ const Search = (p) => <IconBase {...p}><circle cx="11" cy="11" r="8" /><path d="
 const X = (p) => <IconBase {...p}><path d="M18 6L6 18" /><path d="M6 6l12 12" /></IconBase>;
 const Award = (p) => <IconBase {...p}><circle cx="12" cy="8" r="6" /><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" /></IconBase>;
 const Copy = (p) => <IconBase {...p}><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></IconBase>;
+const UserIcon = (p) => <IconBase {...p}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></IconBase>;
+const CheckCircle = (p) => <IconBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="M22 4L12 14.01l-3-3" /></IconBase>;
+const StarIcon = (p) => <IconBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></IconBase>;
+const LogOutIcon = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></IconBase>;
+const GoogleG = (p) => (
+  <svg width={p.size || 16} height={p.size || 16} viewBox="0 0 18 18">
+    <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.79 2.73v2.27h2.9c1.7-1.56 2.68-3.87 2.68-6.64z" />
+    <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.27c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.34C2.44 15.98 5.48 18 9 18z" />
+    <path fill="#FBBC05" d="M3.95 10.69A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.16.29-1.69V4.97H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.03l2.99-2.34z" />
+    <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.97l2.99 2.34C4.66 5.17 6.65 3.58 9 3.58z" />
+  </svg>
+);
 
 /* ---------- UI text translations (chrome only; country data is localized separately via .pt fields) ---------- */
 const UI_STRINGS = {
@@ -150,6 +186,15 @@ const UI_STRINGS = {
     quizCopyResult: "Copy your result", quizCopied: "Copied to clipboard!",
     quizShareText: "I scored SCORE/8 on Waypoint's Passport Quiz this month 🧳 Can you beat me?",
     quizRank0: "Just got the passport", quizRank1: "Frequent flyer", quizRank2: "World wanderer", quizRank3: "Waypoint Master",
+    signIn: "Sign in", signOut: "Sign out", createAccount: "Create account",
+    continueWithGoogle: "Continue with Google", orDivider: "or",
+    emailLabel: "Email", passwordLabel: "Password",
+    authSubmitSignIn: "Sign in", authSubmitSignUp: "Create account",
+    authSwitchToSignUp: "Don't have an account? Create one", authSwitchToSignIn: "Already have an account? Sign in",
+    authModalTitleIn: "Welcome back", authModalTitleUp: "Create your account",
+    authModalSubtitle: "Track which countries you've visited and which you want to see next.",
+    markVisited: "Visited", markWantToVisit: "Want to visit",
+    signInToTrackHint: "Sign in to track this country",
     articlesComingSoon: "Long-form guides, itineraries, and travel notes are on their way — check back soon.",
     productsComingSoon: "Downloadable guides, packing lists, and planning tools are on their way — check back soon.",
     newsletterIntro: "Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.",
@@ -182,6 +227,15 @@ const UI_STRINGS = {
     quizCopyResult: "Copiar o resultado", quizCopied: "Copiado!",
     quizShareText: "Fiz SCORE/8 no Passport Quiz da Waypoint este mês 🧳 Consegues fazer melhor?",
     quizRank0: "Acabaste de tirar o passaporte", quizRank1: "Viajante habitual", quizRank2: "Andarilho do mundo", quizRank3: "Mestre Waypoint",
+    signIn: "Entrar", signOut: "Sair", createAccount: "Criar conta",
+    continueWithGoogle: "Continuar com Google", orDivider: "ou",
+    emailLabel: "Email", passwordLabel: "Palavra-passe",
+    authSubmitSignIn: "Entrar", authSubmitSignUp: "Criar conta",
+    authSwitchToSignUp: "Não tens conta? Cria uma", authSwitchToSignIn: "Já tens conta? Entra",
+    authModalTitleIn: "Bem-vindo de volta", authModalTitleUp: "Cria a tua conta",
+    authModalSubtitle: "Acompanha os países que já visitaste e os que queres conhecer a seguir.",
+    markVisited: "Visitado", markWantToVisit: "Quero visitar",
+    signInToTrackHint: "Entra para acompanhar este país",
     articlesComingSoon: "Guias mais longos, itinerários e notas de viagem estão a caminho — volta em breve.",
     productsComingSoon: "Guias para descarregar, listas de bagagem e ferramentas de planeamento estão a caminho — volta em breve.",
     newsletterIntro: "Recebe um novo destino no teu email todas as semanas — ideias de itinerários reais e notas de viagem, sem spam.",
@@ -470,6 +524,11 @@ function StatBlock({ icon: Icon, label, value, accent }) {
   );
 }
 
+function StatusDot({ status }) {
+  if (!status) return null;
+  return <span className={"wp-status-dot wp-status-dot-" + status} title={status} />;
+}
+
 function ContinentIcon({ id, size = 28 }) {
   const stroke = "currentColor";
   const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke, strokeWidth: 1.6 };
@@ -495,6 +554,17 @@ function Waypoint() {
   const [quizSelected, setQuizSelected] = useState(null);
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizCopied, setQuizCopied] = useState(false);
+
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState("signin");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
+  const [countryStatuses, setCountryStatuses] = useState({});
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const normalize = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
@@ -635,6 +705,54 @@ function Waypoint() {
       window.removeEventListener("popstate", onHashChange);
     };
   }, []);
+
+  const firebaseReady = typeof window !== "undefined" && window.firebase && window.firebase.apps && window.firebase.apps.length > 0;
+
+  useEffect(() => {
+    if (!firebaseReady) { setAuthLoading(false); return; }
+    const unsub = firebase.auth().onAuthStateChanged((u) => {
+      setUser(u);
+      setAuthLoading(false);
+      if (u) {
+        firebase.firestore().collection("users").doc(u.uid).get()
+          .then((doc) => setCountryStatuses(doc.exists ? (doc.data().countries || {}) : {}))
+          .catch(() => setCountryStatuses({}));
+      } else {
+        setCountryStatuses({});
+      }
+    });
+    return () => unsub();
+  }, [firebaseReady]);
+
+  const openAuthModal = (mode) => { setAuthMode(mode || "signin"); setAuthError(""); setAuthEmail(""); setAuthPassword(""); setShowAuthModal(true); };
+  const closeAuthModal = () => { setShowAuthModal(false); setAuthError(""); setAuthBusy(false); };
+
+  const signInWithGoogle = () => {
+    if (!firebaseReady) return;
+    setAuthError(""); setAuthBusy(true);
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider)
+      .then(() => closeAuthModal())
+      .catch((e) => { setAuthError(e.message); setAuthBusy(false); });
+  };
+  const submitAuthForm = () => {
+    if (!firebaseReady) return;
+    setAuthError(""); setAuthBusy(true);
+    const action = authMode === "signup"
+      ? firebase.auth().createUserWithEmailAndPassword(authEmail, authPassword)
+      : firebase.auth().signInWithEmailAndPassword(authEmail, authPassword);
+    action.then(() => closeAuthModal()).catch((e) => { setAuthError(e.message); setAuthBusy(false); });
+  };
+  const signOutUser = () => { setShowUserMenu(false); if (firebaseReady) firebase.auth().signOut(); };
+
+  const setCountryStatus = (countryId, status) => {
+    if (!user) { openAuthModal("signin"); return; }
+    const next = { ...countryStatuses };
+    if (!status || next[countryId] === status) delete next[countryId];
+    else next[countryId] = status;
+    setCountryStatuses(next);
+    firebase.firestore().collection("users").doc(user.uid).set({ countries: next }).catch(() => {});
+  };
 
   return (
     <div className="wp-root">
@@ -802,6 +920,37 @@ function Waypoint() {
         .wp-lang-btn-active { color: var(--ink); font-weight: 700; }
         .wp-lang-sep { color: var(--hairline); font-size: 0.8rem; }
 
+        .wp-signin-btn { background: var(--navy); color: #F6F2E8; border: none; border-radius: 999px; padding: 0.45rem 1rem; font-family: 'Work Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-left: 0.6rem; }
+        .wp-user-menu-wrap { position: relative; margin-left: 0.6rem; }
+        .wp-user-chip { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.4rem 0.85rem; font-family: 'Work Sans', sans-serif; font-size: 0.82rem; color: var(--ink); cursor: pointer; }
+        .wp-user-dropdown { position: absolute; right: 0; top: calc(100% + 0.4rem); background: #fff; border: 1px solid var(--hairline); border-radius: 8px; box-shadow: 0 8px 20px rgba(31,27,20,0.12); padding: 0.4rem; min-width: 140px; z-index: 30; }
+        .wp-user-dropdown-item { display: flex; align-items: center; gap: 0.5rem; width: 100%; background: none; border: none; text-align: left; padding: 0.5rem 0.6rem; border-radius: 5px; font-family: 'Work Sans', sans-serif; font-size: 0.85rem; color: var(--ink); cursor: pointer; }
+        .wp-user-dropdown-item:hover { background: var(--parchment); }
+
+        .wp-status-row { display: flex; gap: 0.6rem; margin-top: 0.9rem; }
+        .wp-status-btn { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.4rem 0.9rem; font-family: 'Work Sans', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
+        .wp-status-btn:hover { border-color: var(--ink-soft); }
+        .wp-status-visited.wp-status-active { background: #E4EFE2; border-color: #6B9E68; color: #3C6B3A; }
+        .wp-status-want.wp-status-active { background: #FBF1DF; border-color: var(--gold); color: #8A6425; }
+
+        .wp-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 0.5rem; vertical-align: middle; }
+        .wp-status-dot-visited { background: #6B9E68; }
+        .wp-status-dot-want { background: var(--gold); }
+
+        .wp-modal-overlay { position: fixed; inset: 0; background: rgba(20,32,53,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.2rem; }
+        .wp-auth-modal { position: relative; background: #fff; border-radius: 14px; padding: 2rem 1.8rem; max-width: 380px; width: 100%; box-shadow: 0 20px 50px rgba(20,32,53,0.25); }
+        .wp-modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; cursor: pointer; color: var(--ink-soft); padding: 0.2rem; }
+        .wp-auth-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; margin: 0 0 0.4rem; }
+        .wp-auth-subtitle { font-size: 0.86rem; color: var(--ink-soft); line-height: 1.45; margin: 0 0 1.3rem; }
+        .wp-google-btn { display: flex; align-items: center; justify-content: center; gap: 0.6rem; width: 100%; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.65rem 1rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; font-weight: 600; color: var(--ink); cursor: pointer; }
+        .wp-google-btn:hover { background: var(--parchment); }
+        .wp-auth-divider { display: flex; align-items: center; text-align: center; color: var(--ink-soft); font-size: 0.78rem; margin: 1rem 0; }
+        .wp-auth-divider::before, .wp-auth-divider::after { content: ""; flex: 1; border-top: 1px solid var(--hairline); }
+        .wp-auth-divider span { padding: 0 0.7rem; }
+        .wp-auth-input { width: 100%; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.7rem 0.9rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; margin-bottom: 0.7rem; color: var(--ink); }
+        .wp-auth-error { font-size: 0.82rem; color: #B5453D; margin: -0.2rem 0 0.7rem; }
+        .wp-auth-switch { display: block; width: 100%; text-align: center; background: none; border: none; margin-top: 1rem; font-family: 'Work Sans', sans-serif; font-size: 0.82rem; color: var(--ink-soft); text-decoration: underline; cursor: pointer; }
+
         .wp-about-top { display: flex; gap: 1.3rem; align-items: flex-start; flex-wrap: wrap; margin-bottom: 1rem; }
         .wp-about-photo-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 1px solid var(--hairline); flex-shrink: 0; }
         .wp-about-bio { font-size: 0.98rem; line-height: 1.65; max-width: 60ch; margin: 0 0 1rem; }
@@ -881,6 +1030,23 @@ function Waypoint() {
               <span className="wp-lang-sep">/</span>
               <button className={"wp-lang-btn" + (lang === "pt" ? " wp-lang-btn-active" : "")} onClick={() => setLang("pt")}>PT</button>
             </span>
+            {firebaseReady && !authLoading && (
+              user ? (
+                <span className="wp-user-menu-wrap">
+                  <button className="wp-user-chip" onClick={() => setShowUserMenu((s) => !s)}>
+                    <UserIcon size={14} />
+                    <span className="wp-user-email">{user.email ? user.email.split("@")[0] : "Account"}</span>
+                  </button>
+                  {showUserMenu && (
+                    <div className="wp-user-dropdown">
+                      <button className="wp-user-dropdown-item" onClick={signOutUser}><LogOutIcon size={14} /> {T.signOut}</button>
+                    </div>
+                  )}
+                </span>
+              ) : (
+                <button className="wp-signin-btn" onClick={() => openAuthModal("signin")}>{T.signIn}</button>
+              )
+            )}
           </div>
         </nav>
 
@@ -956,7 +1122,7 @@ function Waypoint() {
               homeSearchResults.map((cty) => (
                 <button key={cty.id} className="wp-country-row" style={{ "--row-color": cty.continentColor }} onClick={() => goToDetailFromSearch(cty)}>
                   <div>
-                    <div className="wp-country-name"><span>{cty.flag}</span>{cty.name}</div>
+                    <div className="wp-country-name"><span>{cty.flag}</span>{cty.name}<StatusDot status={countryStatuses[cty.id]} /></div>
                     <div className="wp-country-capital">{cty.continentName} · {T.capital}: {cty.capital}</div>
                   </div>
                   <ChevronRight size={18} style={{ color: "#8a8272", flexShrink: 0 }} />
@@ -1079,7 +1245,7 @@ function Waypoint() {
               continentSearchResults.map((cty) => (
                 <button key={cty.id} className="wp-country-row" style={{ "--row-color": continent.color }} onClick={() => goToDetail(cty)}>
                   <div>
-                    <div className="wp-country-name"><span>{cty.flag}</span>{cty.name}</div>
+                    <div className="wp-country-name"><span>{cty.flag}</span>{cty.name}<StatusDot status={countryStatuses[cty.id]} /></div>
                     <div className="wp-country-capital">{T.capital}: {cty.capital}</div>
                   </div>
                   <ChevronRight size={18} style={{ color: "#8a8272", flexShrink: 0 }} />
@@ -1100,6 +1266,22 @@ function Waypoint() {
               {country.highlights && (
                 <div className="wp-chip-row">
                   {country.highlights.map((h, i) => <span className="wp-chip" key={i}>{h}</span>)}
+                </div>
+              )}
+              {firebaseReady && !authLoading && (
+                <div className="wp-status-row" title={!user ? T.signInToTrackHint : ""}>
+                  <button
+                    className={"wp-status-btn wp-status-visited" + (countryStatuses[country.id] === "visited" ? " wp-status-active" : "")}
+                    onClick={() => setCountryStatus(country.id, "visited")}
+                  >
+                    <CheckCircle size={15} /> {T.markVisited}
+                  </button>
+                  <button
+                    className={"wp-status-btn wp-status-want" + (countryStatuses[country.id] === "want" ? " wp-status-active" : "")}
+                    onClick={() => setCountryStatus(country.id, "want")}
+                  >
+                    <StarIcon size={14} /> {T.markWantToVisit}
+                  </button>
                 </div>
               )}
             </div>
@@ -1296,6 +1478,47 @@ function Waypoint() {
             <span>{T.footerBuiltFor}</span>
           </div>
         </footer>
+
+        {showAuthModal && (
+          <div className="wp-modal-overlay" onClick={closeAuthModal}>
+            <div className="wp-auth-modal" onClick={(e) => e.stopPropagation()}>
+              <button className="wp-modal-close" onClick={closeAuthModal} aria-label="Close"><X size={16} /></button>
+              <h2 className="wp-auth-title">{authMode === "signup" ? T.authModalTitleUp : T.authModalTitleIn}</h2>
+              <p className="wp-auth-subtitle">{T.authModalSubtitle}</p>
+
+              <button className="wp-google-btn" onClick={signInWithGoogle} disabled={authBusy}>
+                <GoogleG size={16} /> {T.continueWithGoogle}
+              </button>
+
+              <div className="wp-auth-divider"><span>{T.orDivider}</span></div>
+
+              <input
+                type="email"
+                className="wp-auth-input"
+                placeholder={T.emailLabel}
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+              />
+              <input
+                type="password"
+                className="wp-auth-input"
+                placeholder={T.passwordLabel}
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") submitAuthForm(); }}
+              />
+              {authError && <p className="wp-auth-error">{authError}</p>}
+
+              <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ width: "100%", justifyContent: "center", marginTop: "0.4rem" }} onClick={submitAuthForm} disabled={authBusy}>
+                {authMode === "signup" ? T.authSubmitSignUp : T.authSubmitSignIn}
+              </button>
+
+              <button className="wp-auth-switch" onClick={() => { setAuthMode(authMode === "signup" ? "signin" : "signup"); setAuthError(""); }}>
+                {authMode === "signup" ? T.authSwitchToSignIn : T.authSwitchToSignUp}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
