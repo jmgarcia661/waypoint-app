@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/cabo-verde.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need a visa for Cabo Verde?","acceptedAnswer":{"@type":"Answer","text":"Yes, an e-visa is required for most nationalities, applied for online in advance."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Sal (SID), the main international gateway with the best direct connections from Europe."}},
+{"@type":"Question","name":"Do I need to build in buffer days?","acceptedAnswer":{"@type":"Answer","text":"Yes, genuinely important — inter-island ferries are weather-dependent and can be delayed or cancelled, especially between São Vicente and Santo Antão."}},
+{"@type":"Question","name":"Which island should I prioritize if short on time?","acceptedAnswer":{"@type":"Answer","text":"Sal for beaches and kitesurfing, or Santo Antão for hiking — they offer very different experiences, so pick based on your priorities rather than trying to rush both."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">10% in restaurants is appreciated but not obligatory</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Generally safe and relaxed; inter-island ferries can be affected by weather, so build in buffer days</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">Inter-island flights or ferries are needed to move between islands; each island is small enough to explore by car</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Sal&#x27;s Amílcar Cabral International Airport (SID) is the main international gateway, with the best direct flight connections from Europe</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">9 days</span>
   </div>
+  <p class="wp-days-reason">9 days covers Sal, Santo Antão, and Fogo/Santiago — three genuinely different islands. 5–6 works for just two islands; 12+ lets you add São Vicente properly or slow the ferry-dependent legs down.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–3</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Sal</div>
         <div class="wp-day-desc">Beach time at Santa Maria, plus the Buracona blue eye and Pedra de Lume.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> A boat trip to Buracona costs about €20–30; most beach time itself is free.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try cachupa at a local restaurant in Santa Maria — Cabo Verde&#x27;s essential dish, worth having at least once properly.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Santo Antão</div>
         <div class="wp-day-desc">Ferry via São Vicente to hike the island&#x27;s green ribeiras and coastal trails.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1h flight to São Vicente, then a short ferry crossing</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> A guided hike through the ribeiras costs about €25–40 for a half-day.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try fresh, simple grilled fish at a small village restaurant along the coastal trail.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Mindelo</div>
         <div class="wp-day-desc">An evening in São Vicente&#x27;s lively port town before flying on.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> An evening out in Mindelo&#x27;s live music scene costs little beyond drinks.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Mindelo is known for its morna music scene — pair a live show with fresh seafood at a harborside spot.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Fogo &amp; Santiago</div>
         <div class="wp-day-desc">Hike the volcano, then visit Cidade Velha near Praia before departure.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1h flight from São Vicente</span><span class="wp-day-tag wp-day-tag-book">Book ahead</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> The Fogo volcano hike with a mandatory local guide costs about €25–35 per person.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try wine grown on Fogo&#x27;s volcanic slopes — a genuine curiosity worth tasting at the source.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a visa for Cabo Verde?</div>
+      <div class="wp-faq-a">Yes, an e-visa is required for most nationalities, applied for online in advance.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Sal (SID), the main international gateway with the best direct connections from Europe.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need to build in buffer days?</div>
+      <div class="wp-faq-a">Yes, genuinely important — inter-island ferries are weather-dependent and can be delayed or cancelled, especially between São Vicente and Santo Antão.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which island should I prioritize if short on time?</div>
+      <div class="wp-faq-a">Sal for beaches and kitesurfing, or Santo Antão for hiking — they offer very different experiences, so pick based on your priorities rather than trying to rush both.</div>
     </div></div>
 
   
