@@ -137,6 +137,7 @@ const UI_STRINGS = {
     searchHome: "Search for a country...", searchContinent: "Search countries in this continent...",
     noResultsFor: "No countries found for", inContinent: "in",
     whereToGoNow: "Where to go now", whereToGoNowSubtitle: "A few ideas worth booking this month, updated every month.",
+    monthlyEyebrow: "Updated monthly",
     quizTitle: "This month's Passport Quiz", quizSubtitle: "8 questions. How many countries can you get right?",
     quizStart: "Start quiz", quizQuestionLabel: "Question", quizOf: "of",
     quizPromptTagline: "Which country is this?", quizPromptHighlight: "Which country is famous for this?",
@@ -166,6 +167,7 @@ const UI_STRINGS = {
     searchHome: "Procurar um país...", searchContinent: "Procurar países neste continente...",
     noResultsFor: "Nenhum país encontrado para", inContinent: "em",
     whereToGoNow: "Onde ir agora", whereToGoNowSubtitle: "Algumas ideias que valem a pena reservar este mês, atualizadas todos os meses.",
+    monthlyEyebrow: "Atualizado mensalmente",
     quizTitle: "O Quiz do Passaporte deste mês", quizSubtitle: "8 perguntas. Quantos países consegues acertar?",
     quizStart: "Começar o quiz", quizQuestionLabel: "Pergunta", quizOf: "de",
     quizPromptTagline: "Que país é este?", quizPromptHighlight: "Que país é famoso por isto?",
@@ -700,6 +702,10 @@ function Waypoint() {
         .wp-quiz-rank { font-size: 1rem; color: var(--ink-soft); margin-bottom: 1.2rem; }
         .wp-quiz-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
 
+        .wp-monthly-wrap { background: #FBF6EA; border: 1px solid var(--hairline); border-radius: 4px; padding: 1.6rem 1.5rem 1.8rem; margin-bottom: 1.8rem; }
+        .wp-monthly-eyebrow { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--navy); background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.32rem 0.75rem; margin-bottom: 1.2rem; }
+        .wp-now-section + .wp-quiz-section { border-top: 1px solid var(--hairline); padding-top: 1.6rem; margin-top: 0.4rem; }
+
         .wp-now-section { margin-bottom: 1.8rem; }
         .wp-now-subtitle { font-size: 0.86rem; color: var(--ink-soft); margin: 0 0 1rem; }
         .wp-now-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.9rem; }
@@ -869,86 +875,6 @@ function Waypoint() {
           </div>
         )}
 
-        {view === "continents" && nowPicks.length > 0 && (
-          <div className="wp-now-section">
-            <h2 className="wp-section-title" style={{ marginBottom: "0.2rem" }}>{T.whereToGoNow}</h2>
-            <p className="wp-now-subtitle">{T.whereToGoNowSubtitle}</p>
-            <div className="wp-now-grid">
-              {nowPicks.map((cty) => (
-                <button key={cty.id} className="wp-now-card" style={{ "--now-color": cty.continentColor }} onClick={() => goToDetailFromSearch(cty)}>
-                  <div className="wp-now-flag">{cty.flag}</div>
-                  <div className="wp-now-name">{cty.name}</div>
-                  <div className="wp-now-reason">{cty.reason}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {view === "continents" && quizQuestions.length > 0 && (
-          <div className="wp-quiz-section">
-            {!quizStarted && (
-              <div className="wp-quiz-card wp-quiz-intro">
-                <Award size={26} style={{ color: "var(--navy)" }} />
-                <h2 className="wp-section-title" style={{ margin: "0.6rem 0 0.2rem" }}>{T.quizTitle}</h2>
-                <p className="wp-now-subtitle" style={{ marginBottom: "1rem" }}>{T.quizSubtitle}</p>
-                <button className="wp-quiz-btn wp-quiz-btn-primary" onClick={startQuiz}>{T.quizStart}</button>
-              </div>
-            )}
-
-            {quizStarted && !quizFinished && quizQuestions[quizIndex] && (
-              <div className="wp-quiz-card">
-                <div className="wp-quiz-progress">{T.quizQuestionLabel} {quizIndex + 1} {T.quizOf} {quizQuestions.length}</div>
-                <div className="wp-quiz-clue-wrap">
-                  {quizQuestions[quizIndex].clue.type === "flag" ? (
-                    <div className="wp-quiz-flag-big">{quizQuestions[quizIndex].country.flag}</div>
-                  ) : quizQuestions[quizIndex].clue.type === "food" ? (
-                    <div className="wp-quiz-clue-food">{quizQuestions[quizIndex].clue.text}</div>
-                  ) : (
-                    <div className="wp-quiz-clue-text">{quizQuestions[quizIndex].clue.text}</div>
-                  )}
-                </div>
-                <p className="wp-quiz-prompt">{quizPromptFor(quizQuestions[quizIndex].clue.type)}</p>
-                <div className="wp-quiz-options">
-                  {quizQuestions[quizIndex].options.map((opt) => {
-                    const isCorrect = opt.id === quizQuestions[quizIndex].correctId;
-                    const isSelected = opt.id === quizSelected;
-                    let cls = "wp-quiz-option";
-                    if (quizSelected) {
-                      if (isCorrect) cls += " wp-quiz-option-correct";
-                      else if (isSelected) cls += " wp-quiz-option-wrong";
-                    }
-                    return (
-                      <button key={opt.id} className={cls} onClick={() => answerQuiz(opt.id)} disabled={!!quizSelected}>
-                        <span>{opt.flag}</span> {opt.name}
-                      </button>
-                    );
-                  })}
-                </div>
-                {quizSelected && (
-                  <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ marginTop: "1rem" }} onClick={nextQuizQuestion}>
-                    {quizIndex + 1 >= quizQuestions.length ? T.quizSeeResults : T.quizNext}
-                  </button>
-                )}
-              </div>
-            )}
-
-            {quizFinished && (
-              <div className="wp-quiz-card wp-quiz-intro">
-                <Award size={30} style={{ color: "var(--navy)" }} />
-                <div className="wp-quiz-score">{quizScore}/{quizQuestions.length}</div>
-                <div className="wp-quiz-rank">{quizRank(quizScore)}</div>
-                <div className="wp-quiz-actions">
-                  <button className="wp-quiz-btn" onClick={copyQuizResult}>
-                    <Copy size={14} /> {quizCopied ? T.quizCopied : T.quizCopyResult}
-                  </button>
-                  <button className="wp-quiz-btn wp-quiz-btn-primary" onClick={startQuiz}>{T.quizPlayAgain}</button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {view === "continents" && (
           <div className="wp-search-wrap">
             <div className="wp-search-box">
@@ -995,6 +921,92 @@ function Waypoint() {
                   <ChevronRight size={18} style={{ color: "#8a8272", flexShrink: 0 }} />
                 </button>
               ))
+            )}
+          </div>
+        )}
+
+        {view === "continents" && (nowPicks.length > 0 || quizQuestions.length > 0) && (
+          <div className="wp-monthly-wrap">
+            <div className="wp-monthly-eyebrow"><CalendarClock size={13} /> {T.monthlyEyebrow}</div>
+
+            {nowPicks.length > 0 && (
+              <div className="wp-now-section">
+                <h2 className="wp-section-title" style={{ marginBottom: "0.2rem" }}>{T.whereToGoNow}</h2>
+                <p className="wp-now-subtitle">{T.whereToGoNowSubtitle}</p>
+                <div className="wp-now-grid">
+                  {nowPicks.map((cty) => (
+                    <button key={cty.id} className="wp-now-card" style={{ "--now-color": cty.continentColor }} onClick={() => goToDetailFromSearch(cty)}>
+                      <div className="wp-now-flag">{cty.flag}</div>
+                      <div className="wp-now-name">{cty.name}</div>
+                      <div className="wp-now-reason">{cty.reason}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {quizQuestions.length > 0 && (
+              <div className="wp-quiz-section">
+                {!quizStarted && (
+                  <div className="wp-quiz-card wp-quiz-intro">
+                    <Award size={26} style={{ color: "var(--navy)" }} />
+                    <h2 className="wp-section-title" style={{ margin: "0.6rem 0 0.2rem" }}>{T.quizTitle}</h2>
+                    <p className="wp-now-subtitle" style={{ marginBottom: "1rem" }}>{T.quizSubtitle}</p>
+                    <button className="wp-quiz-btn wp-quiz-btn-primary" onClick={startQuiz}>{T.quizStart}</button>
+                  </div>
+                )}
+
+                {quizStarted && !quizFinished && quizQuestions[quizIndex] && (
+                  <div className="wp-quiz-card">
+                    <div className="wp-quiz-progress">{T.quizQuestionLabel} {quizIndex + 1} {T.quizOf} {quizQuestions.length}</div>
+                    <div className="wp-quiz-clue-wrap">
+                      {quizQuestions[quizIndex].clue.type === "flag" ? (
+                        <div className="wp-quiz-flag-big">{quizQuestions[quizIndex].country.flag}</div>
+                      ) : quizQuestions[quizIndex].clue.type === "food" ? (
+                        <div className="wp-quiz-clue-food">{quizQuestions[quizIndex].clue.text}</div>
+                      ) : (
+                        <div className="wp-quiz-clue-text">{quizQuestions[quizIndex].clue.text}</div>
+                      )}
+                    </div>
+                    <p className="wp-quiz-prompt">{quizPromptFor(quizQuestions[quizIndex].clue.type)}</p>
+                    <div className="wp-quiz-options">
+                      {quizQuestions[quizIndex].options.map((opt) => {
+                        const isCorrect = opt.id === quizQuestions[quizIndex].correctId;
+                        const isSelected = opt.id === quizSelected;
+                        let cls = "wp-quiz-option";
+                        if (quizSelected) {
+                          if (isCorrect) cls += " wp-quiz-option-correct";
+                          else if (isSelected) cls += " wp-quiz-option-wrong";
+                        }
+                        return (
+                          <button key={opt.id} className={cls} onClick={() => answerQuiz(opt.id)} disabled={!!quizSelected}>
+                            <span>{opt.flag}</span> {opt.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {quizSelected && (
+                      <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ marginTop: "1rem" }} onClick={nextQuizQuestion}>
+                        {quizIndex + 1 >= quizQuestions.length ? T.quizSeeResults : T.quizNext}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {quizFinished && (
+                  <div className="wp-quiz-card wp-quiz-intro">
+                    <Award size={30} style={{ color: "var(--navy)" }} />
+                    <div className="wp-quiz-score">{quizScore}/{quizQuestions.length}</div>
+                    <div className="wp-quiz-rank">{quizRank(quizScore)}</div>
+                    <div className="wp-quiz-actions">
+                      <button className="wp-quiz-btn" onClick={copyQuizResult}>
+                        <Copy size={14} /> {quizCopied ? T.quizCopied : T.quizCopyResult}
+                      </button>
+                      <button className="wp-quiz-btn wp-quiz-btn-primary" onClick={startQuiz}>{T.quizPlayAgain}</button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}
