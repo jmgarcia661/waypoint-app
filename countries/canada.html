@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/canada.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need an eTA for Canada?","acceptedAnswer":{"@type":"Answer","text":"Most visa-exempt visitors (EU, UK, Australia) need an eTA — a lightweight online authorization, not a full visa — before flying in. US citizens and permanent residents are exempt and just need a valid passport."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Vancouver (YVR) for this route; Toronto (YYZ) if you'd rather start in the east and travel it in reverse."}},
+{"@type":"Question","name":"Do I need a car for this itinerary?","acceptedAnswer":{"@type":"Answer","text":"Yes for the Banff/Rockies leg specifically; the city stops (Vancouver, Toronto, Québec City) are each walkable or well served by transit on their own."}},
+{"@type":"Question","name":"How far apart are these stops really?","acceptedAnswer":{"@type":"Answer","text":"Very — this is a country where domestic flights between regions are normal, not optional. Budget for them rather than assuming a single road trip covers everything."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">15–18% in restaurants is standard and expected</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Very safe; normal precautions in wilderness areas around wildlife</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">Distances are vast; flying or a long road trip both work depending on the route</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Vancouver International (YVR) is the natural start for this west-to-east route; Toronto Pearson (YYZ) works if you&#x27;d rather begin in the east and travel in reverse</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">10 days</span>
   </div>
+  <p class="wp-days-reason">10 days covers Vancouver, Banff, Toronto, and Québec City — a genuinely broad coast-to-coast sampler. 6–7 works for just the Rockies and one city; 14+ lets you slow the pace considerably given the distances.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–3</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Vancouver &amp; Whistler</div>
         <div class="wp-day-desc">Stanley Park and Granville Island, then a drive up the Sea-to-Sky Highway.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> Stanley Park is free to explore; the Sea-to-Sky Gondola near Squamish costs about CAD 65.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try fresh Pacific salmon, ideally at a casual spot on Granville Island&#x27;s public market.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Banff &amp; Lake Louise</div>
         <div class="wp-day-desc">Hiking and canoeing around the Rockies&#x27; best-known lakes.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1h flight from Vancouver to Calgary, then a drive</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Banff National Park entry costs about CAD 11/day per adult; canoe rental at Lake Louise runs about CAD 150/hour in peak season.</div><div class="wp-day-extra"><strong>Where to eat:</strong> A hearty bowl of Alberta beef chili after a day of hiking is the practical, satisfying choice here.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Toronto &amp; Niagara Falls</div>
         <div class="wp-day-desc">City time followed by a day trip to the falls.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~4h flight from Calgary</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> CN Tower admission costs about CAD 55; boat tours at Niagara Falls run about CAD 35.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try a peameal bacon sandwich at Toronto&#x27;s St. Lawrence Market, a genuine local classic.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Québec City</div>
         <div class="wp-day-desc">The old walled town, closing the trip on its oldest streets.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1h flight from Toronto</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Walking the old walled town is free; the Citadelle guided tour costs about CAD 20.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Poutine tastes noticeably more authentic here than almost anywhere else — worth trying at a proper Québécois casse-croûte.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need an eTA for Canada?</div>
+      <div class="wp-faq-a">Most visa-exempt visitors (EU, UK, Australia) need an eTA — a lightweight online authorization, not a full visa — before flying in. US citizens and permanent residents are exempt and just need a valid passport.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Vancouver (YVR) for this route; Toronto (YYZ) if you&#x27;d rather start in the east and travel it in reverse.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a car for this itinerary?</div>
+      <div class="wp-faq-a">Yes for the Banff/Rockies leg specifically; the city stops (Vancouver, Toronto, Québec City) are each walkable or well served by transit on their own.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">How far apart are these stops really?</div>
+      <div class="wp-faq-a">Very — this is a country where domestic flights between regions are normal, not optional. Budget for them rather than assuming a single road trip covers everything.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="usa.html"><span>🇺🇸</span><span>United States</span></a></div>
