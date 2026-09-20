@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/germany.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How long can I stay in Germany without a visa?","acceptedAnswer":{"@type":"Answer","text":"90 days within any 180-day period for US, UK, Canadian, and Australian passport holders — the standard Schengen rule. The EU's EES biometric border system is now active, so budget extra time at your first entry."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Berlin Brandenburg (BER) for this route; Munich (MUC) if you'd rather start in Bavaria and travel it in reverse."}},
+{"@type":"Question","name":"Do I need a car for this itinerary?","acceptedAnswer":{"@type":"Answer","text":"Helpful for the Black Forest and Romantic Road legs, but Berlin and Cologne are well covered by train — renting only for the middle portion is a common approach."}},
+{"@type":"Question","name":"Do I need to book Neuschwanstein Castle in advance?","acceptedAnswer":{"@type":"Answer","text":"Yes, tickets are timed-entry and sell out days ahead in peak season — book online before you arrive."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">5–10% in restaurants, rounded up and handed directly to the server</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Very safe; efficient and orderly public transport</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">High-speed ICE trains connect cities quickly; the autobahn is famous for good reason</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Berlin Brandenburg Airport (BER) is the natural start for this route; Munich Airport (MUC) works well if you&#x27;d rather begin in Bavaria and travel it in reverse</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">11 days</span>
   </div>
+  <p class="wp-days-reason">11 days covers Berlin, Cologne, the Black Forest, the Romantic Road, and Bavaria without rushing. 7–8 works if you drop one region; 14+ lets you slow down or add Hamburg.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–3</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Berlin</div>
         <div class="wp-day-desc">The Brandenburg Gate, Berlin Wall Memorial, and the city&#x27;s museum island.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> The Berlin Wall Memorial is free; Museum Island&#x27;s combined ticket costs about €19.</div><div class="wp-day-extra"><strong>Where to eat:</strong> A currywurst from a street stand is the essential quick Berlin meal — cheap, fast, everywhere.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Cologne</div>
         <div class="wp-day-desc">The cathedral and a walk along the Rhine.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~4.5h by train from Berlin</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Cologne Cathedral is free to enter, though climbing the tower costs about €6.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try a Kölsch beer, served only in small 200ml glasses at Cologne&#x27;s traditional breweries — it&#x27;s a whole ritual.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Black Forest</div>
         <div class="wp-day-desc">Hiking trails and spa towns in southwest Germany&#x27;s dense forest region.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~3.5h drive from Cologne</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Most hiking trails are free; a spa day in Baden-Baden runs €25–40 for basic thermal bath entry.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Real Black Forest cake tastes noticeably different here than the export version — worth trying at a local konditorei.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,6 +309,7 @@
         <div class="wp-day-title">Rothenburg ob der Tauber</div>
         <div class="wp-day-desc">A stop along the Romantic Road&#x27;s best-preserved medieval town.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~2h drive from the Black Forest</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Walking the town walls is free; the Night Watchman&#x27;s tour costs about €9.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try Schneeballen, a local pastry specialty sold throughout the old town — best fresh rather than the decorated tourist versions.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -301,7 +318,26 @@
         <div class="wp-day-title">Neuschwanstein &amp; Bavaria</div>
         <div class="wp-day-desc">The fairy-tale castle and Munich before departure.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~2.5h drive from Rothenburg</span><span class="wp-day-tag wp-day-tag-book">Book ahead</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Castle entry costs about €21 and must be booked ahead.</div><div class="wp-day-extra"><strong>Where to eat:</strong> A proper Bavarian beer hall dinner in Munich — pretzel, schnitzel, and a stein — is the fitting way to close the trip.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">How long can I stay in Germany without a visa?</div>
+      <div class="wp-faq-a">90 days within any 180-day period for US, UK, Canadian, and Australian passport holders — the standard Schengen rule. The EU&#x27;s EES biometric border system is now active, so budget extra time at your first entry.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Berlin Brandenburg (BER) for this route; Munich (MUC) if you&#x27;d rather start in Bavaria and travel it in reverse.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a car for this itinerary?</div>
+      <div class="wp-faq-a">Helpful for the Black Forest and Romantic Road legs, but Berlin and Cologne are well covered by train — renting only for the middle portion is a common approach.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need to book Neuschwanstein Castle in advance?</div>
+      <div class="wp-faq-a">Yes, tickets are timed-entry and sell out days ahead in peak season — book online before you arrive.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="czech-republic.html"><span>🇨🇿</span><span>Czech Republic</span></a></div>
