@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/singapore.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need a visa for Singapore?","acceptedAnswer":{"@type":"Answer","text":"Not for most Western passport holders for short tourist stays."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Singapore Changi (SIN), consistently rated among the world's best airports and a short ride from the city."}},
+{"@type":"Question","name":"Is chewing gum really banned in Singapore?","acceptedAnswer":{"@type":"Answer","text":"Importing and selling gum is restricted, yes, though bringing a small personal amount for your own use is generally tolerated — it's the sale and littering that's actually targeted."}},
+{"@type":"Question","name":"Is Singapore expensive to visit?","acceptedAnswer":{"@type":"Answer","text":"Hotels and alcohol run high, but hawker center meals are genuinely affordable — a full meal for a few dollars is completely normal."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">Not customary and service charge is usually already included</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">One of the safest cities in the world, day or night</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">An excellent, easy-to-use metro (MRT) covers nearly the whole city</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Singapore Changi Airport (SIN), consistently rated among the world&#x27;s best airports and a short MRT or taxi ride from the city center</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">5 days</span>
   </div>
+  <p class="wp-days-reason">5 days covers Marina Bay, Chinatown/Little India, the zoo, and Sentosa at a relaxed pace, since Singapore is compact and efficient to move around. 3 works for just the city highlights; 6–7 lets you add a day trip to Malaysia&#x27;s Johor Bahru.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Day 1</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Marina Bay</div>
         <div class="wp-day-desc">Gardens by the Bay, the Supertree light show, and the Marina Bay Sands SkyPark.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> Gardens by the Bay&#x27;s Cloud Forest and Flower Dome combined ticket costs about SGD 32; the Supertree light show itself is free.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try chilli crab at a hawker center rather than a tourist restaurant — same quality, a fraction of the price.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Chinatown &amp; Little India</div>
         <div class="wp-day-desc">Temples, shophouses, and hawker food across two of the city&#x27;s most distinct districts.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">Short metro ride across the city</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Most temples are free to enter; a hawker meal in either district costs SGD 4–8.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Hainanese chicken rice from a well-reviewed hawker stall is Singapore&#x27;s essential dish, best eaten exactly where it&#x27;s cheapest.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Singapore Zoo &amp; Night Safari</div>
         <div class="wp-day-desc">A full day and evening among naturalistic enclosures and nocturnal wildlife.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~30min drive from the city center</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Combined zoo and Night Safari tickets cost about SGD 88.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Grab dinner before the Night Safari — food options inside are limited once it gets dark.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Sentosa Island</div>
         <div class="wp-day-desc">Beaches and theme parks to close the trip on a lighter note.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~20min by cable car or monorail</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Universal Studios Singapore costs about SGD 82; the beaches themselves are free.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try kaya toast with soft-boiled eggs at a Sentosa cafe for a lighter, local-style breakfast before a beach day.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a visa for Singapore?</div>
+      <div class="wp-faq-a">Not for most Western passport holders for short tourist stays.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Singapore Changi (SIN), consistently rated among the world&#x27;s best airports and a short ride from the city.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Is chewing gum really banned in Singapore?</div>
+      <div class="wp-faq-a">Importing and selling gum is restricted, yes, though bringing a small personal amount for your own use is generally tolerated — it&#x27;s the sale and littering that&#x27;s actually targeted.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Is Singapore expensive to visit?</div>
+      <div class="wp-faq-a">Hotels and alcohol run high, but hawker center meals are genuinely affordable — a full meal for a few dollars is completely normal.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="malaysia.html"><span>🇲🇾</span><span>Malaysia</span></a></div>
