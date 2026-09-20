@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/panama.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need a visa for Panama?","acceptedAnswer":{"@type":"Answer","text":"Not for most Western passport holders (EU, UK, US, Canada) for short stays, typically up to 90–180 days depending on nationality."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Tocumen International (PTY) in Panama City, the country's main gateway."}},
+{"@type":"Question","name":"Can I really watch ships transit the Panama Canal?","acceptedAnswer":{"@type":"Answer","text":"Yes — the Miraflores Locks visitor center has viewing decks timed around actual ship transits, worth checking the schedule before you go."}},
+{"@type":"Question","name":"Bocas del Toro or San Blas — which should I choose?","acceptedAnswer":{"@type":"Answer","text":"Bocas is easier to reach and has more infrastructure and nightlife. San Blas is more remote, run by the indigenous Guna people, and offers a quieter, more traditional island experience."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">10% is customary in restaurants</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Very safe in Panama City and main tourist areas</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">Domestic flights connect Bocas del Toro and remote regions quickly</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Tocumen International Airport (PTY) in Panama City is the country&#x27;s main gateway</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">9 days</span>
   </div>
+  <p class="wp-days-reason">9 days covers Panama City, Boquete, and a choice between Bocas del Toro or San Blas without rushing. 5–6 works for just Panama City and one region; 11+ lets you do both island regions instead of choosing.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–3</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Panama City</div>
         <div class="wp-day-desc">The Panama Canal locks, Casco Viejo&#x27;s old town, and an Embera village visit.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> The Miraflores Locks visitor center costs about $20; an Embera village visit typically runs $60–90 including transport and lunch.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try a sancocho, Panama&#x27;s national stew, at a traditional fonda in Casco Viejo.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Boquete</div>
         <div class="wp-day-desc">Coffee farm tours and hiking in the cool highland cloud forest.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~45min flight from Panama City</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> A coffee farm tour, including tastings, costs about $30–40, more for geisha-specific tours.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try Panamanian coffee at its source — a proper geisha cup can be a genuine splurge worth having once.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,7 +300,26 @@
         <div class="wp-day-title">Bocas del Toro or San Blas</div>
         <div class="wp-day-desc">Either Caribbean island time in Bocas or a more remote trip to the San Blas Islands.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~30min flight from Boquete to Bocas del Toro</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> A multi-day San Blas island-hopping boat trip runs $100–180/day including basic accommodation and meals; Bocas day tours cost $25–40.</div><div class="wp-day-extra"><strong>Where to eat:</strong> In San Blas, meals are typically included and prepared by local Guna families — fresh fish and coconut rice are common.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a visa for Panama?</div>
+      <div class="wp-faq-a">Not for most Western passport holders (EU, UK, US, Canada) for short stays, typically up to 90–180 days depending on nationality.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Tocumen International (PTY) in Panama City, the country&#x27;s main gateway.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Can I really watch ships transit the Panama Canal?</div>
+      <div class="wp-faq-a">Yes — the Miraflores Locks visitor center has viewing decks timed around actual ship transits, worth checking the schedule before you go.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Bocas del Toro or San Blas — which should I choose?</div>
+      <div class="wp-faq-a">Bocas is easier to reach and has more infrastructure and nightlife. San Blas is more remote, run by the indigenous Guna people, and offers a quieter, more traditional island experience.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="costa-rica.html"><span>🇨🇷</span><span>Costa Rica</span></a></div>

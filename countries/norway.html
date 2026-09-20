@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/norway.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How long can I stay in Norway without a visa?","acceptedAnswer":{"@type":"Answer","text":"90 days within any 180-day period for US, UK, Canadian, and Australian passport holders — Norway follows the Schengen rule despite not being an EU member. EES biometric registration is now active at the border."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Oslo Gardermoen (OSL), the country's main international gateway."}},
+{"@type":"Question","name":"Is the Norway in a Nutshell route worth doing?","acceptedAnswer":{"@type":"Answer","text":"Yes — the combination of the Flåm Railway and a fjord cruise packs some of Norway's best scenery into a single, well-organized day."}},
+{"@type":"Question","name":"Is Norway expensive to visit?","acceptedAnswer":{"@type":"Answer","text":"Yes, consistently one of the priciest countries in Europe — self-catering and buying alcohol from state-run shops (Vinmonopolet) rather than restaurants helps manage costs."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">Not obligatory; rounding up is appreciated</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Extremely safe; weather is the main practical risk on hikes</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">Ferries, trains, and scenic drives connect the fjord regions; distances take longer than they look on a map</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Oslo Gardermoen Airport (OSL) is the main gateway for this route</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">9 days</span>
   </div>
+  <p class="wp-days-reason">9 days covers Oslo, Bergen, the Flåm/fjords region, and Stavanger without rushing. 5–6 works if you drop one region; 12+ lets you add the Lofoten Islands properly.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–2</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Oslo</div>
         <div class="wp-day-desc">Vigeland Park, the Viking Ship Museum, and the harborside Opera House.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> Vigeland Park is free; the Viking Ship Museum costs about NOK 150.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try fresh shrimp from a stall at Oslo&#x27;s harbor, eaten straight from the bag, a genuine local tradition.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Bergen</div>
         <div class="wp-day-desc">The Bryggen wharf, Mount Fløyen, and the city&#x27;s fish market.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~7h scenic train from Oslo</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> The Fløibanen funicular round trip costs about NOK 180.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Fresh fish soup at Bergen&#x27;s historic fish market is a reliable, warming choice.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Flåm &amp; the fjords</div>
         <div class="wp-day-desc">The Flåm Railway and a cruise through Geirangerfjord or Nærøyfjord.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~3h by train and ferry from Bergen</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> The Flåm Railway costs about NOK 560 one-way; a fjord cruise adds NOK 700–900.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Pack your own lunch for the train — no dining car, and the scenery is the real point.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Stavanger &amp; Preikestolen</div>
         <div class="wp-day-desc">The Pulpit Rock hike, with time to explore Stavanger&#x27;s old town.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~4h by ferry and bus from Flåm</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> The Preikestolen hike itself is free; parking at the trailhead costs about NOK 250/day.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Refuel after the hike with a hearty meal in Stavanger&#x27;s old town — you&#x27;ll have earned it.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">How long can I stay in Norway without a visa?</div>
+      <div class="wp-faq-a">90 days within any 180-day period for US, UK, Canadian, and Australian passport holders — Norway follows the Schengen rule despite not being an EU member. EES biometric registration is now active at the border.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Oslo Gardermoen (OSL), the country&#x27;s main international gateway.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Is the Norway in a Nutshell route worth doing?</div>
+      <div class="wp-faq-a">Yes — the combination of the Flåm Railway and a fjord cruise packs some of Norway&#x27;s best scenery into a single, well-organized day.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Is Norway expensive to visit?</div>
+      <div class="wp-faq-a">Yes, consistently one of the priciest countries in Europe — self-catering and buying alcohol from state-run shops (Vinmonopolet) rather than restaurants helps manage costs.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="denmark.html"><span>🇩🇰</span><span>Denmark</span></a></div>
