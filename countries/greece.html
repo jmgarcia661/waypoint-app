@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/greece.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How long can I stay in Greece without a visa?","acceptedAnswer":{"@type":"Answer","text":"90 days within any 180-day period for US, UK, Canadian, and Australian passport holders — the standard Schengen rule. The EU's EES biometric border system is now active, so budget extra time at your first entry; ETIAS hasn't launched yet and may slip to 2027."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Athens International (ATH) for this itinerary. Santorini and Mykonos both have their own airports with direct seasonal flights from Europe in summer, if you want to skip Athens entirely."}},
+{"@type":"Question","name":"Do I need to book island ferries in advance?","acceptedAnswer":{"@type":"Answer","text":"Yes, especially in July and August, when popular routes between Athens, Santorini, and Mykonos sell out. Book at least a few weeks ahead in peak season."}},
+{"@type":"Question","name":"Is Greece expensive to visit?","acceptedAnswer":{"@type":"Answer","text":"Athens and the mainland are good value; the popular islands, especially Santorini and Mykonos in peak season, can rival Western Europe's pricier destinations for accommodation."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">Rounding up or roughly 10% is appreciated but not obligatory</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Very safe; normal caution on ferries and boat trips</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">Ferries connect the islands; domestic flights save time on longer hops</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Athens International Airport (ATH) is the main gateway; Santorini (JTR) and Mykonos (JMK) also have direct seasonal flights from several European cities in summer</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">9 days</span>
   </div>
+  <p class="wp-days-reason">9 days covers Athens plus two islands and a mainland detour at a relaxed pace. 6–7 works with one island only; 12+ lets you add a third island or slow the ferry-hopping down.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–2</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Athens</div>
         <div class="wp-day-desc">The Acropolis, the Ancient Agora, and the museum below the hill.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> The Acropolis combo ticket (covers multiple sites) costs €30.</div><div class="wp-day-extra"><strong>Where to eat:</strong> A souvlaki wrap from a no-frills stand in Monastiraki beats most sit-down tavernas nearby, for a fraction of the price.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Santorini</div>
         <div class="wp-day-desc">Fira and Oia, a boat trip to the volcano, and sunset watching.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~30min flight or 5h ferry from Athens</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> A sunset catamaran cruise runs €80–120; caldera-view accommodation carries a real premium.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try fava, Santorini&#x27;s own yellow split pea puree, at a local taverna in Oia.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Mykonos</div>
         <div class="wp-day-desc">Old town lanes and beach time before heading back to the mainland.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~3h ferry from Santorini</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Beach club sunbeds run €30–60/day in peak season; free public beaches are also plentiful.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Seek out kopanisti, a spicy whipped local cheese, as a starter.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Meteora or Delphi</div>
         <div class="wp-day-desc">A land-based detour on the way back to Athens for departure.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1h flight from Mykonos to Athens, then a drive</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Meteora&#x27;s monastery entry fees run around €3 each; a rental car for this leg costs roughly €35–50/day.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try local pites (savory pies) and mountain tea in the villages below Meteora&#x27;s rock towers.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">How long can I stay in Greece without a visa?</div>
+      <div class="wp-faq-a">90 days within any 180-day period for US, UK, Canadian, and Australian passport holders — the standard Schengen rule. The EU&#x27;s EES biometric border system is now active, so budget extra time at your first entry; ETIAS hasn&#x27;t launched yet and may slip to 2027.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Athens International (ATH) for this itinerary. Santorini and Mykonos both have their own airports with direct seasonal flights from Europe in summer, if you want to skip Athens entirely.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need to book island ferries in advance?</div>
+      <div class="wp-faq-a">Yes, especially in July and August, when popular routes between Athens, Santorini, and Mykonos sell out. Book at least a few weeks ahead in peak season.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Is Greece expensive to visit?</div>
+      <div class="wp-faq-a">Athens and the mainland are good value; the popular islands, especially Santorini and Mykonos in peak season, can rival Western Europe&#x27;s pricier destinations for accommodation.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="turkey.html"><span>🇹🇷</span><span>Turkey</span></a></div>
