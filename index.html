@@ -198,6 +198,7 @@ const UI_STRINGS = {
     myMap: "Map", mapTitle: "Your map", mapSubtitle: "Every country you've marked, all in one place.",
     mapLegendVisited: "Visited", mapLegendWant: "Want to visit", mapLegendNone: "Not marked",
     mapSignInPrompt: "Sign in to start marking countries on your map.",
+    mapVisitedListTitle: "Visited", mapWantListTitle: "Want to visit", mapListEmpty: "Nothing here yet.",
     articlesComingSoon: "Long-form guides, itineraries, and travel notes are on their way — check back soon.",
     productsComingSoon: "Downloadable guides, packing lists, and planning tools are on their way — check back soon.",
     newsletterIntro: "Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.",
@@ -242,6 +243,7 @@ const UI_STRINGS = {
     myMap: "Mapa", mapTitle: "O teu mapa", mapSubtitle: "Todos os países que marcaste, num só sítio.",
     mapLegendVisited: "Visitado", mapLegendWant: "Quero visitar", mapLegendNone: "Não marcado",
     mapSignInPrompt: "Entra para começares a marcar países no teu mapa.",
+    mapVisitedListTitle: "Visitados", mapWantListTitle: "Quero visitar", mapListEmpty: "Ainda nada aqui.",
     articlesComingSoon: "Guias mais longos, itinerários e notas de viagem estão a caminho — volta em breve.",
     productsComingSoon: "Guias para descarregar, listas de bagagem e ferramentas de planeamento estão a caminho — volta em breve.",
     newsletterIntro: "Recebe um novo destino no teu email todas as semanas — ideias de itinerários reais e notas de viagem, sem spam.",
@@ -745,6 +747,7 @@ function Waypoint() {
   const [countryId, setCountryId] = useState(null);
   const [lang, setLang] = useState("en");
   const [homeQuery, setHomeQuery] = useState("");
+  const [mapQuery, setMapQuery] = useState("");
   const [continentQuery, setContinentQuery] = useState("");
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizIndex, setQuizIndex] = useState(0);
@@ -875,6 +878,21 @@ function Waypoint() {
   const homeSearchResults = homeQuery.trim()
     ? allCountriesFlat.filter((cty) => normalize(cty.name).includes(normalize(homeQuery)) || normalize(cty.capital).includes(normalize(homeQuery)))
     : [];
+  const mapSearchResults = mapQuery.trim()
+    ? allCountriesFlat.filter((cty) => normalize(cty.name).includes(normalize(mapQuery)) || normalize(cty.capital).includes(normalize(mapQuery)))
+    : [];
+  const groupCountriesByContinent = (list) => {
+    const groups = {};
+    list.forEach((cty) => {
+      if (!groups[cty.continentName]) groups[cty.continentName] = [];
+      groups[cty.continentName].push(cty);
+    });
+    return groups;
+  };
+  const mapVisitedCountries = allCountriesFlat.filter((cty) => countryStatuses[cty.id] === "visited");
+  const mapWantCountries = allCountriesFlat.filter((cty) => countryStatuses[cty.id] === "want");
+  const mapVisitedByContinent = groupCountriesByContinent(mapVisitedCountries);
+  const mapWantByContinent = groupCountriesByContinent(mapWantCountries);
   const continentSearchResults = continent && continentQuery.trim()
     ? continent.countries.filter((cty) => normalize(cty.name).includes(normalize(continentQuery)) || normalize(cty.capital).includes(normalize(continentQuery)))
     : (continent ? continent.countries : []);
@@ -1153,6 +1171,22 @@ function Waypoint() {
         .wp-map-marker { stroke: var(--hairline); stroke-width: 1.5; }
         .wp-map-status-none:hover { fill: #F6F2E8; }
         .wp-map-bg-country { fill: #FFFFFF; stroke: var(--hairline); stroke-width: 1; pointer-events: none; }
+
+        .wp-map-search-results { background: #fff; border: 1px solid var(--hairline); border-top: none; border-radius: 0 0 10px 10px; margin-bottom: 1.4rem; overflow: hidden; }
+        .wp-map-search-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 0.8rem 1rem; border-top: 1px solid var(--hairline); }
+        .wp-map-search-row:first-child { border-top: none; }
+        .wp-map-search-row-info { cursor: pointer; flex: 1; min-width: 180px; }
+        .wp-map-search-row-info:hover .wp-country-name { text-decoration: underline; }
+
+        .wp-map-lists { display: grid; grid-template-columns: 1fr; gap: 1.6rem; margin-top: 1.6rem; }
+        @media (min-width: 700px) { .wp-map-lists { grid-template-columns: 1fr 1fr; } }
+        .wp-map-list-title { font-family: 'Fraunces', serif; font-size: 1.2rem; margin: 0 0 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+        .wp-map-list-count { font-family: 'Work Sans', sans-serif; font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); background: var(--parchment); border-radius: 999px; padding: 0.1rem 0.6rem; }
+        .wp-map-list-empty { color: var(--ink-soft); font-size: 0.9rem; }
+        .wp-map-list-group { margin-bottom: 1rem; }
+        .wp-map-list-continent { font-size: 0.75rem; font-weight: 600; text-transform: none; color: var(--ink-soft); margin-bottom: 0.3rem; }
+        .wp-map-list-row { display: flex; align-items: center; gap: 0.5rem; width: 100%; text-align: left; background: none; border: none; padding: 0.35rem 0; font-family: 'Work Sans', sans-serif; font-size: 0.92rem; color: var(--ink); cursor: pointer; }
+        .wp-map-list-row:hover { text-decoration: underline; }
 
         .wp-modal-overlay { position: fixed; inset: 0; background: rgba(20,32,53,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.2rem; }
         .wp-auth-modal { position: relative; background: #fff; border-radius: 14px; padding: 2rem 1.8rem; max-width: 380px; width: 100%; box-shadow: 0 20px 50px rgba(20,32,53,0.25); }
@@ -1634,6 +1668,56 @@ function Waypoint() {
               <span className="wp-map-legend-item"><span className="wp-status-dot wp-status-dot-none"></span>{T.mapLegendNone}</span>
             </div>
 
+            <div className="wp-search-wrap" style={{ marginBottom: mapQuery.trim() ? "0" : "1.4rem" }}>
+              <div className="wp-search-box">
+                <Search size={16} className="wp-search-icon" />
+                <input
+                  type="text"
+                  className="wp-search-input"
+                  placeholder={T.searchHome}
+                  value={mapQuery}
+                  onChange={(e) => setMapQuery(e.target.value)}
+                />
+                {mapQuery && (
+                  <button className="wp-search-clear" onClick={() => setMapQuery("")} aria-label="Clear search">
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+            {mapQuery.trim() && (
+              <div className="wp-map-search-results">
+                {mapSearchResults.length === 0 ? (
+                  <p className="wp-search-empty">{T.noResultsFor} "{mapQuery}"</p>
+                ) : (
+                  mapSearchResults.map((cty) => (
+                    <div key={cty.id} className="wp-map-search-row">
+                      <div className="wp-map-search-row-info" onClick={() => goToDetailFromSearch(cty)}>
+                        <div className="wp-country-name"><span>{cty.flag}</span>{cty.name}<StatusDot status={countryStatuses[cty.id]} /></div>
+                        <div className="wp-country-capital">{cty.continentName} · {T.capital}: {cty.capital}</div>
+                      </div>
+                      {firebaseReady && !authLoading && (
+                        <div className="wp-status-row" title={!user ? T.signInToTrackHint : ""}>
+                          <button
+                            className={"wp-status-btn wp-status-visited" + (countryStatuses[cty.id] === "visited" ? " wp-status-active" : "")}
+                            onClick={() => setCountryStatus(cty.id, "visited")}
+                          >
+                            <CheckCircle size={14} /> {T.markVisited}
+                          </button>
+                          <button
+                            className={"wp-status-btn wp-status-want" + (countryStatuses[cty.id] === "want" ? " wp-status-active" : "")}
+                            onClick={() => setCountryStatus(cty.id, "want")}
+                          >
+                            <StarIcon size={13} /> {T.markWantToVisit}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
             <div className="wp-map-frame">
               <svg viewBox="0 0 2000 1001" className="wp-world-map">
                 {Object.keys(WORLD_MAP_BG_PATHS).map((iso) => (
@@ -1662,6 +1746,43 @@ function Waypoint() {
                   </circle>
                 ))}
               </svg>
+            </div>
+
+            <div className="wp-map-lists">
+              <div className="wp-map-list-col">
+                <h3 className="wp-map-list-title">{T.mapVisitedListTitle} <span className="wp-map-list-count">{mapVisitedCountries.length}</span></h3>
+                {Object.keys(mapVisitedByContinent).length === 0 ? (
+                  <p className="wp-map-list-empty">{T.mapListEmpty}</p>
+                ) : (
+                  Object.keys(mapVisitedByContinent).sort().map((contName) => (
+                    <div key={contName} className="wp-map-list-group">
+                      <div className="wp-map-list-continent">{contName}</div>
+                      {mapVisitedByContinent[contName].map((cty) => (
+                        <button key={cty.id} className="wp-map-list-row" onClick={() => goToDetailFromSearch(cty)}>
+                          <span>{cty.flag}</span>{cty.name}
+                        </button>
+                      ))}
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="wp-map-list-col">
+                <h3 className="wp-map-list-title">{T.mapWantListTitle} <span className="wp-map-list-count">{mapWantCountries.length}</span></h3>
+                {Object.keys(mapWantByContinent).length === 0 ? (
+                  <p className="wp-map-list-empty">{T.mapListEmpty}</p>
+                ) : (
+                  Object.keys(mapWantByContinent).sort().map((contName) => (
+                    <div key={contName} className="wp-map-list-group">
+                      <div className="wp-map-list-continent">{contName}</div>
+                      {mapWantByContinent[contName].map((cty) => (
+                        <button key={cty.id} className="wp-map-list-row" onClick={() => goToDetailFromSearch(cty)}>
+                          <span>{cty.flag}</span>{cty.name}
+                        </button>
+                      ))}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         )}
