@@ -117,6 +117,10 @@ const ImageOff = (p) => <IconBase {...p}><path d="M3 3l18 18" /><path d="M21 15V
 const ShieldCheck = (p) => <IconBase {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></IconBase>;
 const Utensils = (p) => <IconBase {...p}><path d="M3 2v7a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V2" /><path d="M5 11v11" /><path d="M19 2v20" /><path d="M15 2v7a2 2 0 0 0 4 0V2" /></IconBase>;
 const MapPinIcon = (p) => <IconBase {...p}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></IconBase>;
+const Search = (p) => <IconBase {...p}><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></IconBase>;
+const X = (p) => <IconBase {...p}><path d="M18 6L6 18" /><path d="M6 6l12 12" /></IconBase>;
+const Award = (p) => <IconBase {...p}><circle cx="12" cy="8" r="6" /><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" /></IconBase>;
+const Copy = (p) => <IconBase {...p}><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></IconBase>;
 
 /* ---------- UI text translations (chrome only; country data is localized separately via .pt fields) ---------- */
 const UI_STRINGS = {
@@ -130,6 +134,18 @@ const UI_STRINGS = {
     gettingThere: "Getting there", cost: "Cost", eat: "Where to eat", faqTitle: "Frequently asked questions",
     population: "Population", language: "Language", currency: "Currency", bestTime: "Best time to visit",
     tastesOf: "Tastes of", pairsWith: "Pairs well with", bookAhead: "Book ahead",
+    searchHome: "Search for a country...", searchContinent: "Search countries in this continent...",
+    noResultsFor: "No countries found for", inContinent: "in",
+    whereToGoNow: "Where to go now", whereToGoNowSubtitle: "A few ideas worth booking this month, updated every month.",
+    quizTitle: "This month's Passport Quiz", quizSubtitle: "8 questions. How many countries can you get right?",
+    quizStart: "Start quiz", quizQuestionLabel: "Question", quizOf: "of",
+    quizPromptTagline: "Which country is this?", quizPromptHighlight: "Which country is famous for this?",
+    quizPromptFood: "Which country is this dish from?", quizPromptFlag: "Which country does this flag belong to?",
+    quizNext: "Next question", quizSeeResults: "See results",
+    quizYourScore: "Your score", quizPlayAgain: "Play again",
+    quizCopyResult: "Copy your result", quizCopied: "Copied to clipboard!",
+    quizShareText: "I scored SCORE/8 on Waypoint's Passport Quiz this month 🧳 Can you beat me?",
+    quizRank0: "Just got the passport", quizRank1: "Frequent flyer", quizRank2: "World wanderer", quizRank3: "Waypoint Master",
     articlesComingSoon: "Long-form guides, itineraries, and travel notes are on their way — check back soon.",
     productsComingSoon: "Downloadable guides, packing lists, and planning tools are on their way — check back soon.",
     newsletterIntro: "Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.",
@@ -147,6 +163,18 @@ const UI_STRINGS = {
     gettingThere: "Como chegar", cost: "Custo", eat: "Onde comer", faqTitle: "Perguntas frequentes",
     population: "População", language: "Língua", currency: "Moeda", bestTime: "Melhor época para visitar",
     tastesOf: "Sabores de", pairsWith: "Combina bem com", bookAhead: "Reservar com antecedência",
+    searchHome: "Procurar um país...", searchContinent: "Procurar países neste continente...",
+    noResultsFor: "Nenhum país encontrado para", inContinent: "em",
+    whereToGoNow: "Onde ir agora", whereToGoNowSubtitle: "Algumas ideias que valem a pena reservar este mês, atualizadas todos os meses.",
+    quizTitle: "O Quiz do Passaporte deste mês", quizSubtitle: "8 perguntas. Quantos países consegues acertar?",
+    quizStart: "Começar o quiz", quizQuestionLabel: "Pergunta", quizOf: "de",
+    quizPromptTagline: "Que país é este?", quizPromptHighlight: "Que país é famoso por isto?",
+    quizPromptFood: "De que país é este prato?", quizPromptFlag: "De que país é esta bandeira?",
+    quizNext: "Pergunta seguinte", quizSeeResults: "Ver resultados",
+    quizYourScore: "A tua pontuação", quizPlayAgain: "Jogar novamente",
+    quizCopyResult: "Copiar o resultado", quizCopied: "Copiado!",
+    quizShareText: "Fiz SCORE/8 no Passport Quiz da Waypoint este mês 🧳 Consegues fazer melhor?",
+    quizRank0: "Acabaste de tirar o passaporte", quizRank1: "Viajante habitual", quizRank2: "Andarilho do mundo", quizRank3: "Mestre Waypoint",
     articlesComingSoon: "Guias mais longos, itinerários e notas de viagem estão a caminho — volta em breve.",
     productsComingSoon: "Guias para descarregar, listas de bagagem e ferramentas de planeamento estão a caminho — volta em breve.",
     newsletterIntro: "Recebe um novo destino no teu email todas as semanas — ideias de itinerários reais e notas de viagem, sem spam.",
@@ -154,6 +182,84 @@ const UI_STRINGS = {
     footerExplore: "Explorar", footerConnect: "Contacto", footerProjectBy: "Um projeto da",
     footerBuiltFor: "Feito para quem planeia as viagens com um cuidado quase exagerado.",
   },
+};
+
+const WHERE_TO_GO_NOW = {
+  1: [
+    { id: "thailand", reason: { en: "Peak cool, dry season — comfortable temperatures for temples, islands, and everything in between.", pt: "Época seca e fresca no seu melhor — temperaturas agradáveis para templos, ilhas, e tudo pelo meio." } },
+    { id: "costa-rica", reason: { en: "Dry season is in full swing, meaning easier wildlife spotting and calmer seas on the Pacific coast.", pt: "Época seca em pleno — mais fácil avistar vida selvagem e mar mais calmo na costa do Pacífico." } },
+    { id: "new-zealand", reason: { en: "The height of southern summer — long days for hiking, beaches, and Milford Sound at its best.", pt: "O auge do verão austral — dias longos para caminhadas, praias, e Milford Sound no seu melhor." } },
+  ],
+  2: [
+    { id: "uae", reason: { en: "One of the most pleasant stretches of the year in Dubai and Abu Dhabi, well before summer's extreme heat.", pt: "Um dos períodos mais agradáveis do ano no Dubai e Abu Dhabi, bem antes do calor extremo do verão." } },
+    { id: "argentina", reason: { en: "Peak Patagonian summer — the best window for hiking around El Calafate and the glaciers.", pt: "Verão patagónico no seu auge — a melhor janela para caminhadas perto de El Calafate e os glaciares." } },
+    { id: "vietnam", reason: { en: "The south's dry season is in full swing, with the north still comfortably cool and clear.", pt: "A época seca do sul está em pleno, com o norte ainda agradavelmente fresco e límpido." } },
+  ],
+  3: [
+    { id: "japan", reason: { en: "Cherry blossoms begin their sweep north through the country from late March.", pt: "As flores de cerejeira começam a sua marcha para norte pelo país a partir de finais de março." } },
+    { id: "namibia", reason: { en: "Dry season is well underway, with clear skies ideal for self-driving and stargazing.", pt: "A época seca já vai avançada, com céus limpos ideais para conduzir e observar estrelas." } },
+    { id: "egypt", reason: { en: "Comfortably mild for the pyramids and Nile cruising, before summer's serious heat arrives.", pt: "Temperaturas amenas para as pirâmides e cruzeiros no Nilo, antes do calor sério do verão chegar." } },
+  ],
+  4: [
+    { id: "netherlands", reason: { en: "Tulip season is in full color, with Keukenhof's gardens at their peak.", pt: "A época das tulipas está em pleno esplendor, com os jardins de Keukenhof no seu auge." } },
+    { id: "india", reason: { en: "A pleasant window before the monsoon, with the Taj Mahal and Rajasthan at comfortable temperatures.", pt: "Uma janela agradável antes da monção, com o Taj Mahal e o Rajastão em temperaturas confortáveis." } },
+    { id: "portugal", reason: { en: "Mild spring weather and thinner crowds, before the summer rush along the coast.", pt: "Clima ameno de primavera e menos multidões, antes da correria do verão na costa." } },
+  ],
+  5: [
+    { id: "peru", reason: { en: "The dry season begins, and Machu Picchu enters its best stretch of clear, rain-free months.", pt: "Começa a época seca, e Machu Picchu entra no seu melhor período de meses límpidos e sem chuva." } },
+    { id: "greece", reason: { en: "Warm enough for the islands, without the peak-summer heat or crowds of July and August.", pt: "Já quente o suficiente para as ilhas, sem o calor ou multidões do pico de julho e agosto." } },
+    { id: "croatia", reason: { en: "Early-summer warmth along the Adriatic, with far fewer crowds than the July peak.", pt: "Calor de início de verão junto ao Adriático, com muito menos multidões do que o pico de julho." } },
+  ],
+  6: [
+    { id: "iceland", reason: { en: "Midnight sun and the best weather window of the year for the Ring Road.", pt: "Sol da meia-noite e a melhor janela de clima do ano para a Ring Road." } },
+    { id: "kenya", reason: { en: "The dry season begins, bringing some of the year's best wildlife viewing to the Mara.", pt: "Começa a época seca, trazendo uma das melhores alturas do ano para observar vida selvagem na Mara." } },
+    { id: "switzerland", reason: { en: "Alpine trails fully open up, with long days perfect for the classic train-and-hike routes.", pt: "As trilhas alpinas abrem por completo, com dias longos perfeitos para as rotas clássicas de comboio e caminhada." } },
+  ],
+  7: [
+    { id: "norway", reason: { en: "Midnight sun continues, with the best hiking and fjord-cruising weather of the year.", pt: "O sol da meia-noite continua, com o melhor clima do ano para caminhadas e cruzeiros pelos fiordes." } },
+    { id: "tanzania", reason: { en: "The Great Migration's river crossings typically peak now in the Serengeti and Mara.", pt: "As travessias de rio da Grande Migração atingem tipicamente o seu pico agora no Serengeti e na Mara." } },
+    { id: "canada", reason: { en: "Mild, sunny summer weather across the Rockies, with every national park fully open.", pt: "Clima de verão ameno e ensolarado por toda a região das Rochosas, com todos os parques nacionais totalmente abertos." } },
+  ],
+  8: [
+    { id: "georgia", reason: { en: "Peak season for hiking the Caucasus, with mountain passes fully clear of snow.", pt: "Época alta para caminhadas no Cáucaso, com os passos de montanha totalmente livres de neve." } },
+    { id: "south-africa", reason: { en: "Dry winter means sparse vegetation and excellent visibility for Kruger safaris.", pt: "O inverno seco significa vegetação escassa e excelente visibilidade para safaris no Kruger." } },
+    { id: "sweden", reason: { en: "Long, warm days made for boating through the Stockholm archipelago.", pt: "Dias longos e quentes, perfeitos para navegar pelo arquipélago de Estocolmo." } },
+  ],
+  9: [
+    { id: "turkey", reason: { en: "Warm, golden shoulder-season weather with noticeably thinner summer crowds.", pt: "Clima quente e dourado de época intermédia, com muito menos multidões de verão." } },
+    { id: "botswana", reason: { en: "The dry season peaks, concentrating wildlife around the Okavango's remaining water sources.", pt: "A época seca atinge o pico, concentrando a vida selvagem junto às últimas fontes de água do Okavango." } },
+    { id: "czech-republic", reason: { en: "Comfortably cool for wandering Prague's Old Town, with the summer crowds thinning out.", pt: "Temperaturas amenas para passear pela Cidade Velha de Praga, com as multidões de verão a diminuir." } },
+  ],
+  10: [
+    { id: "chile", reason: { en: "Spring arrives in Patagonia, with wildflowers and a genuine shoulder-season calm.", pt: "A primavera chega à Patagónia, com flores silvestres e uma verdadeira calma de época intermédia." } },
+    { id: "japan", reason: { en: "Autumn foliage begins its own sweep across the country, following spring's cherry blossoms in reverse.", pt: "A folhagem de outono começa a sua própria marcha pelo país, seguindo ao contrário as flores de cerejeira da primavera." } },
+    { id: "vietnam", reason: { en: "The north settles into its clearest, driest stretch of the year.", pt: "O norte entra no seu período mais límpido e seco do ano." } },
+  ],
+  11: [
+    { id: "morocco", reason: { en: "One of the two ideal windows of the year — warm days, cool nights, no summer heat.", pt: "Uma das duas janelas ideais do ano — dias quentes, noites frescas, sem o calor do verão." } },
+    { id: "thailand", reason: { en: "The cool, dry season returns, bringing some of the year's most comfortable travel weather.", pt: "A época seca e fresca regressa, trazendo um dos climas mais agradáveis do ano para viajar." } },
+    { id: "costa-rica", reason: { en: "The dry season begins its run through April, with clearer skies across both coasts.", pt: "A época seca começa o seu percurso até abril, com céus mais limpos em ambas as costas." } },
+  ],
+  12: [
+    { id: "tanzania", reason: { en: "Calving season begins in the southern Serengeti, drawing predators along with it.", pt: "Começa a época de nascimentos no sul do Serengeti, atraindo predadores na mesma zona." } },
+    { id: "mexico", reason: { en: "Dry season warmth makes for an easy escape from northern winter, from the Yucatán to Mexico City.", pt: "O calor da época seca torna-se uma fuga fácil ao inverno do norte, do Iucatão à Cidade do México." } },
+    { id: "new-zealand", reason: { en: "Southern summer kicks off, with long days made for the Great Walks and beach time alike.", pt: "Começa o verão austral, com dias longos perfeitos tanto para as Great Walks como para a praia." } },
+  ],
+};
+
+const MONTHLY_QUIZ = {
+  1: ["japan", "brazil", "egypt", "france", "thailand", "kenya", "mexico", "iceland"],
+  2: ["italy", "india", "morocco", "usa", "vietnam", "peru", "greece", "south-africa"],
+  3: ["spain", "china", "argentina", "uk", "cambodia", "tanzania", "portugal", "uae"],
+  4: ["germany", "indonesia", "colombia", "canada", "laos", "botswana", "netherlands", "oman"],
+  5: ["turkey", "malaysia", "chile", "australia", "singapore", "namibia", "ireland", "qatar"],
+  6: ["austria", "croatia", "ecuador", "new-zealand", "cabo-verde", "zambia", "switzerland", "panama"],
+  7: ["norway", "poland", "bolivia", "costa-rica", "mauritius", "zimbabwe", "denmark", "belize"],
+  8: ["sweden", "czech-republic", "bosnia", "fiji", "kuwait", "georgia", "belgium", "vanuatu"],
+  9: ["turkey", "china", "mexico", "greece", "laos", "botswana", "spain", "oman"],
+  10: ["japan", "italy", "brazil", "morocco", "thailand", "kenya", "france", "peru"],
+  11: ["india", "egypt", "vietnam", "usa", "argentina", "south-africa", "uk", "cambodia"],
+  12: ["germany", "netherlands", "canada", "colombia", "indonesia", "tanzania", "uae", "iceland"],
 };
 
 const ABOUT_BIO = {
@@ -392,31 +498,152 @@ function Waypoint() {
   const [continentId, setContinentId] = useState(null);
   const [countryId, setCountryId] = useState(null);
   const [lang, setLang] = useState("en");
+  const [homeQuery, setHomeQuery] = useState("");
+  const [continentQuery, setContinentQuery] = useState("");
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [quizIndex, setQuizIndex] = useState(0);
+  const [quizScore, setQuizScore] = useState(0);
+  const [quizSelected, setQuizSelected] = useState(null);
+  const [quizFinished, setQuizFinished] = useState(false);
+  const [quizCopied, setQuizCopied] = useState(false);
+
+  const normalize = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
   const T = UI_STRINGS[lang];
   const continents = CONTINENTS.map((c) => localizeContinent(c, lang));
   const continent = continents.find((c) => c.id === continentId) || null;
   const country = continent ? continent.countries.find((c) => c.id === countryId) : null;
 
-  const goToContinents = () => { setView("continents"); setContinentId(null); setCountryId(null); };
-  const goToCountries = (cId) => { setContinentId(cId); setCountryId(null); setView("countries"); window.scrollTo(0, 0); };
-  const goToDetail = (cty) => { setCountryId(cty.id); setView("detail"); window.scrollTo(0, 0); };
+  const setHash = (h) => {
+    const newHash = h ? "#" + h : "";
+    if (window.location.hash !== newHash) {
+      const base = window.location.pathname + window.location.search;
+      history.pushState(null, "", h ? base + newHash : base);
+    }
+  };
+
+  const goToContinents = () => { setView("continents"); setContinentId(null); setCountryId(null); setHomeQuery(""); setHash(""); };
+  const goToCountries = (cId) => { setContinentId(cId); setCountryId(null); setView("countries"); setContinentQuery(""); window.scrollTo(0, 0); setHash("continent=" + cId); };
+  const goToDetail = (cty) => { setCountryId(cty.id); setView("detail"); window.scrollTo(0, 0); setHash("country=" + cty.id); };
+  const goToDetailFromSearch = (cty) => { setContinentId(cty.continentId); setCountryId(cty.id); setView("detail"); setHomeQuery(""); window.scrollTo(0, 0); setHash("country=" + cty.id); };
+  const goToStatic = (page) => { setView(page); setContinentId(null); setCountryId(null); window.scrollTo(0, 0); setHash(page); };
+
+  const allCountriesFlat = continents.flatMap((c) => c.countries.map((cty) => ({ ...cty, continentId: c.id, continentName: c.name, continentColor: c.color })));
+  const currentMonth = new Date().getMonth() + 1;
+  const nowPicks = (WHERE_TO_GO_NOW[currentMonth] || [])
+    .map((pick) => {
+      const found = allCountriesFlat.find((c) => c.id === pick.id);
+      if (!found) return null;
+      return { ...found, reason: pick.reason[lang] || pick.reason.en };
+    })
+    .filter(Boolean);
+
+  // --- Passport Quiz: deterministic per month, same for every visitor ---
+  const seededRandom = (seed) => {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const seededShuffle = (arr, seed) => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(seededRandom(seed + i) * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+  const CLUE_ORDER = ["tagline", "highlight", "food", "flag"];
+  const buildClueCandidates = (cty) => {
+    const nameNorm = normalize(cty.name);
+    const candidates = [];
+    if (cty.tagline && !normalize(cty.tagline).includes(nameNorm)) {
+      candidates.push({ type: "tagline", text: cty.tagline });
+    }
+    if (cty.highlights && cty.highlights.length) {
+      const h = cty.highlights.find((h) => !normalize(h).includes(nameNorm));
+      if (h) candidates.push({ type: "highlight", text: h });
+    }
+    if (cty.food && cty.food.length) {
+      const f = cty.food.find((f) => !normalize(f.name).includes(nameNorm) && !normalize(f.desc || "").includes(nameNorm));
+      if (f) candidates.push({ type: "food", text: f.name + " — " + f.desc });
+    }
+    candidates.push({ type: "flag", text: null });
+    return candidates;
+  };
+  const quizCountryIds = MONTHLY_QUIZ[currentMonth] || [];
+  const quizQuestions = quizCountryIds.map((id, i) => {
+    const country = allCountriesFlat.find((c) => c.id === id);
+    if (!country) return null;
+    const candidates = buildClueCandidates(country);
+    const preferredType = CLUE_ORDER[i % 4];
+    const clue = candidates.find((c) => c.type === preferredType) || candidates[0];
+    const wrongPool = allCountriesFlat.filter((c) => c.id !== country.id && !quizCountryIds.includes(c.id));
+    const distractors = seededShuffle(wrongPool, currentMonth * 1000 + i).slice(0, 3);
+    const options = seededShuffle([country, ...distractors], currentMonth * 1000 + i + 500);
+    return { country, clue, options, correctId: country.id };
+  }).filter(Boolean);
+
+  const quizPromptFor = (type) => {
+    if (type === "tagline") return T.quizPromptTagline;
+    if (type === "highlight") return T.quizPromptHighlight;
+    if (type === "food") return T.quizPromptFood;
+    return T.quizPromptFlag;
+  };
+
+  const startQuiz = () => { setQuizStarted(true); setQuizIndex(0); setQuizScore(0); setQuizSelected(null); setQuizFinished(false); setQuizCopied(false); };
+  const answerQuiz = (optionId) => {
+    if (quizSelected) return;
+    setQuizSelected(optionId);
+    if (optionId === quizQuestions[quizIndex].correctId) setQuizScore((s) => s + 1);
+  };
+  const nextQuizQuestion = () => {
+    if (quizIndex + 1 >= quizQuestions.length) { setQuizFinished(true); }
+    else { setQuizIndex((i) => i + 1); setQuizSelected(null); }
+  };
+  const quizRank = (score) => {
+    if (score <= 2) return T.quizRank0;
+    if (score <= 5) return T.quizRank1;
+    if (score <= 7) return T.quizRank2;
+    return T.quizRank3;
+  };
+  const copyQuizResult = () => {
+    const text = T.quizShareText.replace("SCORE", String(quizScore));
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => { setQuizCopied(true); setTimeout(() => setQuizCopied(false), 2000); });
+    }
+  };
+
+  const homeSearchResults = homeQuery.trim()
+    ? allCountriesFlat.filter((cty) => normalize(cty.name).includes(normalize(homeQuery)) || normalize(cty.capital).includes(normalize(homeQuery)))
+    : [];
+  const continentSearchResults = continent && continentQuery.trim()
+    ? continent.countries.filter((cty) => normalize(cty.name).includes(normalize(continentQuery)) || normalize(cty.capital).includes(normalize(continentQuery)))
+    : (continent ? continent.countries : []);
 
   const goToCountryById = (id) => {
     for (const cont of continents) {
       const found = cont.countries.find((c) => c.id === id);
-      if (found) { setContinentId(cont.id); setCountryId(found.id); setView("detail"); window.scrollTo(0, 0); return; }
+      if (found) { setContinentId(cont.id); setCountryId(found.id); setView("detail"); window.scrollTo(0, 0); setHash("country=" + id); return; }
     }
   };
 
+  const applyHashState = (hash) => {
+    if (!hash) { goToContinents(); return; }
+    if (hash.startsWith("country=")) { goToCountryById(hash.split("=")[1]); return; }
+    if (hash.startsWith("continent=")) { goToCountries(hash.split("=")[1]); return; }
+    if (["about", "newsletter", "articles", "products"].includes(hash)) { goToStatic(hash); return; }
+  };
+
   useEffect(() => {
-    const hash = window.location.hash.replace("#", "");
-    if (!hash) return;
-    if (hash.startsWith("country=")) {
-      goToCountryById(hash.split("=")[1]);
-    } else if (["about", "newsletter", "articles", "products"].includes(hash)) {
-      setView(hash);
-    }
+    applyHashState(window.location.hash.replace("#", ""));
+    const onHashChange = () => applyHashState(window.location.hash.replace("#", ""));
+    window.addEventListener("hashchange", onHashChange);
+    window.addEventListener("popstate", onHashChange);
+    return () => {
+      window.removeEventListener("hashchange", onHashChange);
+      window.removeEventListener("popstate", onHashChange);
+    };
   }, []);
 
   return (
@@ -450,6 +677,46 @@ function Waypoint() {
         .wp-continent-name { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 500; }
         .wp-continent-tagline { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.35; flex-grow: 1; }
         .wp-continent-count { font-size: 0.75rem; color: var(--tile-color); font-weight: 600; }
+
+        .wp-quiz-section { margin-bottom: 1.8rem; }
+        .wp-quiz-card { background: #fff; border: 1px solid var(--hairline); border-radius: 4px; padding: 1.5rem 1.4rem; }
+        .wp-quiz-intro { text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .wp-quiz-progress { font-size: 0.8rem; color: var(--ink-soft); font-weight: 600; margin-bottom: 0.9rem; }
+        .wp-quiz-clue-wrap { min-height: 70px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; }
+        .wp-quiz-flag-big { font-size: 3.5rem; line-height: 1; }
+        .wp-quiz-clue-text { font-family: 'Fraunces', serif; font-style: italic; font-size: 1.25rem; text-align: center; line-height: 1.4; color: var(--ink); }
+        .wp-quiz-clue-food { font-size: 1.05rem; text-align: center; line-height: 1.5; }
+        .wp-quiz-prompt { text-align: center; font-size: 0.9rem; color: var(--ink-soft); margin: 0 0 1.1rem; }
+        .wp-quiz-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+        @media (max-width: 480px) { .wp-quiz-options { grid-template-columns: 1fr; } }
+        .wp-quiz-option { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 3px; padding: 0.7rem 0.9rem; font-family: inherit; font-size: 0.92rem; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 0.5rem; }
+        .wp-quiz-option:hover:not(:disabled) { border-color: var(--navy); }
+        .wp-quiz-option:disabled { cursor: default; }
+        .wp-quiz-option-correct { background: #E4EFE2; border-color: #6B9E68; font-weight: 600; }
+        .wp-quiz-option-wrong { background: #F5E2E0; border-color: #C1665F; }
+        .wp-quiz-btn { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.65rem 1.4rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--ink); display: inline-flex; align-items: center; gap: 0.4rem; }
+        .wp-quiz-btn-primary { background: var(--navy); color: #F3EDE0; border-color: var(--navy); }
+        .wp-quiz-score { font-family: 'Fraunces', serif; font-size: 2.6rem; font-weight: 600; margin: 0.5rem 0 0.15rem; }
+        .wp-quiz-rank { font-size: 1rem; color: var(--ink-soft); margin-bottom: 1.2rem; }
+        .wp-quiz-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
+
+        .wp-now-section { margin-bottom: 1.8rem; }
+        .wp-now-subtitle { font-size: 0.86rem; color: var(--ink-soft); margin: 0 0 1rem; }
+        .wp-now-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.9rem; }
+        .wp-now-card { background: #fff; border: 1px solid var(--hairline); border-top: 3px solid var(--now-color); border-radius: 3px; padding: 1rem 1.1rem; text-align: left; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; gap: 0.35rem; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .wp-now-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(38,33,25,0.08); }
+        .wp-now-flag { font-size: 1.4rem; line-height: 1; }
+        .wp-now-name { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 500; }
+        .wp-now-reason { font-size: 0.85rem; color: #4a4436; line-height: 1.45; }
+
+        .wp-search-wrap { margin-bottom: 1.3rem; }
+        .wp-search-box { display: flex; align-items: center; gap: 0.6rem; background: #fff; border: 1px solid var(--hairline); border-radius: 3px; padding: 0.75rem 0.95rem; }
+        .wp-search-icon { color: var(--ink-soft); flex-shrink: 0; }
+        .wp-search-input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: 'Work Sans', sans-serif; font-size: 0.95rem; color: var(--ink); }
+        .wp-search-input::placeholder { color: var(--ink-soft); }
+        .wp-search-clear { background: none; border: none; cursor: pointer; color: var(--ink-soft); padding: 0.15rem; display: flex; align-items: center; flex-shrink: 0; }
+        .wp-search-clear:hover { color: var(--ink); }
+        .wp-search-empty { font-size: 0.92rem; color: var(--ink-soft); padding: 0.6rem 0 1rem; }
 
         .wp-country-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; background: #fff; border: 1px solid var(--hairline); border-left: 4px solid var(--row-color); border-radius: 2px; padding: 0.95rem 1.1rem; cursor: pointer; text-align: left; font-family: inherit; margin-bottom: 0.6rem; }
         .wp-country-row:hover { background: #FBF8F1; }
@@ -568,10 +835,10 @@ function Waypoint() {
           </button>
           <div className="wp-nav-links">
             <button className={"wp-nav-link" + ((view === "continents" || view === "countries" || view === "detail") ? " wp-nav-link-active" : "")} onClick={goToContinents}>{T.home}</button>
-            <button className={"wp-nav-link" + (view === "articles" ? " wp-nav-link-active" : "")} onClick={() => setView("articles")}>{T.articles}</button>
-            <button className={"wp-nav-link" + (view === "products" ? " wp-nav-link-active" : "")} onClick={() => setView("products")}>{T.products}</button>
-            <button className={"wp-nav-link" + (view === "newsletter" ? " wp-nav-link-active" : "")} onClick={() => setView("newsletter")}>{T.newsletter}</button>
-            <button className={"wp-nav-link" + (view === "about" ? " wp-nav-link-active" : "")} onClick={() => setView("about")}>{T.aboutMe}</button>
+            <button className={"wp-nav-link" + (view === "articles" ? " wp-nav-link-active" : "")} onClick={() => goToStatic("articles")}>{T.articles}</button>
+            <button className={"wp-nav-link" + (view === "products" ? " wp-nav-link-active" : "")} onClick={() => goToStatic("products")}>{T.products}</button>
+            <button className={"wp-nav-link" + (view === "newsletter" ? " wp-nav-link-active" : "")} onClick={() => goToStatic("newsletter")}>{T.newsletter}</button>
+            <button className={"wp-nav-link" + (view === "about" ? " wp-nav-link-active" : "")} onClick={() => goToStatic("about")}>{T.aboutMe}</button>
             <span className="wp-lang-toggle">
               <button className={"wp-lang-btn" + (lang === "en" ? " wp-lang-btn-active" : "")} onClick={() => setLang("en")}>EN</button>
               <span className="wp-lang-sep">/</span>
@@ -602,7 +869,107 @@ function Waypoint() {
           </div>
         )}
 
+        {view === "continents" && nowPicks.length > 0 && (
+          <div className="wp-now-section">
+            <h2 className="wp-section-title" style={{ marginBottom: "0.2rem" }}>{T.whereToGoNow}</h2>
+            <p className="wp-now-subtitle">{T.whereToGoNowSubtitle}</p>
+            <div className="wp-now-grid">
+              {nowPicks.map((cty) => (
+                <button key={cty.id} className="wp-now-card" style={{ "--now-color": cty.continentColor }} onClick={() => goToDetailFromSearch(cty)}>
+                  <div className="wp-now-flag">{cty.flag}</div>
+                  <div className="wp-now-name">{cty.name}</div>
+                  <div className="wp-now-reason">{cty.reason}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {view === "continents" && quizQuestions.length > 0 && (
+          <div className="wp-quiz-section">
+            {!quizStarted && (
+              <div className="wp-quiz-card wp-quiz-intro">
+                <Award size={26} style={{ color: "var(--navy)" }} />
+                <h2 className="wp-section-title" style={{ margin: "0.6rem 0 0.2rem" }}>{T.quizTitle}</h2>
+                <p className="wp-now-subtitle" style={{ marginBottom: "1rem" }}>{T.quizSubtitle}</p>
+                <button className="wp-quiz-btn wp-quiz-btn-primary" onClick={startQuiz}>{T.quizStart}</button>
+              </div>
+            )}
+
+            {quizStarted && !quizFinished && quizQuestions[quizIndex] && (
+              <div className="wp-quiz-card">
+                <div className="wp-quiz-progress">{T.quizQuestionLabel} {quizIndex + 1} {T.quizOf} {quizQuestions.length}</div>
+                <div className="wp-quiz-clue-wrap">
+                  {quizQuestions[quizIndex].clue.type === "flag" ? (
+                    <div className="wp-quiz-flag-big">{quizQuestions[quizIndex].country.flag}</div>
+                  ) : quizQuestions[quizIndex].clue.type === "food" ? (
+                    <div className="wp-quiz-clue-food">{quizQuestions[quizIndex].clue.text}</div>
+                  ) : (
+                    <div className="wp-quiz-clue-text">{quizQuestions[quizIndex].clue.text}</div>
+                  )}
+                </div>
+                <p className="wp-quiz-prompt">{quizPromptFor(quizQuestions[quizIndex].clue.type)}</p>
+                <div className="wp-quiz-options">
+                  {quizQuestions[quizIndex].options.map((opt) => {
+                    const isCorrect = opt.id === quizQuestions[quizIndex].correctId;
+                    const isSelected = opt.id === quizSelected;
+                    let cls = "wp-quiz-option";
+                    if (quizSelected) {
+                      if (isCorrect) cls += " wp-quiz-option-correct";
+                      else if (isSelected) cls += " wp-quiz-option-wrong";
+                    }
+                    return (
+                      <button key={opt.id} className={cls} onClick={() => answerQuiz(opt.id)} disabled={!!quizSelected}>
+                        <span>{opt.flag}</span> {opt.name}
+                      </button>
+                    );
+                  })}
+                </div>
+                {quizSelected && (
+                  <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ marginTop: "1rem" }} onClick={nextQuizQuestion}>
+                    {quizIndex + 1 >= quizQuestions.length ? T.quizSeeResults : T.quizNext}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {quizFinished && (
+              <div className="wp-quiz-card wp-quiz-intro">
+                <Award size={30} style={{ color: "var(--navy)" }} />
+                <div className="wp-quiz-score">{quizScore}/{quizQuestions.length}</div>
+                <div className="wp-quiz-rank">{quizRank(quizScore)}</div>
+                <div className="wp-quiz-actions">
+                  <button className="wp-quiz-btn" onClick={copyQuizResult}>
+                    <Copy size={14} /> {quizCopied ? T.quizCopied : T.quizCopyResult}
+                  </button>
+                  <button className="wp-quiz-btn wp-quiz-btn-primary" onClick={startQuiz}>{T.quizPlayAgain}</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {view === "continents" && (
+          <div className="wp-search-wrap">
+            <div className="wp-search-box">
+              <Search size={16} className="wp-search-icon" />
+              <input
+                type="text"
+                className="wp-search-input"
+                placeholder={T.searchHome}
+                value={homeQuery}
+                onChange={(e) => setHomeQuery(e.target.value)}
+              />
+              {homeQuery && (
+                <button className="wp-search-clear" onClick={() => setHomeQuery("")} aria-label="Clear search">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {view === "continents" && !homeQuery.trim() && (
           <div className="wp-continent-grid">
             {continents.map((c) => (
               <button key={c.id} className="wp-continent-tile" style={{ "--tile-color": c.color }} onClick={() => goToCountries(c.id)}>
@@ -614,25 +981,64 @@ function Waypoint() {
           </div>
         )}
 
+        {view === "continents" && homeQuery.trim() && (
+          <div>
+            {homeSearchResults.length === 0 ? (
+              <p className="wp-search-empty">{T.noResultsFor} "{homeQuery}"</p>
+            ) : (
+              homeSearchResults.map((cty) => (
+                <button key={cty.id} className="wp-country-row" style={{ "--row-color": cty.continentColor }} onClick={() => goToDetailFromSearch(cty)}>
+                  <div>
+                    <div className="wp-country-name"><span>{cty.flag}</span>{cty.name}</div>
+                    <div className="wp-country-capital">{cty.continentName} · {T.capital}: {cty.capital}</div>
+                  </div>
+                  <ChevronRight size={18} style={{ color: "#8a8272", flexShrink: 0 }} />
+                </button>
+              ))
+            )}
+          </div>
+        )}
+
         {view === "countries" && continent && (
           <div>
             <button className="wp-back" onClick={goToContinents}><ArrowLeft size={15} /> {T.allContinents}</button>
             <h2 className="wp-section-title" style={{ marginBottom: "1.1rem" }}>{continent.name}</h2>
-            {continent.countries.map((cty) => (
-              <button key={cty.id} className="wp-country-row" style={{ "--row-color": continent.color }} onClick={() => goToDetail(cty)}>
-                <div>
-                  <div className="wp-country-name"><span>{cty.flag}</span>{cty.name}</div>
-                  <div className="wp-country-capital">{T.capital}: {cty.capital}</div>
-                </div>
-                <ChevronRight size={18} style={{ color: "#8a8272", flexShrink: 0 }} />
-              </button>
-            ))}
+            <div className="wp-search-wrap">
+              <div className="wp-search-box">
+                <Search size={16} className="wp-search-icon" />
+                <input
+                  type="text"
+                  className="wp-search-input"
+                  placeholder={T.searchContinent}
+                  value={continentQuery}
+                  onChange={(e) => setContinentQuery(e.target.value)}
+                />
+                {continentQuery && (
+                  <button className="wp-search-clear" onClick={() => setContinentQuery("")} aria-label="Clear search">
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+            {continentSearchResults.length === 0 ? (
+              <p className="wp-search-empty">{T.noResultsFor} "{continentQuery}"</p>
+            ) : (
+              continentSearchResults.map((cty) => (
+                <button key={cty.id} className="wp-country-row" style={{ "--row-color": continent.color }} onClick={() => goToDetail(cty)}>
+                  <div>
+                    <div className="wp-country-name"><span>{cty.flag}</span>{cty.name}</div>
+                    <div className="wp-country-capital">{T.capital}: {cty.capital}</div>
+                  </div>
+                  <ChevronRight size={18} style={{ color: "#8a8272", flexShrink: 0 }} />
+                </button>
+              ))
+            )}
           </div>
         )}
 
         {view === "detail" && continent && country && (
           <div>
-            <button className="wp-back" onClick={() => setView("countries")}><ArrowLeft size={15} /> {continent.name}</button>
+            <button className="wp-back" onClick={() => goToCountries(continentId)}><ArrowLeft size={15} /> {continent.name}</button>
 
             <div className="wp-detail-hero">
               <h2 className="wp-detail-name"><span>{country.flag}</span>{country.name}</h2>
@@ -777,7 +1183,7 @@ function Waypoint() {
               <div style={{ fontFamily: "'Fraunces', serif", fontSize: "1.3rem", fontWeight: 500, marginBottom: "0.6rem" }}>Namibia Self-Drive Checklist &amp; Planner</div>
               <p style={{ fontSize: "0.95rem", color: "#4a4436", lineHeight: 1.6, marginBottom: "1.1rem" }}>The route at a glance, what to book months ahead, offline driving apps that actually work, and a gear checklist — everything from the Namibia trip report, organized into a printable planner.</p>
               <button
-                onClick={() => setView("newsletter")}
+                onClick={() => goToStatic("newsletter")}
                 style={{ display: "inline-block", background: "var(--navy)", color: "#F3EDE0", border: "none", cursor: "pointer", padding: "0.7rem 1.4rem", borderRadius: "999px", fontSize: "0.9rem", fontFamily: "'Work Sans', sans-serif" }}
               >
                 Get it free via the newsletter →
@@ -820,14 +1226,14 @@ function Waypoint() {
             <div className="wp-footer-col">
               <div className="wp-footer-col-title">{T.footerExplore}</div>
               <button className="wp-footer-link" onClick={goToContinents}>{T.home}</button>
-              <button className="wp-footer-link" onClick={() => setView("articles")}>{T.articles}</button>
-              <button className="wp-footer-link" onClick={() => setView("products")}>{T.products}</button>
+              <button className="wp-footer-link" onClick={() => goToStatic("articles")}>{T.articles}</button>
+              <button className="wp-footer-link" onClick={() => goToStatic("products")}>{T.products}</button>
             </div>
 
             <div className="wp-footer-col">
               <div className="wp-footer-col-title">{T.footerConnect}</div>
-              <button className="wp-footer-link" onClick={() => setView("about")}>{T.aboutMe}</button>
-              <button className="wp-footer-link" onClick={() => setView("newsletter")}>{T.newsletter}</button>
+              <button className="wp-footer-link" onClick={() => goToStatic("about")}>{T.aboutMe}</button>
+              <button className="wp-footer-link" onClick={() => goToStatic("newsletter")}>{T.newsletter}</button>
               {/* Add real social links here once accounts exist, e.g.: <a className="wp-footer-link" href="https://instagram.com/...">Instagram</a> */}
             </div>
           </div>
