@@ -86,6 +86,10 @@
   "url": "https://hellowaypoint.com/countries/ireland.html"
 }
 </script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do I need a visa for Ireland?","acceptedAnswer":{"@type":"Answer","text":"Not for most Western passport holders (EU, UK, US, Canada, Australia) for short tourist stays. Ireland is not part of the Schengen Area, so its 90-day rule is tracked separately from mainland Europe."}},
+{"@type":"Question","name":"Which airport should I fly into?","acceptedAnswer":{"@type":"Answer","text":"Dublin Airport (DUB), the country's main international gateway."}},
+{"@type":"Question","name":"Do I need a car for this itinerary?","acceptedAnswer":{"@type":"Answer","text":"Yes, genuinely necessary for the Dingle Peninsula and Ring of Kerry — these scenic drives aren't practically covered by public transport."}},
+{"@type":"Question","name":"Is Ireland expensive to visit?","acceptedAnswer":{"@type":"Answer","text":"Dublin runs comparably to other Western European capitals; rural areas and smaller towns are noticeably better value."}}]}</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
@@ -141,6 +145,13 @@
   .wp-day-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.4rem; }
   .wp-day-tag { font-size:0.74rem; background:#EDE6D4; color:#4a4436; padding:0.15rem 0.55rem; border-radius:999px; }
   .wp-day-tag-book { background:var(--navy); color:#F3EDE0; }
+  .wp-day-extra { font-size:0.82rem; color:#4a4436; line-height:1.5; margin-top:0.4rem; }
+  .wp-day-extra strong { color:var(--ink); }
+  .wp-days-reason { font-size:0.86rem; color:var(--ink-soft); line-height:1.5; margin:0.4rem 0 1.1rem; max-width:62ch; }
+  .wp-faq-wrap { margin-top:2rem; }
+  .wp-faq-item { background:#fff; border:1px solid var(--hairline); border-radius:3px; padding:0.9rem 1.1rem; margin-top:0.8rem; }
+  .wp-faq-q { font-family:'Fraunces',serif; font-weight:600; font-size:0.94rem; margin-bottom:0.35rem; color:var(--ink); }
+  .wp-faq-a { font-size:0.86rem; line-height:1.55; color:#4a4436; }
   .wp-cta { background:#fff; border:1px solid var(--hairline); border-radius:6px; padding:1.3rem; margin:2rem 0; text-align:center; }
   .wp-cta a { display:inline-block; margin-top:0.7rem; background:var(--navy); color:#F3EDE0; text-decoration:none; padding:0.65rem 1.4rem; border-radius:999px; font-size:0.92rem; }
   .wp-pairs-row { display:flex; flex-wrap:wrap; gap:0.7rem; margin-top:0.9rem; }
@@ -191,6 +202,7 @@
       <div><div class="wp-gtk-label">Tipping</div><div class="wp-gtk-value">10–15% in restaurants for good service</div></div>
       <div><div class="wp-gtk-label">Safety</div><div class="wp-gtk-value">Very safe; friendly and welcoming to travelers</div></div>
       <div><div class="wp-gtk-label">Getting around</div><div class="wp-gtk-value">A rental car is the best way to see the west coast; trains link major cities</div></div>
+      <div><div class="wp-gtk-label">Getting there</div><div class="wp-gtk-value">Dublin Airport (DUB) is the main international gateway for this route</div></div>
     </div>
   </div>
 
@@ -262,6 +274,7 @@
     <h2 class="wp-section-title" style="margin-bottom:0">Suggested itinerary</h2>
     <span class="wp-itinerary-total">9 days</span>
   </div>
+  <p class="wp-days-reason">9 days covers Dublin and a loop around the southwest coast without rushing. 5–6 works for just Dublin and one region; 12+ lets you add Northern Ireland or the north coast.</p>
   <div>
     <div class="wp-day">
       <div class="wp-day-label">1. Days 1–2</div>
@@ -269,6 +282,7 @@
         <div class="wp-day-title">Dublin</div>
         <div class="wp-day-desc">The Guinness Storehouse, Kilmainham Gaol, and the city&#x27;s literary pub scene.</div>
         
+        <div class="wp-day-extra"><strong>Cost:</strong> The Guinness Storehouse costs about €30; Kilmainham Gaol entry runs about €8 and often requires booking ahead.</div><div class="wp-day-extra"><strong>Where to eat:</strong> A pint of Guinness genuinely does taste different here — worth having one at a traditional pub with live music.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -277,6 +291,7 @@
         <div class="wp-day-title">Dingle Peninsula</div>
         <div class="wp-day-desc">The Slea Head Drive and traditional music in Dingle town.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~4.5h drive from Dublin</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> The Slea Head Drive itself is free; a small parking fee applies at some viewpoints.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try fresh seafood chowder at a harborside pub in Dingle town — a local specialty done well almost everywhere here.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -285,6 +300,7 @@
         <div class="wp-day-title">Ring of Kerry</div>
         <div class="wp-day-desc">A full-day scenic drive around the Iveragh Peninsula.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~1h drive from Dingle</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Mostly free to drive; a stop at Muckross House costs about €10 for the gardens.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Stop for a scone with local jam and cream at one of the small cafes along the route.</div>
       </div>
     </div>
     <div class="wp-day">
@@ -293,7 +309,26 @@
         <div class="wp-day-title">Cliffs of Moher &amp; Galway</div>
         <div class="wp-day-desc">The dramatic Atlantic cliffs and a stop in the lively city of Galway.</div>
         <div class="wp-day-tags"><span class="wp-day-tag">~2.5h drive from Killarney</span></div>
+        <div class="wp-day-extra"><strong>Cost:</strong> Cliffs of Moher visitor center parking and entry costs about €10; Galway itself is free to wander.</div><div class="wp-day-extra"><strong>Where to eat:</strong> Try oysters in Galway, especially if visiting in September during the city&#x27;s famous oyster festival.</div>
       </div>
+    </div></div>
+
+  <div class="wp-faq-wrap"><h2 class="wp-section-title">Frequently asked questions</h2>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a visa for Ireland?</div>
+      <div class="wp-faq-a">Not for most Western passport holders (EU, UK, US, Canada, Australia) for short tourist stays. Ireland is not part of the Schengen Area, so its 90-day rule is tracked separately from mainland Europe.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Which airport should I fly into?</div>
+      <div class="wp-faq-a">Dublin Airport (DUB), the country&#x27;s main international gateway.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Do I need a car for this itinerary?</div>
+      <div class="wp-faq-a">Yes, genuinely necessary for the Dingle Peninsula and Ring of Kerry — these scenic drives aren&#x27;t practically covered by public transport.</div>
+    </div>
+    <div class="wp-faq-item">
+      <div class="wp-faq-q">Is Ireland expensive to visit?</div>
+      <div class="wp-faq-a">Dublin runs comparably to other Western European capitals; rural areas and smaller towns are noticeably better value.</div>
     </div></div>
 
   <h2 class="wp-section-title">Pairs well with</h2><div class="wp-pairs-row"><a class="wp-pairs-card" href="uk.html"><span>🇬🇧</span><span>United Kingdom</span></a></div>
