@@ -85,6 +85,7 @@
 <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 <!-- Firebase (auth + per-user country tracking). Replace the placeholder values below with
      your real Firebase project config (Project settings > General > Your apps > Web app).
@@ -151,6 +152,7 @@ const CheckCircle = (p) => <IconBase {...p}><path d="M22 11.08V12a10 10 0 1 1-5.
 const StarIcon = (p) => <IconBase {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></IconBase>;
 const LogOutIcon = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></IconBase>;
 const PlusIcon = (p) => <IconBase {...p}><path d="M12 5v14" /><path d="M5 12h14" /></IconBase>;
+const Download = (p) => <IconBase {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M7 10l5 5 5-5" /><path d="M12 15V3" /></IconBase>;
 const GoogleG = (p) => (
   <svg width={p.size || 16} height={p.size || 16} viewBox="0 0 18 18">
     <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.79 2.73v2.27h2.9c1.7-1.56 2.68-3.87 2.68-6.64z" />
@@ -216,6 +218,9 @@ const UI_STRINGS = {
     transitBus: "bus", transitCar: "car", transitBoat: "boat", transitDuration: "duration, e.g. 12h",
     transitPrice: "price, e.g. €25", markTripDone: "Mark trip as done", deleteTrip: "Delete trip",
     confirmDeleteTrip: "Delete this trip? This can't be undone.",
+    whereToSleep: "Where to sleep", whereToEat: "Where to eat", nights: "nights",
+    stayNamePlaceholder: "hotel or place name", nightsPlaceholder: "nights", addMealPlaceholder: "restaurant or dish",
+    exportPdf: "Export PDF", typicalRange: "typical range",
     articlesComingSoon: "Long-form guides, itineraries, and travel notes are on their way — check back soon.",
     productsComingSoon: "Downloadable guides, packing lists, and planning tools are on their way — check back soon.",
     newsletterIntro: "Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.",
@@ -277,6 +282,9 @@ const UI_STRINGS = {
     transitBus: "autocarro", transitCar: "carro", transitBoat: "barco", transitDuration: "duração, ex: 12h",
     transitPrice: "preço, ex: €25", markTripDone: "Marcar viagem como feita", deleteTrip: "Eliminar viagem",
     confirmDeleteTrip: "Eliminar esta viagem? Não é possível desfazer.",
+    whereToSleep: "Onde dormir", whereToEat: "Onde comer", nights: "noites",
+    stayNamePlaceholder: "nome do hotel ou lugar", nightsPlaceholder: "noites", addMealPlaceholder: "restaurante ou prato",
+    exportPdf: "Exportar PDF", typicalRange: "intervalo típico",
     articlesComingSoon: "Guias mais longos, itinerários e notas de viagem estão a caminho — volta em breve.",
     productsComingSoon: "Guias para descarregar, listas de bagagem e ferramentas de planeamento estão a caminho — volta em breve.",
     newsletterIntro: "Recebe um novo destino no teu email todas as semanas — ideias de itinerários reais e notas de viagem, sem spam.",
@@ -902,6 +910,8 @@ function Waypoint() {
   const [newTripStart, setNewTripStart] = useState("");
   const [newTripEnd, setNewTripEnd] = useState("");
   const [highlightDrafts, setHighlightDrafts] = useState({});
+  const [stayDrafts, setStayDrafts] = useState({});
+  const [mealDrafts, setMealDrafts] = useState({});
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const normalize = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -1169,7 +1179,7 @@ function Waypoint() {
       startDate: newTripStart,
       endDate: newTripEnd,
       status: "planning",
-      stops: [{ id: "stop_" + Date.now(), city: "", dayStart: 1, dayEnd: total, highlights: [] }],
+      stops: [{ id: "stop_" + Date.now(), city: "", dayStart: 1, dayEnd: total, highlights: [], stays: [], meals: [] }],
       transits: [],
       createdAt: new Date().toISOString(),
     };
@@ -1198,7 +1208,7 @@ function Waypoint() {
       const lastStop = t.stops[t.stops.length - 1];
       const nextDay = lastStop ? lastStop.dayEnd + 1 : 1;
       const total = dayCount(t.startDate, t.endDate);
-      const newStop = { id: "stop_" + Date.now(), city: "", dayStart: Math.min(nextDay, total), dayEnd: total, highlights: [] };
+      const newStop = { id: "stop_" + Date.now(), city: "", dayStart: Math.min(nextDay, total), dayEnd: total, highlights: [], stays: [], meals: [] };
       return { ...t, stops: [...t.stops, newStop], transits: [...t.transits, { afterStopId: lastStop ? lastStop.id : null, mode: "", duration: "", price: "" }] };
     });
   };
@@ -1241,6 +1251,73 @@ function Waypoint() {
   };
 
   const tripTotalCost = (trip) => trip.transits.reduce((sum, tr) => sum + (parseFloat(tr.price) || 0), 0);
+
+  const addStay = (tripId, stopId, name, nights, price) => {
+    if (!name.trim()) return;
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: [...s.stays, { id: "st_" + Date.now(), name: name.trim(), nights: nights || "", price: price || "" }] } : s)),
+    }));
+  };
+  const removeStay = (tripId, stopId, stayId) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: s.stays.filter((st) => st.id !== stayId) } : s)),
+    }));
+  };
+  const addMeal = (tripId, stopId, name, price) => {
+    if (!name.trim()) return;
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim(), price: price || "" }] } : s)),
+    }));
+  };
+  const removeMeal = (tripId, stopId, mealId) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: s.meals.filter((m) => m.id !== mealId) } : s)),
+    }));
+  };
+
+  const tripTotalCost = (trip) => {
+    const transitSum = trip.transits.reduce((sum, tr) => sum + (parseFloat(tr.price) || 0), 0);
+    const staySum = trip.stops.reduce((sum, s) => sum + (s.stays || []).reduce((ss, st) => ss + (parseFloat(st.price) || 0), 0), 0);
+    const mealSum = trip.stops.reduce((sum, s) => sum + (s.meals || []).reduce((ms, m) => ms + (parseFloat(m.price) || 0), 0), 0);
+    return transitSum + staySum + mealSum;
+  };
+
+  const TRANSIT_TYPICAL = {
+    flight: "1-3h · €30-120",
+    train: "4-15h · €10-50",
+    bus: "5-18h · €5-30",
+    car: lang === "pt" ? "varia com a distância" : "varies with distance",
+    boat: "1-6h · €10-40",
+  };
+
+  const exportTripPDF = (trip) => {
+    if (!window.jspdf) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+    doc.setFontSize(18); doc.text(trip.name, 15, y); y += 8;
+    doc.setFontSize(10); doc.setTextColor(120);
+    doc.text((trip.startDate || "?") + " - " + (trip.endDate || "?") + " · " + dayCount(trip.startDate, trip.endDate) + " " + T.days, 15, y); y += 10;
+    doc.setTextColor(0);
+    trip.stops.forEach((stop, i) => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      doc.setFontSize(13); doc.text((stop.city || T.cityPlaceholder) + "  (" + T.day + " " + stop.dayStart + "-" + stop.dayEnd + ")", 15, y); y += 7;
+      doc.setFontSize(10);
+      stop.highlights.forEach((h) => { doc.text("• " + h.text, 20, y); y += 5.5; });
+      (stop.stays || []).forEach((st) => { doc.text("🏨 " + st.name + (st.nights ? " · " + st.nights + " " + T.days : "") + (st.price ? " · " + st.price : ""), 20, y); y += 5.5; });
+      (stop.meals || []).forEach((m) => { doc.text("🍽 " + m.name + (m.price ? " · " + m.price : ""), 20, y); y += 5.5; });
+      const transit = trip.transits.find((tr) => tr.afterStopId === stop.id);
+      if (transit && transit.mode) { y += 1; doc.setTextColor(140); doc.text("→ " + transit.mode + (transit.duration ? " · " + transit.duration : "") + (transit.price ? " · " + transit.price : ""), 15, y); doc.setTextColor(0); y += 7; }
+      y += 3;
+    });
+    y += 4;
+    doc.setFontSize(12); doc.text(T.estimatedCost + ": €" + tripTotalCost(trip).toFixed(0), 15, y);
+    doc.save(trip.name.replace(/[^a-z0-9]/gi, "_") + ".pdf");
+  };
 
   const markTripDone = (tripId) => {
     updateTrip(tripId, (t) => ({ ...t, status: "done" }));
@@ -1509,6 +1586,11 @@ function Waypoint() {
         .wp-trip-add-stop-btn:hover { border-color: var(--gold); color: var(--ink); }
         .wp-trip-footer-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
         .wp-trip-delete-btn { background: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.55rem 1.1rem; font-size: 0.85rem; color: #B5453D; cursor: pointer; }
+        .wp-trip-subsection { margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid var(--hairline); }
+        .wp-trip-subsection-label { font-size: 0.72rem; color: var(--ink-soft); margin: 0 0 0.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
+        .wp-trip-typical-hint { font-size: 0.72rem; color: var(--ink-soft); margin: 0.2rem 0 0.6rem 1.2rem; }
+        .wp-trip-export-btn { display: flex; align-items: center; gap: 0.4rem; background: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 1rem; font-size: 0.82rem; color: var(--ink); cursor: pointer; margin-bottom: 1.2rem; }
+        .wp-trip-export-btn:hover { border-color: var(--gold); }
         .wp-map-list-row:hover { text-decoration: underline; }
 
         .wp-modal-overlay { position: fixed; inset: 0; background: rgba(20,32,53,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.2rem; }
@@ -2259,6 +2341,10 @@ function Waypoint() {
                 </div>
               </div>
 
+              <button className="wp-trip-export-btn" onClick={() => exportTripPDF(trip)}>
+                <Download size={14} /> {T.exportPdf}
+              </button>
+
               {trip.stops.map((stop, i) => (
                 <div key={stop.id}>
                   <div className="wp-trip-stop-card">
@@ -2318,6 +2404,66 @@ function Waypoint() {
                         ))}
                       </div>
                     )}
+
+                    <div className="wp-trip-subsection">
+                      <p className="wp-trip-subsection-label">{T.whereToSleep}</p>
+                      {(stop.stays || []).map((st) => (
+                        <div key={st.id} className="wp-trip-highlight-row">
+                          <span style={{ fontSize: "0.85rem" }}>🏨</span>
+                          <span className="wp-trip-highlight-text">{st.name}{st.nights ? " · " + st.nights + " " + T.nights : ""}{st.price ? " · " + st.price : ""}</span>
+                          <button className="wp-trip-remove-btn" onClick={() => removeStay(trip.id, stop.id, st.id)} aria-label="Remove"><X size={12} /></button>
+                        </div>
+                      ))}
+                      <div className="wp-trip-add-highlight-row">
+                        <input type="text" className="wp-trip-highlight-input" style={{ flex: 2 }} placeholder={T.stayNamePlaceholder}
+                          value={(stayDrafts[stop.id] || {}).name || ""}
+                          onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), name: e.target.value } })} />
+                        <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.nightsPlaceholder}
+                          value={(stayDrafts[stop.id] || {}).nights || ""}
+                          onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), nights: e.target.value } })} />
+                        <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.transitPrice}
+                          value={(stayDrafts[stop.id] || {}).price || ""}
+                          onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), price: e.target.value } })} />
+                        <button className="wp-trip-add-btn" onClick={() => {
+                          const d = stayDrafts[stop.id] || {};
+                          addStay(trip.id, stop.id, d.name || "", d.nights || "", d.price || "");
+                          setStayDrafts({ ...stayDrafts, [stop.id]: {} });
+                        }}><PlusIcon size={14} /></button>
+                      </div>
+                    </div>
+
+                    <div className="wp-trip-subsection">
+                      <p className="wp-trip-subsection-label">{T.whereToEat}</p>
+                      {(stop.meals || []).map((m) => (
+                        <div key={m.id} className="wp-trip-highlight-row">
+                          <span style={{ fontSize: "0.85rem" }}>🍽</span>
+                          <span className="wp-trip-highlight-text">{m.name}{m.price ? " · " + m.price : ""}</span>
+                          <button className="wp-trip-remove-btn" onClick={() => removeMeal(trip.id, stop.id, m.id)} aria-label="Remove"><X size={12} /></button>
+                        </div>
+                      ))}
+                      <div className="wp-trip-add-highlight-row">
+                        <input type="text" className="wp-trip-highlight-input" placeholder={T.addMealPlaceholder}
+                          value={(mealDrafts[stop.id] || {}).name || ""}
+                          onChange={(e) => setMealDrafts({ ...mealDrafts, [stop.id]: { ...(mealDrafts[stop.id] || {}), name: e.target.value } })} />
+                        <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.transitPrice}
+                          value={(mealDrafts[stop.id] || {}).price || ""}
+                          onChange={(e) => setMealDrafts({ ...mealDrafts, [stop.id]: { ...(mealDrafts[stop.id] || {}), price: e.target.value } })} />
+                        <button className="wp-trip-add-btn" onClick={() => {
+                          const d = mealDrafts[stop.id] || {};
+                          addMeal(trip.id, stop.id, d.name || "", d.price || "");
+                          setMealDrafts({ ...mealDrafts, [stop.id]: {} });
+                        }}><PlusIcon size={14} /></button>
+                      </div>
+                      {countryData && countryData.food && countryData.food.length > 0 && (
+                        <div className="wp-trip-suggestions">
+                          {countryData.food.filter((f) => !stop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => (
+                            <button key={f.name} className="wp-trip-suggestion-chip" onClick={() => addMeal(trip.id, stop.id, f.name, "")}>
+                              <PlusIcon size={11} /> {f.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {i < trip.stops.length - 1 && trip.transits.find((tr) => tr.afterStopId === stop.id) && (
@@ -2349,6 +2495,9 @@ function Waypoint() {
                         onChange={(e) => updateTransit(trip.id, stop.id, "price", e.target.value)}
                       />
                     </div>
+                  )}
+                  {i < trip.stops.length - 1 && trip.transits.find((tr) => tr.afterStopId === stop.id) && trip.transits.find((tr) => tr.afterStopId === stop.id).mode && (
+                    <p className="wp-trip-typical-hint">{T.typicalRange}: {TRANSIT_TYPICAL[trip.transits.find((tr) => tr.afterStopId === stop.id).mode]}</p>
                   )}
                 </div>
               ))}
