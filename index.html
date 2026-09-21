@@ -153,6 +153,7 @@ const StarIcon = (p) => <IconBase {...p}><polygon points="12 2 15.09 8.26 22 9.2
 const LogOutIcon = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></IconBase>;
 const PlusIcon = (p) => <IconBase {...p}><path d="M12 5v14" /><path d="M5 12h14" /></IconBase>;
 const Download = (p) => <IconBase {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M7 10l5 5 5-5" /><path d="M12 15V3" /></IconBase>;
+const RefreshIcon = (p) => <IconBase {...p}><path d="M21 12a9 9 0 0 1-15.5 6.3L3 15" /><path d="M3 12a9 9 0 0 1 15.5-6.3L21 9" /><path d="M3 21v-6h6" /><path d="M21 3v6h-6" /></IconBase>;
 const GoogleG = (p) => (
   <svg width={p.size || 16} height={p.size || 16} viewBox="0 0 18 18">
     <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.79 2.73v2.27h2.9c1.7-1.56 2.68-3.87 2.68-6.64z" />
@@ -207,6 +208,7 @@ const UI_STRINGS = {
     mapLegendVisited: "Visited", mapLegendWant: "Want to visit", mapLegendNone: "Not marked",
     mapSignInPrompt: "Sign in to start marking countries on your map.",
     mapVisitedListTitle: "Visited", mapWantListTitle: "Want to visit", mapListEmpty: "Nothing here yet.",
+    pctOfWorldVisited: "of the world visited",
     myTrips: "Trips", tripsSubtitle: "Plan your next trip, day by day.",
     tripsSignInPrompt: "Sign in to start planning a trip.", noTripsYet: "No trips yet — start planning your next one.",
     newTrip: "New trip", tripNameLabel: "name", tripNamePlaceholder: "e.g. Thailand 2027",
@@ -222,6 +224,7 @@ const UI_STRINGS = {
     stayNamePlaceholder: "hotel or place name", nightsPlaceholder: "nights", addMealPlaceholder: "restaurant or dish",
     exportPdf: "Export PDF", typicalRange: "typical range",
     insertStopHere: "insert stop here", hoursLabel: "hours", minutesLabel: "min",
+    saveTrip: "Save", tripSaved: "Saved",
     articlesComingSoon: "Long-form guides, itineraries, and travel notes are on their way — check back soon.",
     productsComingSoon: "Downloadable guides, packing lists, and planning tools are on their way — check back soon.",
     newsletterIntro: "Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.",
@@ -272,6 +275,7 @@ const UI_STRINGS = {
     mapLegendVisited: "Visitado", mapLegendWant: "Quero visitar", mapLegendNone: "Não marcado",
     mapSignInPrompt: "Entra para começares a marcar países no teu mapa.",
     mapVisitedListTitle: "Visitados", mapWantListTitle: "Quero visitar", mapListEmpty: "Ainda nada aqui.",
+    pctOfWorldVisited: "do mundo visitado",
     myTrips: "Viagens", tripsSubtitle: "Planeia a tua próxima viagem, dia a dia.",
     tripsSignInPrompt: "Entra para começares a planear uma viagem.", noTripsYet: "Ainda sem viagens — começa a planear a próxima.",
     newTrip: "Nova viagem", tripNameLabel: "nome", tripNamePlaceholder: "ex: Tailândia 2027",
@@ -287,6 +291,7 @@ const UI_STRINGS = {
     stayNamePlaceholder: "nome do hotel ou lugar", nightsPlaceholder: "noites", addMealPlaceholder: "restaurante ou prato",
     exportPdf: "Exportar PDF", typicalRange: "intervalo típico",
     insertStopHere: "inserir paragem aqui", hoursLabel: "horas", minutesLabel: "min",
+    saveTrip: "Guardar", tripSaved: "Guardado",
     articlesComingSoon: "Guias mais longos, itinerários e notas de viagem estão a caminho — volta em breve.",
     productsComingSoon: "Guias para descarregar, listas de bagagem e ferramentas de planeamento estão a caminho — volta em breve.",
     newsletterIntro: "Recebe um novo destino no teu email todas as semanas — ideias de itinerários reais e notas de viagem, sem spam.",
@@ -903,6 +908,12 @@ function Waypoint() {
   const [authError, setAuthError] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
   const [countryStatuses, setCountryStatuses] = useState({});
+  const [visitedLog, setVisitedLog] = useState([]);
+  const [mapZoom, setMapZoom] = useState(1);
+  const [mapPan, setMapPan] = useState({ x: 0, y: 0 });
+  const [popoverCountry, setPopoverCountry] = useState(null);
+  const [cameFromMap, setCameFromMap] = useState(false);
+  const mapDragRef = useRef({ dragging: false, moved: false, startX: 0, startY: 0, panStartX: 0, panStartY: 0 });
   const [trips, setTrips] = useState({});
   const [activeTripId, setActiveTripId] = useState(null);
   const [showNewTripForm, setShowNewTripForm] = useState(false);
@@ -914,6 +925,7 @@ function Waypoint() {
   const [highlightDrafts, setHighlightDrafts] = useState({});
   const [stayDrafts, setStayDrafts] = useState({});
   const [mealDrafts, setMealDrafts] = useState({});
+  const [tripSaveStatus, setTripSaveStatus] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const normalize = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -934,7 +946,7 @@ function Waypoint() {
   const goToContinents = () => { setView("continents"); setContinentId(null); setCountryId(null); setHomeQuery(""); setHash(""); };
   const goToCountries = (cId) => { setContinentId(cId); setCountryId(null); setView("countries"); setContinentQuery(""); window.scrollTo(0, 0); setHash("continent=" + cId); };
   const goToDetail = (cty) => { setCountryId(cty.id); setView("detail"); window.scrollTo(0, 0); setHash("country=" + cty.id); };
-  const goToDetailFromSearch = (cty) => { if (cty.isExtra) return; setContinentId(cty.continentId); setCountryId(cty.id); setView("detail"); setHomeQuery(""); window.scrollTo(0, 0); setHash("country=" + cty.id); };
+  const goToDetailFromSearch = (cty) => { if (cty.isExtra) return; setCameFromMap(false); setContinentId(cty.continentId); setCountryId(cty.id); setView("detail"); setHomeQuery(""); window.scrollTo(0, 0); setHash("country=" + cty.id); };
   const goToStatic = (page) => { setView(page); setContinentId(null); setCountryId(null); window.scrollTo(0, 0); setHash(page); };
 
   const allCountriesFlat = continents.flatMap((c) => c.countries.map((cty) => ({ ...cty, continentId: c.id, continentName: c.name, continentColor: c.color })));
@@ -1098,11 +1110,13 @@ function Waypoint() {
             const data = doc.exists ? doc.data() : {};
             setCountryStatuses(data.countries || {});
             setTrips(data.trips || {});
+            setVisitedLog(data.visitedLog || []);
           })
-          .catch(() => { setCountryStatuses({}); setTrips({}); });
+          .catch(() => { setCountryStatuses({}); setTrips({}); setVisitedLog([]); });
       } else {
         setCountryStatuses({});
         setTrips({});
+        setVisitedLog([]);
       }
     });
     return () => unsub();
@@ -1143,15 +1157,98 @@ function Waypoint() {
   const setCountryStatus = (countryId, status) => {
     if (!user) { openAuthModal("signin"); return; }
     const next = { ...countryStatuses };
+    const wasVisited = next[countryId] === "visited";
     if (!status || next[countryId] === status) delete next[countryId];
     else next[countryId] = status;
     setCountryStatuses(next);
-    firebase.firestore().collection("users").doc(user.uid).set({ countries: next }, { merge: true }).catch(() => {});
+    const isNowVisited = next[countryId] === "visited";
+    let nextLog = visitedLog;
+    if (isNowVisited && !wasVisited) {
+      nextLog = [...visitedLog.filter((l) => l.id !== countryId), { id: countryId, date: new Date().toISOString() }];
+      setVisitedLog(nextLog);
+    } else if (!isNowVisited && wasVisited) {
+      nextLog = visitedLog.filter((l) => l.id !== countryId);
+      setVisitedLog(nextLog);
+    }
+    firebase.firestore().collection("users").doc(user.uid).set({ countries: next, visitedLog: nextLog }, { merge: true }).catch(() => {});
   };
+
+  const goToDetailFromMap = (cty) => {
+    if (!cty) return;
+    if (cty.isExtra) { setPopoverCountry(cty); return; }
+    goToDetailFromSearch(cty);
+    setCameFromMap(true);
+  };
+
+  const backFromDetail = () => {
+    if (cameFromMap) { setCameFromMap(false); goToStatic("map"); }
+    else { goToCountries(continentId); }
+  };
+
+  const MAP_ZOOM_MAX = 6;
+  const clampPan = (pan, zoom) => {
+    const maxX = (zoom - 1) * 260;
+    const maxY = (zoom - 1) * 140;
+    return { x: Math.max(-maxX, Math.min(maxX, pan.x)), y: Math.max(-maxY, Math.min(maxY, pan.y)) };
+  };
+  const mapZoomIn = () => setMapZoom((z) => Math.min(MAP_ZOOM_MAX, +(z + 0.6).toFixed(2)));
+  const mapZoomOut = () => setMapZoom((z) => {
+    const nz = Math.max(1, +(z - 0.6).toFixed(2));
+    if (nz === 1) setMapPan({ x: 0, y: 0 });
+    else setMapPan((p) => clampPan(p, nz));
+    return nz;
+  });
+  const mapZoomReset = () => { setMapZoom(1); setMapPan({ x: 0, y: 0 }); };
+  const handleMapWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.35 : 0.35;
+    setMapZoom((z) => {
+      const nz = Math.min(MAP_ZOOM_MAX, Math.max(1, +(z + delta).toFixed(2)));
+      if (nz === 1) setMapPan({ x: 0, y: 0 });
+      return nz;
+    });
+  };
+  const handleMapPointerDown = (e) => {
+    mapDragRef.current = { dragging: true, moved: false, startX: e.clientX, startY: e.clientY, panStartX: mapPan.x, panStartY: mapPan.y };
+  };
+  const handleMapPointerMove = (e) => {
+    if (!mapDragRef.current.dragging) return;
+    const dx = e.clientX - mapDragRef.current.startX;
+    const dy = e.clientY - mapDragRef.current.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) mapDragRef.current.moved = true;
+    if (mapZoom > 1) setMapPan(clampPan({ x: mapDragRef.current.panStartX + dx, y: mapDragRef.current.panStartY + dy }, mapZoom));
+  };
+  const handleMapPointerUp = () => { mapDragRef.current.dragging = false; };
+  const handleMapCountryClick = (cty) => {
+    if (mapDragRef.current.moved) return;
+    goToDetailFromMap(cty);
+  };
+
+  const pctVisited = allCountriesForMap.length ? Math.round((countryStatuses && Object.values(countryStatuses).filter((s) => s === "visited").length) / allCountriesForMap.length * 100) : 0;
+
+  const visitedSparkline = (() => {
+    if (visitedLog.length < 2) return null;
+    const sorted = [...visitedLog].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const w = 220, h = 46, pad = 3;
+    const maxY = sorted.length;
+    const pts = sorted.map((entry, i) => {
+      const x = pad + (i / (sorted.length - 1)) * (w - pad * 2);
+      const y = h - pad - ((i + 1) / maxY) * (h - pad * 2);
+      return x.toFixed(1) + "," + y.toFixed(1);
+    });
+    return { d: "M" + pts.join(" L"), w, h };
+  })();
+
 
   const saveTrips = (next) => {
     setTrips(next);
     if (user) firebase.firestore().collection("users").doc(user.uid).set({ trips: next }, { merge: true }).catch(() => {});
+  };
+
+  const saveTripNow = (tripId) => {
+    saveTrips({ ...trips });
+    setTripSaveStatus("saved");
+    setTimeout(() => setTripSaveStatus(""), 1800);
   };
 
   const dayCount = (start, end) => {
@@ -1292,11 +1389,11 @@ function Waypoint() {
       stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: s.stays.filter((st) => st.id !== stayId) } : s)),
     }));
   };
-  const addMeal = (tripId, stopId, name, price) => {
+  const addMeal = (tripId, stopId, name) => {
     if (!name.trim()) return;
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim(), price: price || "" }] } : s)),
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim() }] } : s)),
     }));
   };
   const removeMeal = (tripId, stopId, mealId) => {
@@ -1309,8 +1406,7 @@ function Waypoint() {
   const tripTotalCost = (trip) => {
     const transitSum = trip.transits.reduce((sum, tr) => sum + (parseFloat(tr.price) || 0), 0);
     const staySum = trip.stops.reduce((sum, s) => sum + (s.stays || []).reduce((ss, st) => ss + (parseFloat(st.price) || 0), 0), 0);
-    const mealSum = trip.stops.reduce((sum, s) => sum + (s.meals || []).reduce((ms, m) => ms + (parseFloat(m.price) || 0), 0), 0);
-    return transitSum + staySum + mealSum;
+    return transitSum + staySum;
   };
 
   const TRANSIT_TYPICAL = {
@@ -1325,27 +1421,75 @@ function Waypoint() {
     if (!window.jspdf) return;
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    let y = 20;
-    doc.setFontSize(18); doc.text(trip.name, 15, y); y += 8;
-    doc.setFontSize(10); doc.setTextColor(120);
-    doc.text((trip.startDate || "?") + " - " + (trip.endDate || "?") + " · " + dayCount(trip.startDate, trip.endDate) + " " + T.days, 15, y); y += 10;
-    doc.setTextColor(0);
-    trip.stops.forEach((stop, i) => {
-      if (y > 270) { doc.addPage(); y = 20; }
-      doc.setFontSize(13); doc.text((stop.city || T.cityPlaceholder) + "  (" + T.day + " " + stop.dayStart + "-" + stop.dayEnd + ")", 15, y); y += 7;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const navy = [20, 32, 53];
+    const gold = [184, 134, 62];
+    const inkSoft = [131, 121, 95];
+    const ink = [31, 27, 20];
+    const hairline = [225, 214, 188];
+
+    doc.setFillColor(navy[0], navy[1], navy[2]);
+    doc.rect(0, 0, pageWidth, 34, "F");
+    doc.setDrawColor(255, 255, 255);
+    doc.circle(margin + 5, 17, 5, "S");
+    doc.setFillColor(gold[0], gold[1], gold[2]);
+    doc.circle(margin + 5, 17, 2, "F");
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text("WAYPOINT", margin + 15, 14);
+    doc.setFontSize(18);
+    doc.text(trip.name, margin + 15, 25);
+
+    let y = 46;
+    doc.setFontSize(10);
+    doc.setTextColor(inkSoft[0], inkSoft[1], inkSoft[2]);
+    doc.text((trip.startDate || "?") + " - " + (trip.endDate || "?") + "  ·  " + dayCount(trip.startDate, trip.endDate) + " " + T.days, margin, y);
+    y += 10;
+
+    trip.stops.forEach((stop) => {
+      const lineCount = stop.highlights.length + (stop.stays || []).length + (stop.meals || []).length;
+      const boxHeight = 16 + lineCount * 5.5;
+      if (y + boxHeight > 275) { doc.addPage(); y = 20; }
+
+      doc.setDrawColor(hairline[0], hairline[1], hairline[2]);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(margin, y, pageWidth - margin * 2, boxHeight, 3, 3, "S");
+
+      let iy = y + 10;
+      doc.setFontSize(13);
+      doc.setTextColor(ink[0], ink[1], ink[2]);
+      doc.text(stop.city || T.cityPlaceholder, margin + 6, iy);
+      doc.setFontSize(9);
+      doc.setTextColor(inkSoft[0], inkSoft[1], inkSoft[2]);
+      doc.text(T.day + " " + stop.dayStart + "-" + stop.dayEnd, pageWidth - margin - 6, iy, { align: "right" });
+      iy += 7;
+
       doc.setFontSize(10);
-      stop.highlights.forEach((h) => { doc.text("• " + h.text, 20, y); y += 5.5; });
-      (stop.stays || []).forEach((st) => { doc.text("🏨 " + st.name + (st.nights ? " · " + st.nights + " " + T.days : "") + (st.price ? " · " + st.price : ""), 20, y); y += 5.5; });
-      (stop.meals || []).forEach((m) => { doc.text("🍽 " + m.name + (m.price ? " · " + m.price : ""), 20, y); y += 5.5; });
+      doc.setTextColor(60, 55, 45);
+      stop.highlights.forEach((h) => { doc.text("- " + h.text, margin + 8, iy); iy += 5.5; });
+      (stop.stays || []).forEach((st) => { doc.text(T.whereToSleep + ": " + st.name + (st.nights ? " (" + st.nights + " " + T.nights + ")" : "") + (st.price ? " - " + st.price : ""), margin + 8, iy); iy += 5.5; });
+      (stop.meals || []).forEach((m) => { doc.text(T.whereToEat + ": " + m.name, margin + 8, iy); iy += 5.5; });
+
+      y += boxHeight + 4;
+
       const transit = trip.transits.find((tr) => tr.afterStopId === stop.id);
       if (transit && transit.mode) {
-        const durTxt = (transit.durationHours || transit.durationMinutes) ? " · " + (transit.durationHours || 0) + "h" + (transit.durationMinutes ? (transit.durationMinutes) + "m" : "") : "";
-        y += 1; doc.setTextColor(140); doc.text("→ " + transit.mode + durTxt + (transit.price ? " · " + transit.price : ""), 15, y); doc.setTextColor(0); y += 7;
+        const durTxt = (transit.durationHours || transit.durationMinutes) ? " · " + (transit.durationHours || 0) + "h" + (transit.durationMinutes ? transit.durationMinutes + "m" : "") : "";
+        doc.setFontSize(9);
+        doc.setTextColor(gold[0], gold[1], gold[2]);
+        doc.text(transit.mode.toUpperCase() + durTxt + (transit.price ? " · " + transit.price : ""), margin + 6, y);
+        y += 8;
       }
-      y += 3;
     });
-    y += 4;
-    doc.setFontSize(12); doc.text(T.estimatedCost + ": €" + tripTotalCost(trip).toFixed(0), 15, y);
+
+    y += 3;
+    doc.setDrawColor(hairline[0], hairline[1], hairline[2]);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 9;
+    doc.setFontSize(12);
+    doc.setTextColor(ink[0], ink[1], ink[2]);
+    doc.text(T.estimatedCost + ": EUR " + tripTotalCost(trip).toFixed(0), margin, y);
     doc.save(trip.name.replace(/[^a-z0-9]/gi, "_") + ".pdf");
   };
 
@@ -1534,11 +1678,11 @@ function Waypoint() {
         .wp-status-row { display: flex; gap: 0.6rem; margin-top: 0.9rem; }
         .wp-status-btn { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.4rem 0.9rem; font-family: 'Work Sans', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
         .wp-status-btn:hover { border-color: var(--ink-soft); }
-        .wp-status-visited.wp-status-active { background: #E4EFE2; border-color: #6B9E68; color: #3C6B3A; }
+        .wp-status-visited.wp-status-active { background: #E4EFE9; border-color: #3F8F6F; color: #2E6B52; }
         .wp-status-want.wp-status-active { background: #FBF1DF; border-color: var(--gold); color: #8A6425; }
 
         .wp-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 0.5rem; vertical-align: middle; }
-        .wp-status-dot-visited { background: #6B9E68; }
+        .wp-status-dot-visited { background: #3F8F6F; }
         .wp-status-dot-want { background: var(--gold); }
         .wp-status-dot-none { background: #FFFFFF; border: 1px solid var(--hairline); box-sizing: border-box; }
 
@@ -1546,16 +1690,34 @@ function Waypoint() {
         .wp-map-legend { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-bottom: 1rem; font-size: 0.85rem; color: var(--ink-soft); }
         .wp-map-legend-item { display: inline-flex; align-items: center; }
         .wp-map-legend-item .wp-status-dot { margin-left: 0; margin-right: 0.45rem; }
-        .wp-map-frame { background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.8rem; overflow: hidden; }
-        .wp-world-map { width: 100%; height: auto; display: block; }
-        .wp-map-country { stroke: var(--hairline); stroke-width: 1; cursor: pointer; transition: opacity 0.12s ease, fill 0.12s ease; }
-        .wp-map-country:hover { opacity: 0.75; }
+        .wp-map-frame { position: relative; background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.8rem; overflow: hidden; }
+        .wp-world-map { width: 100%; height: auto; display: block; transform-origin: center center; }
+        .wp-map-country { stroke: var(--hairline); stroke-width: 1; cursor: pointer; transition: opacity 0.12s ease, fill 0.12s ease, filter 0.12s ease; }
+        .wp-map-country:hover { filter: brightness(1.08); }
         .wp-map-status-none { fill: #FFFFFF; }
-        .wp-map-status-visited { fill: #6B9E68; }
+        .wp-map-status-visited { fill: #3F8F6F; }
         .wp-map-status-want { fill: var(--gold); }
         .wp-map-marker { stroke: var(--hairline); stroke-width: 1.5; }
         .wp-map-status-none:hover { fill: #F6F2E8; }
         .wp-map-bg-country { fill: #FFFFFF; stroke: var(--hairline); stroke-width: 1; pointer-events: none; }
+        .wp-map-bg-country.wp-map-clickable { pointer-events: auto; cursor: pointer; }
+        .wp-map-bg-country.wp-map-clickable:hover { fill: #F6F2E8; }
+        .wp-map-marker.wp-map-clickable { cursor: pointer; }
+
+        .wp-map-progress-row { display: flex; align-items: center; gap: 1.2rem; background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; }
+        .wp-map-progress-stat { flex-shrink: 0; }
+        .wp-map-progress-value { font-family: 'Fraunces', serif; font-size: 1.8rem; margin: 0; color: var(--ink); line-height: 1; }
+        .wp-map-progress-label { font-size: 0.75rem; color: var(--ink-soft); margin: 0.2rem 0 0; }
+        .wp-map-sparkline { flex: 1; height: 46px; min-width: 0; }
+
+        .wp-map-zoom-controls { position: absolute; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; gap: 0.3rem; }
+        .wp-map-zoom-controls button { width: 32px; height: 32px; border-radius: 8px; background: #fff; border: 1px solid var(--hairline); color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .wp-map-zoom-controls button:hover { border-color: var(--gold); }
+        .wp-map-zoom-reset { margin-top: 0.2rem; }
+
+        .wp-map-popover { background: #fff; border-radius: 14px; padding: 1.3rem 1.4rem; max-width: 320px; width: 90%; position: relative; }
+        .wp-map-popover-name { font-family: 'Fraunces', serif; font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+        .wp-map-popover-cont { font-size: 0.82rem; color: var(--ink-soft); margin: 0.2rem 0 0; }
 
         .wp-map-search-results { background: #fff; border: 1px solid var(--hairline); border-top: none; border-radius: 0 0 10px 10px; margin-bottom: 1.4rem; overflow: hidden; }
         .wp-map-search-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 0.8rem 1rem; border-top: 1px solid var(--hairline); }
@@ -1602,16 +1764,16 @@ function Waypoint() {
         .wp-trip-remove-btn:hover { color: #B5453D; }
         .wp-trip-highlight-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0; border-top: 1px solid var(--hairline); }
         .wp-trip-highlight-text { flex: 1; font-size: 0.85rem; }
-        .wp-trip-add-highlight-row { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
-        .wp-trip-highlight-input { flex: 1; font-size: 0.85rem; padding: 0.4rem 0.6rem; border: 1px solid var(--hairline); border-radius: 8px; }
+        .wp-trip-add-highlight-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
+        .wp-trip-highlight-input { flex: 1 1 100px; min-width: 0; font-size: 0.85rem; padding: 0.4rem 0.6rem; border: 1px solid var(--hairline); border-radius: 8px; }
         .wp-trip-add-btn { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; }
         .wp-trip-suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
         .wp-trip-suggestion-chip { display: flex; align-items: center; gap: 0.25rem; font-size: 0.76rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.25rem 0.6rem; cursor: pointer; color: var(--ink-soft); }
         .wp-trip-suggestion-chip:hover { border-color: var(--gold); color: var(--ink); }
-        .wp-trip-transit-row { display: flex; gap: 0.4rem; padding: 0.5rem 0.2rem; margin-left: 1rem; border-left: 2px dashed var(--hairline); }
-        .wp-trip-transit-select, .wp-trip-transit-input { font-size: 0.78rem; padding: 0.35rem 0.5rem; border: 1px solid var(--hairline); border-radius: 8px; background: #fff; }
-        .wp-trip-transit-select { flex: 0 0 auto; }
-        .wp-trip-transit-input { flex: 1; min-width: 0; }
+        .wp-trip-transit-row { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.5rem 0.2rem; margin-left: 1rem; border-left: 2px dashed var(--hairline); }
+        .wp-trip-transit-select, .wp-trip-transit-input { font-size: 0.78rem; padding: 0.35rem 0.5rem; border: 1px solid var(--hairline); border-radius: 8px; background: #fff; min-width: 0; }
+        .wp-trip-transit-select { flex: 1 1 6rem; }
+        .wp-trip-transit-input { flex: 1 1 5rem; min-width: 0; }
         .wp-trip-add-stop-btn { display: flex; align-items: center; justify-content: center; gap: 0.4rem; width: 100%; background: none; border: 1px dashed var(--hairline); border-radius: 10px; padding: 0.6rem; font-size: 0.85rem; color: var(--ink-soft); cursor: pointer; margin: 0.6rem 0 1.2rem; }
         .wp-trip-add-stop-btn:hover { border-color: var(--gold); color: var(--ink); }
         .wp-trip-footer-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
@@ -1621,6 +1783,8 @@ function Waypoint() {
         .wp-trip-typical-hint { font-size: 0.72rem; color: var(--ink-soft); margin: 0.2rem 0 0.6rem 1.2rem; }
         .wp-trip-export-btn { display: flex; align-items: center; gap: 0.4rem; background: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 1rem; font-size: 0.82rem; color: var(--ink); cursor: pointer; margin-bottom: 1.2rem; }
         .wp-trip-export-btn:hover { border-color: var(--gold); }
+        .wp-trip-action-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.2rem; }
+        .wp-trip-action-row .wp-trip-export-btn { margin-bottom: 0; }
         .wp-trip-insert-before-btn { display: flex; align-items: center; gap: 0.3rem; width: 100%; background: none; border: none; font-size: 0.7rem; color: var(--ink-soft); cursor: pointer; padding: 0.25rem 0.4rem; opacity: 0.55; }
         .wp-trip-insert-before-btn:hover { opacity: 1; color: var(--gold); }
         .wp-trip-day-range-edit { display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--ink-soft); white-space: nowrap; }
@@ -1956,7 +2120,7 @@ function Waypoint() {
 
         {view === "detail" && continent && country && (
           <div>
-            <button className="wp-back" onClick={() => goToCountries(continentId)}><ArrowLeft size={15} /> {continent.name}</button>
+            <button className="wp-back" onClick={backFromDetail}><ArrowLeft size={15} /> {cameFromMap ? T.myMap : continent.name}</button>
 
             <div className="wp-detail-hero">
               <h2 className="wp-detail-name"><span>{country.flag}</span>{country.name}</h2>
@@ -2107,6 +2271,20 @@ function Waypoint() {
               </div>
             )}
 
+            {user && (
+              <div className="wp-map-progress-row">
+                <div className="wp-map-progress-stat">
+                  <p className="wp-map-progress-value">{pctVisited}%</p>
+                  <p className="wp-map-progress-label">{T.pctOfWorldVisited}</p>
+                </div>
+                {visitedSparkline && (
+                  <svg viewBox={"0 0 " + visitedSparkline.w + " " + visitedSparkline.h} className="wp-map-sparkline" preserveAspectRatio="none">
+                    <path d={visitedSparkline.d} fill="none" stroke="#3F8F6F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
+            )}
+
             <div className="wp-map-legend">
               <span className="wp-map-legend-item"><span className="wp-status-dot wp-status-dot-visited"></span>{T.mapLegendVisited}</span>
               <span className="wp-map-legend-item"><span className="wp-status-dot wp-status-dot-want"></span>{T.mapLegendWant}</span>
@@ -2163,18 +2341,32 @@ function Waypoint() {
               </div>
             )}
 
-            <div className="wp-map-frame">
-              <svg viewBox="0 0 2000 1001" className="wp-world-map">
+            <div
+              className="wp-map-frame"
+              onWheel={handleMapWheel}
+              onPointerDown={handleMapPointerDown}
+              onPointerMove={handleMapPointerMove}
+              onPointerUp={handleMapPointerUp}
+              onPointerLeave={handleMapPointerUp}
+              style={{ cursor: mapZoom > 1 ? "grab" : "default", touchAction: "none" }}
+            >
+              <svg
+                viewBox="0 0 2000 1001"
+                className="wp-world-map"
+                style={{ transform: "translate(" + mapPan.x + "px," + mapPan.y + "px) scale(" + mapZoom + ")", transition: mapDragRef.current.dragging ? "none" : "transform 0.18s ease-out" }}
+              >
                 {Object.keys(WORLD_MAP_BG_PATHS).map((iso) => {
                   const key = iso.toLowerCase();
                   const status = countryStatuses[key];
+                  const cty = allCountriesForMap.find((c) => c.id === key);
                   return (
                     <path
                       key={"bg-" + iso}
                       d={WORLD_MAP_BG_PATHS[iso]}
-                      className={status ? "wp-map-country wp-map-status-" + status : "wp-map-bg-country"}
+                      className={status ? "wp-map-country wp-map-status-" + status : "wp-map-bg-country wp-map-clickable"}
+                      onClick={() => handleMapCountryClick(cty)}
                     >
-                      <title>{WORLD_MAP_EXTRA_META[key] ? (lang === "pt" ? WORLD_MAP_EXTRA_META[key].namePt : WORLD_MAP_EXTRA_META[key].nameEn) : iso}</title>
+                      <title>{cty ? cty.name : iso}</title>
                     </path>
                   );
                 })}
@@ -2183,7 +2375,7 @@ function Waypoint() {
                     key={c.id}
                     d={WORLD_MAP_PATHS[c.id]}
                     className={"wp-map-country wp-map-status-" + (countryStatuses[c.id] || "none")}
-                    onClick={() => goToDetailFromSearch(c)}
+                    onClick={() => handleMapCountryClick(c)}
                   >
                     <title>{c.name}</title>
                   </path>
@@ -2195,24 +2387,60 @@ function Waypoint() {
                     cy={WORLD_MAP_MARKERS[c.id].y}
                     r="9"
                     className={"wp-map-country wp-map-marker wp-map-status-" + (countryStatuses[c.id] || "none")}
-                    onClick={() => goToDetailFromSearch(c)}
+                    onClick={() => handleMapCountryClick(c)}
                   >
                     <title>{c.name}</title>
                   </circle>
                 ))}
-                {Object.keys(WORLD_MAP_EXTRA_MARKERS).map((key) => (
-                  <circle
-                    key={"extra-" + key}
-                    cx={WORLD_MAP_EXTRA_MARKERS[key].x}
-                    cy={WORLD_MAP_EXTRA_MARKERS[key].y}
-                    r="5"
-                    className={"wp-map-country wp-map-marker wp-map-status-" + (countryStatuses[key] || "none")}
-                  >
-                    <title>{lang === "pt" ? WORLD_MAP_EXTRA_META[key].namePt : WORLD_MAP_EXTRA_META[key].nameEn}</title>
-                  </circle>
-                ))}
+                {Object.keys(WORLD_MAP_EXTRA_MARKERS).map((key) => {
+                  const cty = allCountriesForMap.find((c) => c.id === key);
+                  return (
+                    <circle
+                      key={"extra-" + key}
+                      cx={WORLD_MAP_EXTRA_MARKERS[key].x}
+                      cy={WORLD_MAP_EXTRA_MARKERS[key].y}
+                      r="5"
+                      className={"wp-map-country wp-map-marker wp-map-clickable wp-map-status-" + (countryStatuses[key] || "none")}
+                      onClick={() => handleMapCountryClick(cty)}
+                    >
+                      <title>{cty ? cty.name : key}</title>
+                    </circle>
+                  );
+                })}
               </svg>
+
+              <div className="wp-map-zoom-controls">
+                <button onClick={mapZoomIn} aria-label="Zoom in"><PlusIcon size={16} /></button>
+                <button onClick={mapZoomOut} aria-label="Zoom out"><span style={{ fontSize: "18px", lineHeight: 1 }}>−</span></button>
+                {mapZoom > 1 && <button onClick={mapZoomReset} className="wp-map-zoom-reset" aria-label="Reset zoom"><RefreshIcon size={14} /></button>}
+              </div>
             </div>
+
+            {popoverCountry && (
+              <div className="wp-modal-overlay" onClick={() => setPopoverCountry(null)}>
+                <div className="wp-map-popover" onClick={(e) => e.stopPropagation()}>
+                  <button className="wp-modal-close" onClick={() => setPopoverCountry(null)} aria-label="Close"><X size={16} /></button>
+                  <p className="wp-map-popover-name"><span>{popoverCountry.flag}</span>{popoverCountry.name}</p>
+                  <p className="wp-map-popover-cont">{popoverCountry.continentName}</p>
+                  {firebaseReady && !authLoading && (
+                    <div className="wp-status-row" style={{ marginTop: "0.8rem" }}>
+                      <button
+                        className={"wp-status-btn wp-status-visited" + (countryStatuses[popoverCountry.id] === "visited" ? " wp-status-active" : "")}
+                        onClick={() => setCountryStatus(popoverCountry.id, "visited")}
+                      >
+                        <CheckCircle size={14} /> {T.markVisited}
+                      </button>
+                      <button
+                        className={"wp-status-btn wp-status-want" + (countryStatuses[popoverCountry.id] === "want" ? " wp-status-active" : "")}
+                        onClick={() => setCountryStatus(popoverCountry.id, "want")}
+                      >
+                        <StarIcon size={13} /> {T.markWantToVisit}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="wp-map-lists">
               <div className="wp-map-list-col">
@@ -2376,9 +2604,14 @@ function Waypoint() {
                 </div>
               </div>
 
-              <button className="wp-trip-export-btn" onClick={() => exportTripPDF(trip)}>
-                <Download size={14} /> {T.exportPdf}
-              </button>
+              <div className="wp-trip-action-row">
+                <button className="wp-trip-export-btn" onClick={() => saveTripNow(trip.id)}>
+                  <CheckCircle size={14} /> {tripSaveStatus === "saved" ? T.tripSaved : T.saveTrip}
+                </button>
+                <button className="wp-trip-export-btn" onClick={() => exportTripPDF(trip)}>
+                  <Download size={14} /> {T.exportPdf}
+                </button>
+              </div>
 
               {trip.stops.map((stop, i) => (
                 <div key={stop.id}>
@@ -2480,27 +2713,30 @@ function Waypoint() {
                       {(stop.meals || []).map((m) => (
                         <div key={m.id} className="wp-trip-highlight-row">
                           <span style={{ fontSize: "0.85rem" }}>🍽</span>
-                          <span className="wp-trip-highlight-text">{m.name}{m.price ? " · " + m.price : ""}</span>
+                          <span className="wp-trip-highlight-text">{m.name}</span>
                           <button className="wp-trip-remove-btn" onClick={() => removeMeal(trip.id, stop.id, m.id)} aria-label="Remove"><X size={12} /></button>
                         </div>
                       ))}
                       <div className="wp-trip-add-highlight-row">
                         <input type="text" className="wp-trip-highlight-input" placeholder={T.addMealPlaceholder}
                           value={(mealDrafts[stop.id] || {}).name || ""}
-                          onChange={(e) => setMealDrafts({ ...mealDrafts, [stop.id]: { ...(mealDrafts[stop.id] || {}), name: e.target.value } })} />
-                        <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.transitPrice}
-                          value={(mealDrafts[stop.id] || {}).price || ""}
-                          onChange={(e) => setMealDrafts({ ...mealDrafts, [stop.id]: { ...(mealDrafts[stop.id] || {}), price: e.target.value } })} />
+                          onChange={(e) => setMealDrafts({ ...mealDrafts, [stop.id]: { ...(mealDrafts[stop.id] || {}), name: e.target.value } })}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && ((mealDrafts[stop.id] || {}).name || "").trim()) {
+                              addMeal(trip.id, stop.id, mealDrafts[stop.id].name);
+                              setMealDrafts({ ...mealDrafts, [stop.id]: {} });
+                            }
+                          }} />
                         <button className="wp-trip-add-btn" onClick={() => {
                           const d = mealDrafts[stop.id] || {};
-                          addMeal(trip.id, stop.id, d.name || "", d.price || "");
+                          addMeal(trip.id, stop.id, d.name || "");
                           setMealDrafts({ ...mealDrafts, [stop.id]: {} });
                         }}><PlusIcon size={14} /></button>
                       </div>
                       {countryData && countryData.food && countryData.food.length > 0 && (
                         <div className="wp-trip-suggestions">
                           {countryData.food.filter((f) => !stop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => (
-                            <button key={f.name} className="wp-trip-suggestion-chip" onClick={() => addMeal(trip.id, stop.id, f.name, "")}>
+                            <button key={f.name} className="wp-trip-suggestion-chip" onClick={() => addMeal(trip.id, stop.id, f.name)}>
                               <PlusIcon size={11} /> {f.name}
                             </button>
                           ))}
