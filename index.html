@@ -4,19 +4,19 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#F6F2E8" />
-<title>Waypoint — a country explorer</title>
-<meta name="description" content="Explore the world one country at a time: real itineraries, budgets, food, and practical tips for 72 countries, all in one place." />
+<title>Waypoint — explore, track, and plan your trips</title>
+<meta name="description" content="Real itineraries, costs, and food for 72 countries. Track where you've been on an interactive map, and plan your next trip day by day — all ad-free, in one place." />
 <link rel="canonical" href="https://hellowaypoint.com/" />
 
 <meta property="og:type" content="website" />
-<meta property="og:title" content="Waypoint — a country explorer" />
-<meta property="og:description" content="Explore the world one country at a time: real itineraries, budgets, food, and practical tips for 72 countries, all in one place." />
+<meta property="og:title" content="Waypoint — explore, track, and plan your trips" />
+<meta property="og:description" content="Real itineraries, costs, and food for 72 countries. Track where you've been on an interactive map, and plan your next trip day by day — all ad-free, in one place." />
 <meta property="og:url" content="https://hellowaypoint.com/" />
 <meta property="og:image" content="https://hellowaypoint.com/assets/og-default.png" />
 <meta property="og:site_name" content="Waypoint" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Waypoint — a country explorer" />
-<meta name="twitter:description" content="Explore the world one country at a time: real itineraries, budgets, food, and practical tips for 72 countries, all in one place." />
+<meta name="twitter:description" content="Real itineraries, costs, and food for 72 countries. Track where you've been on an interactive map, and plan your next trip day by day — all ad-free, in one place." />
 <meta name="twitter:image" content="https://hellowaypoint.com/assets/og-default.png" />
 
 <meta name="google-site-verification" content="4JmgfcnBBGRxPqEDnHy6j5GsvcYFCPaOFdpOCEea1os" />
@@ -168,8 +168,11 @@ const UI_STRINGS = {
   en: {
     home: "Home", articles: "Articles", products: "Products", newsletter: "Newsletter", aboutMe: "About me",
     heroHeadline: "Explore the world, one waypoint at a time.",
-    heroTagline: "Explore the world one continent at a time — pick a place, and find what to see and how many days to give it.",
+    heroTagline: "Everything for your next trip, in one place: real country guides, an interactive map to track where you've been and where you want to go, and a planner to build your itinerary day by day.",
     statsCountries: "countries", statsAttractions: "attractions", statsLanguages: "languages",
+    featExploreTitle: "Explore", featExploreDesc: "Real itineraries, costs, and food for every country.",
+    featTrackTitle: "Track", featTrackDesc: "Mark where you've been and where you want to go on an interactive map.",
+    featPlanTitle: "Plan", featPlanDesc: "Build your next trip day by day, then export it.",
     allContinents: "All continents", countries: "countries", capital: "Capital",
     topAttractions: "Top attractions", suggestedItinerary: "Suggested itinerary", days: "days", day: "day",
     tripEssentials: "Trip essentials", dailyBudget: "Daily budget", visa: "Visa",
@@ -235,8 +238,11 @@ const UI_STRINGS = {
   pt: {
     home: "Início", articles: "Artigos", products: "Produtos", newsletter: "Newsletter", aboutMe: "Sobre mim",
     heroHeadline: "Explora o mundo, um waypoint de cada vez.",
-    heroTagline: "Explora o mundo continente a continente — escolhe um lugar e descobre o que ver e quantos dias dedicar-lhe.",
+    heroTagline: "Tudo para a tua próxima viagem, num só lugar: guias reais de cada país, um mapa interativo para registares onde já foste e onde queres ir, e um planeador para montares o itinerário dia a dia.",
     statsCountries: "países", statsAttractions: "atrações", statsLanguages: "línguas",
+    featExploreTitle: "Explorar", featExploreDesc: "Itinerários, custos e comida reais para cada país.",
+    featTrackTitle: "Registar", featTrackDesc: "Marca onde já foste e onde queres ir num mapa interativo.",
+    featPlanTitle: "Planear", featPlanDesc: "Monta a tua próxima viagem dia a dia, depois exporta-a.",
     allContinents: "Todos os continentes", countries: "países", capital: "Capital",
     topAttractions: "Principais atrações", suggestedItinerary: "Itinerário sugerido", days: "dias", day: "dia",
     tripEssentials: "Essenciais da viagem", dailyBudget: "Orçamento diário", visa: "Visto",
@@ -1524,10 +1530,17 @@ function Waypoint() {
         .wp-title { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
         .wp-hero-headline { font-family: 'Fraunces', serif; font-size: 2.6rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.04; margin: 0 0 0.9rem; }
         @media (min-width: 600px) { .wp-hero-headline { font-size: 3.1rem; } }
-        .wp-tagline { font-size: 0.96rem; color: var(--ink-soft); margin: 0 0 1.1rem; max-width: 42ch; line-height: 1.5; }
-        .wp-hero-stats { display: flex; gap: 1.7rem; }
+        .wp-tagline { font-size: 0.96rem; color: var(--ink-soft); margin: 0 0 1.1rem; max-width: 54ch; line-height: 1.5; }
+        .wp-hero-stats { display: flex; gap: 1.7rem; margin-bottom: 1.4rem; }
         .wp-hero-stat b { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; display: block; line-height: 1.2; }
         .wp-hero-stat span { font-size: 0.76rem; color: var(--ink-soft); }
+        .wp-hero-features { display: flex; flex-direction: column; gap: 0.6rem; max-width: 30rem; }
+        .wp-hero-feature-card { display: flex; align-items: flex-start; gap: 0.7rem; text-align: left; background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.7rem 0.9rem; cursor: pointer; color: var(--ink); }
+        .wp-hero-feature-card:hover { border-color: var(--gold); }
+        .wp-hero-feature-card svg { flex-shrink: 0; margin-top: 0.15rem; color: var(--gold); }
+        .wp-hero-feature-card b { display: block; font-family: 'Fraunces', serif; font-size: 0.95rem; font-weight: 600; margin-bottom: 0.1rem; }
+        .wp-hero-feature-card span { display: block; font-size: 0.8rem; color: var(--ink-soft); line-height: 1.35; }
+        @media (min-width: 640px) { .wp-hero-features { flex-direction: row; } .wp-hero-feature-card { flex: 1; } }
 
         .wp-back { display: inline-flex; align-items: center; gap: 0.4rem; background: none; border: none; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink-soft); padding: 0.3rem 0; margin-bottom: 1.1rem; }
         .wp-back:hover { color: var(--ink); }
@@ -1922,6 +1935,20 @@ function Waypoint() {
                 <div className="wp-hero-stat"><b>{allCountriesFlat.length}</b><span>{T.statsCountries}</span></div>
                 <div className="wp-hero-stat"><b>{totalAttractions}+</b><span>{T.statsAttractions}</span></div>
                 <div className="wp-hero-stat"><b>2</b><span>{T.statsLanguages}</span></div>
+              </div>
+              <div className="wp-hero-features">
+                <button className="wp-hero-feature-card" onClick={() => document.querySelector(".wp-continent-grid") && document.querySelector(".wp-continent-grid").scrollIntoView({ behavior: "smooth" })}>
+                  <Compass size={18} />
+                  <div><b>{T.featExploreTitle}</b><span>{T.featExploreDesc}</span></div>
+                </button>
+                <button className="wp-hero-feature-card" onClick={() => goToStatic("map")}>
+                  <MapPinIcon size={18} />
+                  <div><b>{T.featTrackTitle}</b><span>{T.featTrackDesc}</span></div>
+                </button>
+                <button className="wp-hero-feature-card" onClick={() => goToStatic("trips")}>
+                  <CalendarClock size={18} />
+                  <div><b>{T.featPlanTitle}</b><span>{T.featPlanDesc}</span></div>
+                </button>
               </div>
             </div>
             <div className="wp-hero-visual"><HeroIllustration /></div>
