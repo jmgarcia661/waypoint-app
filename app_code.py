@@ -2891,6 +2891,10 @@ function Waypoint() {
                 </div>
               ))}
 
+              <button className="wp-trip-add-stop-btn" onClick={() => addStop(trip.id)}>
+                <PlusIcon size={15} /> {T.addStop}
+              </button>
+
               <div className="wp-trip-notes-box">
                 <p className="wp-trip-notes-title">{T.dayNotes}</p>
                 <p className="wp-trip-notes-subtitle">{T.dayNotesSubtitle}</p>
@@ -2927,10 +2931,6 @@ function Waypoint() {
                   })}
                 </div>
               </div>
-
-              <button className="wp-trip-add-stop-btn" onClick={() => addStop(trip.id)}>
-                <PlusIcon size={15} /> {T.addStop}
-              </button>
 
               <div className="wp-trip-footer-actions">
                 {trip.status !== "done" && (
