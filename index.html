@@ -228,6 +228,15 @@ const UI_STRINGS = {
     exportPdf: "Export PDF", typicalRange: "typical range",
     insertStopHere: "insert stop here", hoursLabel: "hours", minutesLabel: "min",
     saveTrip: "Save", tripSaved: "Saved",
+    dayNotes: "Day notes", dayNotesPlaceholder: "How did the day go? Anything to remember...",
+    shareTrip: "Share trip",
+    shareTripOnDesc: "Anyone with the link can view this trip (read-only).",
+    shareTripOffDesc: "Make this trip public to share a read-only link.",
+    copyLink: "Copy link", linkCopied: "Link copied",
+    sharedTripBanner: "You're viewing a shared trip — read-only",
+    sharedTripNotFound: "This trip isn't available. The link may be wrong, or sharing was turned off.",
+    sharedTripLoading: "Loading trip…",
+    planYourOwnTrip: "Plan your own trip on Waypoint", backToWaypoint: "Back to Waypoint",
     articlesComingSoon: "Long-form guides, itineraries, and travel notes are on their way — check back soon.",
     productsComingSoon: "Downloadable guides, packing lists, and planning tools are on their way — check back soon.",
     newsletterIntro: "Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.",
@@ -298,6 +307,15 @@ const UI_STRINGS = {
     exportPdf: "Exportar PDF", typicalRange: "intervalo típico",
     insertStopHere: "inserir paragem aqui", hoursLabel: "horas", minutesLabel: "min",
     saveTrip: "Guardar", tripSaved: "Guardado",
+    dayNotes: "Notas do dia", dayNotesPlaceholder: "Como correu o dia? Alguma coisa para recordar...",
+    shareTrip: "Partilhar viagem",
+    shareTripOnDesc: "Quem tiver o link pode ver esta viagem (só leitura).",
+    shareTripOffDesc: "Torna esta viagem pública para partilhares um link só de leitura.",
+    copyLink: "Copiar link", linkCopied: "Link copiado",
+    sharedTripBanner: "Estás a ver uma viagem partilhada — só leitura",
+    sharedTripNotFound: "Esta viagem não está disponível. O link pode estar errado, ou a partilha foi desligada.",
+    sharedTripLoading: "A carregar viagem…",
+    planYourOwnTrip: "Planeia a tua própria viagem no Waypoint", backToWaypoint: "Voltar ao Waypoint",
     articlesComingSoon: "Guias mais longos, itinerários e notas de viagem estão a caminho — volta em breve.",
     productsComingSoon: "Guias para descarregar, listas de bagagem e ferramentas de planeamento estão a caminho — volta em breve.",
     newsletterIntro: "Recebe um novo destino no teu email todas as semanas — ideias de itinerários reais e notas de viagem, sem spam.",
@@ -933,6 +951,9 @@ function Waypoint() {
   const [mealDrafts, setMealDrafts] = useState({});
   const [tripSaveStatus, setTripSaveStatus] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [sharedTrip, setSharedTrip] = useState(null);
+  const [sharedTripStatus, setSharedTripStatus] = useState("idle");
 
   const normalize = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
@@ -1089,6 +1110,7 @@ function Waypoint() {
     if (!hash) { goToContinents(); return; }
     if (hash.startsWith("country=")) { goToCountryById(hash.split("=")[1]); return; }
     if (hash.startsWith("continent=")) { goToCountries(hash.split("=")[1]); return; }
+    if (hash.startsWith("shared=")) { loadSharedTrip(hash.split("=")[1]); return; }
     if (["about", "newsletter", "articles", "products", "map"].includes(hash)) { goToStatic(hash); return; }
   };
 
@@ -1253,8 +1275,69 @@ function Waypoint() {
 
   const saveTripNow = (tripId) => {
     saveTrips({ ...trips });
+    const savedTrip = trips[tripId];
+    if (savedTrip) syncSharedSnapshot(savedTrip);
     setTripSaveStatus("saved");
     setTimeout(() => setTripSaveStatus(""), 1800);
+  };
+
+  const updateDailyNote = (tripId, day, text) => {
+    updateTrip(tripId, (t) => ({ ...t, dailyNotes: { ...(t.dailyNotes || {}), [day]: text } }));
+  };
+
+  const generateShareId = () => (Math.random().toString(36).slice(2, 8) + Date.now().toString(36)).slice(0, 12);
+
+  const buildShareSnapshot = (trip) => ({
+    name: trip.name,
+    countryId: trip.countryId,
+    countryName: trip.countryName,
+    flag: trip.flag,
+    startDate: trip.startDate,
+    endDate: trip.endDate,
+    stops: trip.stops,
+    transits: trip.transits,
+    dailyNotes: trip.dailyNotes || {},
+    ownerUid: user ? user.uid : null,
+    updatedAt: new Date().toISOString(),
+  });
+
+  const syncSharedSnapshot = (trip) => {
+    if (!trip || !trip.isPublic || !trip.shareId || !firebaseReady || !user) return;
+    firebase.firestore().collection("shared_trips").doc(trip.shareId).set(buildShareSnapshot(trip)).catch(() => {});
+  };
+
+  const toggleTripPublic = (trip) => {
+    if (!user || !firebaseReady) return;
+    if (trip.isPublic) {
+      if (trip.shareId) {
+        firebase.firestore().collection("shared_trips").doc(trip.shareId).delete().catch(() => {});
+      }
+      updateTrip(trip.id, (t) => ({ ...t, isPublic: false }));
+    } else {
+      const shareId = trip.shareId || generateShareId();
+      firebase.firestore().collection("shared_trips").doc(shareId).set(buildShareSnapshot({ ...trip, shareId })).catch(() => {});
+      updateTrip(trip.id, (t) => ({ ...t, isPublic: true, shareId }));
+    }
+  };
+
+  const copyShareLink = (shareId) => {
+    const url = window.location.origin + window.location.pathname + "#shared=" + shareId;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => { setShareCopied(true); setTimeout(() => setShareCopied(false), 2000); });
+    }
+  };
+
+  const loadSharedTrip = (shareId) => {
+    setView("shared-trip");
+    setSharedTripStatus("loading");
+    setSharedTrip(null);
+    if (!firebaseReady) { setSharedTripStatus("error"); return; }
+    firebase.firestore().collection("shared_trips").doc(shareId).get()
+      .then((doc) => {
+        if (doc.exists) { setSharedTrip(doc.data()); setSharedTripStatus("ready"); }
+        else { setSharedTripStatus("error"); }
+      })
+      .catch(() => setSharedTripStatus("error"));
   };
 
   const dayCount = (start, end) => {
@@ -1289,6 +1372,9 @@ function Waypoint() {
       status: "planning",
       stops: [{ id: "stop_" + Date.now(), city: "", dayStart: 1, dayEnd: total, highlights: [], stays: [], meals: [] }],
       transits: [],
+      dailyNotes: {},
+      isPublic: false,
+      shareId: null,
       createdAt: new Date().toISOString(),
     };
     saveTrips({ ...trips, [id]: trip });
@@ -1454,7 +1540,19 @@ function Waypoint() {
     y += 10;
 
     trip.stops.forEach((stop) => {
-      const lineCount = stop.highlights.length + (stop.stays || []).length + (stop.meals || []).length;
+      const maxTextWidth = pageWidth - margin * 2 - 14;
+      const noteDays = Array.from({ length: Math.max(1, stop.dayEnd - stop.dayStart + 1) }, (_, di) => stop.dayStart + di)
+        .filter((day) => ((trip.dailyNotes || {})[day] || "").trim());
+      let noteLinesTotal = 0;
+      const wrappedNotes = noteDays.map((day) => {
+        const text = String(trip.dailyNotes[day]).trim();
+        const wrapped = doc.splitTextToSize(text, maxTextWidth);
+        noteLinesTotal += 1 + wrapped.length;
+        return { day, wrapped };
+      });
+
+      const lineCount = stop.highlights.length + (stop.stays || []).length + (stop.meals || []).length
+        + noteLinesTotal + (noteDays.length > 0 ? 3 : 0);
       const boxHeight = 16 + lineCount * 5.5;
       if (y + boxHeight > 275) { doc.addPage(); y = 20; }
 
@@ -1476,6 +1574,32 @@ function Waypoint() {
       stop.highlights.forEach((h) => { doc.text("- " + h.text, margin + 8, iy); iy += 5.5; });
       (stop.stays || []).forEach((st) => { doc.text(T.whereToSleep + ": " + st.name + (st.nights ? " (" + st.nights + " " + T.nights + ")" : "") + (st.price ? " - " + st.price : ""), margin + 8, iy); iy += 5.5; });
       (stop.meals || []).forEach((m) => { doc.text(T.whereToEat + ": " + m.name, margin + 8, iy); iy += 5.5; });
+
+      if (noteDays.length > 0) {
+        iy += 2;
+        doc.setDrawColor(hairline[0], hairline[1], hairline[2]);
+        doc.setLineWidth(0.2);
+        doc.line(margin + 6, iy - 3.5, pageWidth - margin - 6, iy - 3.5);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(gold[0], gold[1], gold[2]);
+        doc.text(T.dayNotes.toUpperCase(), margin + 6, iy);
+        doc.setFont("helvetica", "normal");
+        iy += 5.5;
+        wrappedNotes.forEach(({ day, wrapped }) => {
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(9);
+          doc.setTextColor(ink[0], ink[1], ink[2]);
+          doc.text(T.day + " " + day, margin + 8, iy);
+          iy += 5;
+          doc.setFont("helvetica", "italic");
+          doc.setFontSize(9.5);
+          doc.setTextColor(70, 64, 52);
+          wrapped.forEach((line) => { doc.text(line, margin + 10, iy); iy += 4.6; });
+          doc.setFont("helvetica", "normal");
+          iy += 2;
+        });
+      }
 
       y += boxHeight + 4;
 
@@ -1803,6 +1927,26 @@ function Waypoint() {
         .wp-trip-day-range-edit { display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--ink-soft); white-space: nowrap; }
         .wp-trip-day-num { width: 2.6rem; font-size: 0.75rem; padding: 0.2rem 0.3rem; border: 1px solid var(--hairline); border-radius: 6px; text-align: center; }
         .wp-trip-transit-num { flex: 0 0 3.4rem; text-align: center; }
+
+        .wp-trip-daynote-row { padding: 0.4rem 0; border-top: 1px solid var(--hairline); }
+        .wp-trip-daynote-label { font-size: 0.75rem; color: var(--ink-soft); display: block; margin-bottom: 0.3rem; }
+        .wp-trip-daynote-input { width: 100%; font-family: 'Work Sans', sans-serif; font-size: 0.85rem; padding: 0.5rem 0.6rem; border: 1px solid var(--hairline); border-radius: 8px; resize: vertical; background: #fff; color: var(--ink); }
+        .wp-trip-daynote-input:focus { outline: none; border-color: var(--gold); }
+        .wp-trip-daynote-readonly { font-size: 0.85rem; color: var(--ink); margin: 0; white-space: pre-wrap; line-height: 1.5; }
+        .wp-trip-city-readonly { flex: 1; font-family: 'Fraunces', serif; font-size: 0.98rem; }
+
+        .wp-trip-share-box { background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.9rem 1.1rem; margin-bottom: 1.2rem; }
+        .wp-trip-share-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .wp-trip-share-title { font-family: 'Fraunces', serif; font-size: 0.95rem; margin: 0; }
+        .wp-trip-share-desc { font-size: 0.78rem; color: var(--ink-soft); margin: 0.2rem 0 0; }
+        .wp-trip-share-toggle { flex-shrink: 0; width: 42px; height: 24px; border-radius: 999px; background: var(--hairline); border: none; position: relative; cursor: pointer; padding: 0; transition: background 0.15s ease; }
+        .wp-trip-share-toggle-on { background: var(--gold); }
+        .wp-trip-share-toggle-knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform 0.15s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .wp-trip-share-toggle-on .wp-trip-share-toggle-knob { transform: translateX(18px); }
+        .wp-trip-share-link-row { display: flex; gap: 0.4rem; margin-top: 0.8rem; }
+        .wp-trip-share-link-input { flex: 1; min-width: 0; font-size: 0.8rem; padding: 0.5rem 0.7rem; border: 1px solid var(--hairline); border-radius: 8px; background: var(--parchment); color: var(--ink-soft); }
+
+        .wp-shared-trip-banner { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 10px; padding: 0.6rem 0.9rem; font-size: 0.82rem; color: var(--ink-soft); margin-bottom: 1.2rem; text-align: center; }
         .wp-map-list-row:hover { text-decoration: underline; }
 
         .wp-modal-overlay { position: fixed; inset: 0; background: rgba(20,32,53,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.2rem; }
@@ -2640,6 +2784,37 @@ function Waypoint() {
                 </button>
               </div>
 
+              <div className="wp-trip-share-box">
+                <div className="wp-trip-share-row">
+                  <div>
+                    <p className="wp-trip-share-title">{T.shareTrip}</p>
+                    <p className="wp-trip-share-desc">{trip.isPublic ? T.shareTripOnDesc : T.shareTripOffDesc}</p>
+                  </div>
+                  <button
+                    className={"wp-trip-share-toggle" + (trip.isPublic ? " wp-trip-share-toggle-on" : "")}
+                    onClick={() => toggleTripPublic(trip)}
+                    aria-pressed={!!trip.isPublic}
+                    aria-label={T.shareTrip}
+                  >
+                    <span className="wp-trip-share-toggle-knob"></span>
+                  </button>
+                </div>
+                {trip.isPublic && trip.shareId && (
+                  <div className="wp-trip-share-link-row">
+                    <input
+                      type="text"
+                      readOnly
+                      className="wp-trip-share-link-input"
+                      value={window.location.origin + window.location.pathname + "#shared=" + trip.shareId}
+                      onFocus={(e) => e.target.select()}
+                    />
+                    <button className="wp-trip-add-btn" onClick={() => copyShareLink(trip.shareId)} aria-label={T.copyLink}>
+                      {shareCopied ? <CheckCircle size={14} /> : <Copy size={14} />}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {trip.stops.map((stop, i) => (
                 <div key={stop.id}>
                   <button className="wp-trip-insert-before-btn" onClick={() => insertStopBefore(trip.id, stop.id)}>
@@ -2770,6 +2945,22 @@ function Waypoint() {
                         </div>
                       )}
                     </div>
+
+                    <div className="wp-trip-subsection">
+                      <p className="wp-trip-subsection-label">{T.dayNotes}</p>
+                      {Array.from({ length: Math.max(1, stop.dayEnd - stop.dayStart + 1) }, (_, di) => stop.dayStart + di).map((day) => (
+                        <div key={day} className="wp-trip-daynote-row">
+                          <span className="wp-trip-daynote-label">{T.day} {day}</span>
+                          <textarea
+                            className="wp-trip-daynote-input"
+                            placeholder={T.dayNotesPlaceholder}
+                            rows={2}
+                            value={(trip.dailyNotes || {})[day] || ""}
+                            onChange={(e) => updateDailyNote(trip.id, day, e.target.value)}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {i < trip.stops.length - 1 && trip.transits.find((tr) => tr.afterStopId === stop.id) && (
@@ -2831,6 +3022,119 @@ function Waypoint() {
             </div>
           );
         })()}
+
+        {view === "shared-trip" && (
+          <div className="wp-trips-page">
+            <a className="wp-trip-back" href="index.html">
+              <ChevronRight size={15} style={{ transform: "rotate(180deg)" }} /> {T.backToWaypoint}
+            </a>
+
+            <div className="wp-shared-trip-banner">{T.sharedTripBanner}</div>
+
+            {sharedTripStatus === "loading" && <p className="wp-map-list-empty">{T.sharedTripLoading}</p>}
+            {sharedTripStatus === "error" && <p className="wp-map-list-empty">{T.sharedTripNotFound}</p>}
+
+            {sharedTripStatus === "ready" && sharedTrip && (() => {
+              const total = dayCount(sharedTrip.startDate, sharedTrip.endDate);
+              const cost = tripTotalCost(sharedTrip);
+              const stops = sharedTrip.stops || [];
+              const transits = sharedTrip.transits || [];
+              const notes = sharedTrip.dailyNotes || {};
+              return (
+                <React.Fragment>
+                  <div className="wp-trip-detail-header">
+                    <div className="wp-trip-card-top">
+                      <span className="wp-trip-card-name"><span>{sharedTrip.flag}</span>{sharedTrip.name}</span>
+                    </div>
+                    <p className="wp-trip-card-meta">{sharedTrip.startDate || "?"} – {sharedTrip.endDate || "?"} · {total} {T.days} · {stops.length} {T.stops}</p>
+                  </div>
+
+                  <div className="wp-trip-cost-row">
+                    <div className="wp-trip-cost-box">
+                      <p className="wp-trip-cost-label">{T.estimatedCost}</p>
+                      <p className="wp-trip-cost-value">€{cost.toFixed(0)}</p>
+                    </div>
+                    <div className="wp-trip-cost-box">
+                      <p className="wp-trip-cost-label">{T.perDay}</p>
+                      <p className="wp-trip-cost-value">€{(cost / total).toFixed(0)}</p>
+                    </div>
+                  </div>
+
+                  {stops.map((stop, i) => {
+                    const dayNums = Array.from({ length: Math.max(1, stop.dayEnd - stop.dayStart + 1) }, (_, di) => stop.dayStart + di);
+                    const notedDays = dayNums.filter((day) => (notes[day] || "").trim());
+                    const transit = transits.find((tr) => tr.afterStopId === stop.id);
+                    return (
+                      <div key={stop.id || i}>
+                        <div className="wp-trip-stop-card">
+                          <div className="wp-trip-stop-top">
+                            <span className="wp-trip-city-readonly">{stop.city || "—"}</span>
+                            <span className="wp-trip-day-range-edit">{T.day} {stop.dayStart}–{stop.dayEnd}</span>
+                          </div>
+
+                          {(stop.highlights || []).map((h) => (
+                            <div key={h.id} className="wp-trip-highlight-row">
+                              <CheckCircle size={14} style={{ color: "#6B9E68", flexShrink: 0 }} />
+                              <span className="wp-trip-highlight-text">{h.text}</span>
+                            </div>
+                          ))}
+
+                          {(stop.stays || []).length > 0 && (
+                            <div className="wp-trip-subsection">
+                              <p className="wp-trip-subsection-label">{T.whereToSleep}</p>
+                              {stop.stays.map((st) => (
+                                <div key={st.id} className="wp-trip-highlight-row">
+                                  <span style={{ fontSize: "0.85rem" }}>🏨</span>
+                                  <span className="wp-trip-highlight-text">{st.name}{st.nights ? " · " + st.nights + " " + T.nights : ""}{st.price ? " · " + st.price : ""}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {(stop.meals || []).length > 0 && (
+                            <div className="wp-trip-subsection">
+                              <p className="wp-trip-subsection-label">{T.whereToEat}</p>
+                              {stop.meals.map((m) => (
+                                <div key={m.id} className="wp-trip-highlight-row">
+                                  <span style={{ fontSize: "0.85rem" }}>🍽</span>
+                                  <span className="wp-trip-highlight-text">{m.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {notedDays.length > 0 && (
+                            <div className="wp-trip-subsection">
+                              <p className="wp-trip-subsection-label">{T.dayNotes}</p>
+                              {notedDays.map((day) => (
+                                <div key={day} className="wp-trip-daynote-row">
+                                  <span className="wp-trip-daynote-label">{T.day} {day}</span>
+                                  <p className="wp-trip-daynote-readonly">{notes[day]}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {i < stops.length - 1 && transit && transit.mode && (
+                          <p className="wp-trip-typical-hint" style={{ marginLeft: "1.2rem" }}>
+                            {T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)]}
+                            {transit.durationHours ? " · " + transit.durationHours + "h" : ""}{transit.durationMinutes ? transit.durationMinutes + "min" : ""}
+                            {transit.price ? " · " + transit.price : ""}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  <a className="wp-quiz-btn wp-quiz-btn-primary" href="index.html" style={{ display: "inline-flex", textDecoration: "none", marginTop: "1rem" }}>
+                    {T.planYourOwnTrip}
+                  </a>
+                </React.Fragment>
+              );
+            })()}
+          </div>
+        )}
 
         {view === "articles" && (
           <div>
