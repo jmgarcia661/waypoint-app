@@ -972,7 +972,7 @@ function Waypoint() {
     const id = idForIso2(iso2);
     const status = countryStatuses[id];
     const hasPage = !!ISO2_TO_ID[iso2];
-    const fillColor = status === "visited" ? "#142035" : status === "want" ? "#B0552E" : (hasPage ? "#FFFFFF" : "#EDE6D4");
+    const fillColor = status === "visited" ? "#3F8F6F" : status === "want" ? "#3E7CB1" : (hasPage ? "#FFFFFF" : "#EDE6D4");
     return { fillColor, fillOpacity: 0.92, color: "#E1D6BC", weight: 0.8 };
   };
   const mapClickHandlerRef = useRef(null);
@@ -1594,11 +1594,11 @@ function Waypoint() {
         .wp-status-btn { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.4rem 0.9rem; font-family: 'Work Sans', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
         .wp-status-btn:hover { border-color: var(--ink-soft); }
         .wp-status-visited.wp-status-active { background: #E4EFE9; border-color: #3F8F6F; color: #2E6B52; }
-        .wp-status-want.wp-status-active { background: #FBF1DF; border-color: var(--gold); color: #8A6425; }
+        .wp-status-want.wp-status-active { background: #E3EEF5; border-color: #3E7CB1; color: #2A5A80; }
 
         .wp-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 0.5rem; vertical-align: middle; }
         .wp-status-dot-visited { background: #3F8F6F; }
-        .wp-status-dot-want { background: var(--gold); }
+        .wp-status-dot-want { background: #3E7CB1; }
         .wp-status-dot-none { background: #FFFFFF; border: 1px solid var(--hairline); box-sizing: border-box; }
 
         .wp-map-signin-banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.9rem 1.2rem; margin-bottom: 1.2rem; font-size: 0.9rem; color: var(--ink-soft); }
@@ -1616,7 +1616,7 @@ function Waypoint() {
         .wp-map-country:hover { filter: brightness(1.08); }
         .wp-map-status-none { fill: #FFFFFF; }
         .wp-map-status-visited { fill: #3F8F6F; }
-        .wp-map-status-want { fill: var(--gold); }
+        .wp-map-status-want { fill: #3E7CB1; }
         .wp-map-marker { stroke: var(--hairline); stroke-width: 1.5; }
         .wp-map-status-none:hover { fill: #F6F2E8; }
         .wp-map-bg-country { fill: #FFFFFF; stroke: var(--hairline); stroke-width: 1; pointer-events: none; }
@@ -2242,11 +2242,6 @@ function Waypoint() {
                   <p className="wp-map-progress-value">{pctVisited}%</p>
                   <p className="wp-map-progress-label">{T.pctOfWorldVisited}</p>
                 </div>
-                {visitedSparkline && (
-                  <svg viewBox={"0 0 " + visitedSparkline.w + " " + visitedSparkline.h} className="wp-map-sparkline" preserveAspectRatio="none">
-                    <path d={visitedSparkline.d} fill="none" stroke="#3F8F6F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
               </div>
             )}
 
@@ -2288,13 +2283,13 @@ function Waypoint() {
                         <div className="wp-status-row" title={!user ? T.signInToTrackHint : ""}>
                           <button
                             className={"wp-status-btn wp-status-visited" + (countryStatuses[cty.id] === "visited" ? " wp-status-active" : "")}
-                            onClick={() => setCountryStatus(cty.id, "visited")}
+                            onClick={() => { setCountryStatus(cty.id, "visited"); setMapQuery(""); }}
                           >
                             <CheckCircle size={14} /> {T.markVisited}
                           </button>
                           <button
                             className={"wp-status-btn wp-status-want" + (countryStatuses[cty.id] === "want" ? " wp-status-active" : "")}
-                            onClick={() => setCountryStatus(cty.id, "want")}
+                            onClick={() => { setCountryStatus(cty.id, "want"); setMapQuery(""); }}
                           >
                             <StarIcon size={13} /> {T.markWantToVisit}
                           </button>
