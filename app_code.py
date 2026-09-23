@@ -91,6 +91,7 @@ const UI_STRINGS = {
     mapSignInPrompt: "Sign in to start marking countries on your map.",
     mapVisitedListTitle: "Visited", mapWantListTitle: "Want to visit", mapListEmpty: "Nothing here yet.",
     mapLoading: "Loading map…", mapLoadError: "Couldn't load the map. Check your connection and try again.",
+    countryDetailLoading: "Loading country details…",
     pctOfWorldVisited: "of the world visited",
     myTrips: "Trips", tripsSubtitle: "Plan your next trip, day by day.",
     tripsSignInPrompt: "Sign in to start planning a trip.", noTripsYet: "No trips yet — start planning your next one.",
@@ -172,6 +173,7 @@ const UI_STRINGS = {
     mapSignInPrompt: "Entra para começares a marcar países no teu mapa.",
     mapVisitedListTitle: "Visitados", mapWantListTitle: "Quero visitar", mapListEmpty: "Ainda nada aqui.",
     mapLoading: "A carregar o mapa…", mapLoadError: "Não foi possível carregar o mapa. Verifica a ligação e tenta outra vez.",
+    countryDetailLoading: "A carregar detalhes do país…",
     pctOfWorldVisited: "do mundo visitado",
     myTrips: "Viagens", tripsSubtitle: "Planeia a tua próxima viagem, dia a dia.",
     tripsSignInPrompt: "Entra para começares a planear uma viagem.", noTripsYet: "Ainda sem viagens — começa a planear a próxima.",
@@ -309,30 +311,33 @@ const ABOUT_BIO = {
 
 function localizeCountry(c, lang) {
   const p = lang === "pt" ? c.pt : null;
-  if (!p) return c;
-  return {
+  const base = {
     ...c,
-    name: p.name || c.name,
-    capital: p.capital || c.capital,
-    population: p.population || c.population,
-    language: p.language || c.language,
-    currency: p.currency || c.currency,
-    bestTime: p.bestTime || c.bestTime,
-    tagline: p.tagline || c.tagline,
-    highlights: p.highlights || c.highlights,
-    blurb: p.blurb || c.blurb,
-    budget: p.budget || c.budget,
+    name: (p && p.name) || c.name,
+    capital: (p && p.capital) || c.capital,
+    population: (p && p.population) || c.population,
+    language: (p && p.language) || c.language,
+    currency: (p && p.currency) || c.currency,
+    bestTime: (p && p.bestTime) || c.bestTime,
+    tagline: (p && p.tagline) || c.tagline,
+    highlights: (p && p.highlights) || c.highlights,
+    blurb: (p && p.blurb) || c.blurb,
+    budget: (p && p.budget) || c.budget,
+  };
+  if (!p) return base;
+  return {
+    ...base,
     visa: p.visa || c.visa,
     goodToKnow: p.goodToKnow || c.goodToKnow,
     food: p.food || c.food,
-    attractions: c.attractions.map((a, i) => (p.attractions && p.attractions[i]) ? { ...a, name: p.attractions[i].name, desc: p.attractions[i].desc } : a),
-    itinerary: c.itinerary.map((s, i) => (p.itinerary && p.itinerary[i]) ? {
+    attractions: c.attractions ? c.attractions.map((a, i) => (p.attractions && p.attractions[i]) ? { ...a, name: p.attractions[i].name, desc: p.attractions[i].desc } : a) : c.attractions,
+    itinerary: c.itinerary ? c.itinerary.map((s, i) => (p.itinerary && p.itinerary[i]) ? {
       ...s,
       label: p.itinerary[i].label || s.label,
       title: p.itinerary[i].title || s.title,
       desc: p.itinerary[i].desc || s.desc,
       logistics: p.itinerary[i].logistics !== undefined ? p.itinerary[i].logistics : s.logistics,
-    } : s),
+    } : s) : c.itinerary,
   };
 }
 
@@ -540,6 +545,23 @@ function Waypoint() {
   const [view, setView] = useState("continents");
   const [continentId, setContinentId] = useState(null);
   const [countryId, setCountryId] = useState(null);
+  const [countryDataCache, setCountryDataCache] = useState({});
+  const ensureCountryData = (id) => {
+    if (!id || countryDataCache[id] || countryDataCache["__loading_" + id]) return;
+    setCountryDataCache((c) => ({ ...c, ["__loading_" + id]: true }));
+    fetch("countries-data/" + id + ".json")
+      .then((r) => { if (!r.ok) throw new Error("not found"); return r.json(); })
+      .then((data) => setCountryDataCache((c) => { const n = { ...c, [id]: data }; delete n["__loading_" + id]; return n; }))
+      .catch(() => setCountryDataCache((c) => { const n = { ...c }; delete n["__loading_" + id]; return n; }));
+  };
+  const withFullData = (cty) => {
+    if (!cty) return cty;
+    const full = countryDataCache[cty.id];
+    if (!full) return cty;
+    const merged = { ...cty, ...full };
+    if (full.pt || cty.pt) merged.pt = { ...(cty.pt || {}), ...(full.pt || {}) };
+    return merged;
+  };
   const [lang, setLang] = useState("en");
   const [homeQuery, setHomeQuery] = useState("");
   const [mapQuery, setMapQuery] = useState("");
@@ -590,7 +612,12 @@ function Waypoint() {
   const T = UI_STRINGS[lang];
   const continents = CONTINENTS.map((c) => localizeContinent(c, lang));
   const continent = continents.find((c) => c.id === continentId) || null;
-  const country = continent ? continent.countries.find((c) => c.id === countryId) : null;
+  const country = withFullData(continent ? continent.countries.find((c) => c.id === countryId) : null);
+
+  useEffect(() => {
+    if (view === "detail" && countryId) ensureCountryData(countryId);
+    if (view === "trip-detail" && activeTripId && trips[activeTripId]) ensureCountryData(trips[activeTripId].countryId);
+  }, [view, countryId, activeTripId]);
 
   const setHash = (h) => {
     const newHash = h ? "#" + h : "";
@@ -606,7 +633,7 @@ function Waypoint() {
   const goToDetailFromSearch = (cty) => { if (cty.isExtra) return; setCameFromMap(false); setContinentId(cty.continentId); setCountryId(cty.id); setView("detail"); setHomeQuery(""); window.scrollTo(0, 0); setHash("country=" + cty.id); };
   const goToStatic = (page) => { setView(page); setContinentId(null); setCountryId(null); window.scrollTo(0, 0); setHash(page); };
 
-  const allCountriesFlat = continents.flatMap((c) => c.countries.map((cty) => ({ ...cty, continentId: c.id, continentName: c.name, continentColor: c.color })));
+  const allCountriesFlat = continents.flatMap((c) => c.countries.map((cty) => withFullData({ ...cty, continentId: c.id, continentName: c.name, continentColor: c.color })));
   const isoToFlag = (iso) => iso.toUpperCase().replace(/./g, (ch) => String.fromCodePoint(127397 + ch.charCodeAt(0)));
   const allCountriesForMap = allCountriesFlat.concat(
     Object.keys(WORLD_MAP_META).filter((key) => !Object.values(ID_TO_ISO2).includes(key)).map((key) => {
@@ -621,7 +648,7 @@ function Waypoint() {
       };
     })
   );
-  const totalAttractions = allCountriesFlat.reduce((sum, cty) => sum + (cty.attractions ? cty.attractions.length : 0), 0);
+  const totalAttractions = 540; // precomputed: 90 countries x 6 attractions each, doesn't depend on lazy-loaded detail data
   const currentMonth = new Date().getMonth() + 1;
   const nowPicks = (WHERE_TO_GO_NOW[currentMonth] || [])
     .map((pick) => {
@@ -665,6 +692,11 @@ function Waypoint() {
     return candidates;
   };
   const quizCountryIds = MONTHLY_QUIZ[currentMonth] || [];
+
+  useEffect(() => {
+    quizCountryIds.forEach((id) => ensureCountryData(id));
+    // eslint-disable-next-line
+  }, []);
   const quizQuestions = quizCountryIds.map((id, i) => {
     const country = allCountriesFlat.find((c) => c.id === id);
     if (!country) return null;
@@ -1508,6 +1540,7 @@ function Waypoint() {
         .wp-map-loading { position: absolute; inset: 0; z-index: 600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; background: var(--parchment); border-radius: 11px; font-size: 0.85rem; color: var(--ink-soft); }
         .wp-map-loading-spinner { width: 22px; height: 22px; border: 2.5px solid var(--hairline); border-top-color: var(--gold); border-radius: 50%; animation: wp-spin 0.8s linear infinite; }
         @keyframes wp-spin { to { transform: rotate(360deg); } }
+        .wp-detail-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.7rem; padding: 3rem 1rem; color: var(--ink-soft); font-size: 0.9rem; }
         .wp-leaflet-map { width: 100%; height: 100%; border-radius: 11px; background: #DCE8EE; }
         .wp-map-reset-btn { position: absolute; right: 0.7rem; bottom: 0.7rem; z-index: 500; width: 34px; height: 34px; border-radius: 8px; background: #fff; border: 2px solid rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); }
         .wp-map-reset-btn:hover { background: var(--parchment); }
@@ -2052,55 +2085,61 @@ function Waypoint() {
               </div>
             )}
 
-            <h3 className="wp-section-title">{T.topAttractions}</h3>
-            <div className="wp-attractions-grid">
-              {country.attractions.map((a, i) => (
-                <div key={i}>
-                  <AttractionImage title={a.wiki} alt={a.name} />
-                  <div className="wp-attraction-name">{a.name}</div>
-                  <div className="wp-attraction-desc">{a.desc}</div>
+            {country.attractions ? (
+              <>
+                <h3 className="wp-section-title">{T.topAttractions}</h3>
+                <div className="wp-attractions-grid">
+                  {country.attractions.map((a, i) => (
+                    <div key={i}>
+                      <AttractionImage title={a.wiki} alt={a.name} />
+                      <div className="wp-attraction-name">{a.name}</div>
+                      <div className="wp-attraction-desc">{a.desc}</div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="wp-itinerary-wrap">
-              <div className="wp-itinerary-head">
-                <h3 className="wp-section-title" style={{ marginBottom: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><MapPinIcon size={18} style={{ color: continent.color }} /> {T.suggestedItinerary}</h3>
-                <span className="wp-itinerary-total">{country.itineraryDays} {country.itineraryDays === 1 ? T.day : T.days}</span>
-              </div>
-              {country.daysReason && <p className="wp-days-reason">{country.daysReason}</p>}
+                <div className="wp-itinerary-wrap">
+                  <div className="wp-itinerary-head">
+                    <h3 className="wp-section-title" style={{ marginBottom: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><MapPinIcon size={18} style={{ color: continent.color }} /> {T.suggestedItinerary}</h3>
+                    <span className="wp-itinerary-total">{country.itineraryDays} {country.itineraryDays === 1 ? T.day : T.days}</span>
+                  </div>
+                  {country.daysReason && <p className="wp-days-reason">{country.daysReason}</p>}
 
-              <CountryMap country={country} accentColor={continent.color} />
+                  <CountryMap country={country} accentColor={continent.color} />
 
-              <div className="wp-route">
-                {country.itinerary.map((step, i) => (
-                  <div className="wp-day" style={{ "--accent-color": continent.color }} key={i}>
-                    <span className="wp-day-label">{country.itinerary.some((s) => typeof s.lat === "number") ? (i + 1) + ". " : ""}{step.label}</span>
-                    <div className="wp-day-title">{step.title}</div>
-                    <div className="wp-day-desc">{step.desc}</div>
-                    {(step.logistics || step.bookAhead) && (
-                      <div className="wp-day-tags">
-                        {step.logistics && <span className="wp-day-tag">{step.logistics}</span>}
-                        {step.bookAhead && <span className="wp-day-tag wp-day-tag-book">{T.bookAhead}</span>}
+                  <div className="wp-route">
+                    {country.itinerary.map((step, i) => (
+                      <div className="wp-day" style={{ "--accent-color": continent.color }} key={i}>
+                        <span className="wp-day-label">{country.itinerary.some((s) => typeof s.lat === "number") ? (i + 1) + ". " : ""}{step.label}</span>
+                        <div className="wp-day-title">{step.title}</div>
+                        <div className="wp-day-desc">{step.desc}</div>
+                        {(step.logistics || step.bookAhead) && (
+                          <div className="wp-day-tags">
+                            {step.logistics && <span className="wp-day-tag">{step.logistics}</span>}
+                            {step.bookAhead && <span className="wp-day-tag wp-day-tag-book">{T.bookAhead}</span>}
+                          </div>
+                        )}
+                        {step.cost && <div className="wp-day-extra"><strong>{T.cost}:</strong> {step.cost}</div>}
+                        {step.food && <div className="wp-day-extra"><strong>{T.eat}:</strong> {step.food}</div>}
                       </div>
-                    )}
-                    {step.cost && <div className="wp-day-extra"><strong>{T.cost}:</strong> {step.cost}</div>}
-                    {step.food && <div className="wp-day-extra"><strong>{T.eat}:</strong> {step.food}</div>}
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {country.faq && country.faq.length > 0 && (
-              <div className="wp-faq-wrap">
-                <h3 className="wp-section-title" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><ShieldCheck size={18} style={{ color: continent.color }} /> {T.faqTitle}</h3>
-                {country.faq.map((item, i) => (
-                  <div className="wp-faq-item" key={i}>
-                    <div className="wp-faq-q">{item.q}</div>
-                    <div className="wp-faq-a">{item.a}</div>
+                {country.faq && country.faq.length > 0 && (
+                  <div className="wp-faq-wrap">
+                    <h3 className="wp-section-title" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><ShieldCheck size={18} style={{ color: continent.color }} /> {T.faqTitle}</h3>
+                    {country.faq.map((item, i) => (
+                      <div className="wp-faq-item" key={i}>
+                        <div className="wp-faq-q">{item.q}</div>
+                        <div className="wp-faq-a">{item.a}</div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )}
+              </>
+            ) : (
+              <div className="wp-detail-loading"><span className="wp-map-loading-spinner"></span>{T.countryDetailLoading}</div>
             )}
 
             {country.pairsWith && country.pairsWith.length > 0 && (
@@ -2379,7 +2418,7 @@ function Waypoint() {
           const trip = trips[activeTripId];
           const total = dayCount(trip.startDate, trip.endDate);
           const cost = tripTotalCost(trip);
-          const countryData = allCountriesFlat.find((c) => c.id === trip.countryId);
+          const countryData = withFullData(allCountriesFlat.find((c) => c.id === trip.countryId));
           const suggestions = countryData && countryData.attractions ? countryData.attractions.map((a) => a.name) : [];
           return (
             <div className="wp-trips-page">
