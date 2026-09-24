@@ -1793,7 +1793,8 @@ function Waypoint() {
         .wp-trip-panel-box { background: #fff; border: 1.5px solid var(--gold); border-radius: 12px; padding: 1rem 1.1rem; margin-top: 0.75rem; }
         .wp-trip-panel-box-label { margin: 0 0 0.6rem; font-size: 0.66rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
 
-        .wp-trip-transit-summary-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.7rem 0 0.7rem -2.3rem; padding-left: 2.3rem; }
+        .wp-trip-transit-summary-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.7rem 0 0.7rem -2.3rem; padding-left: 2.3rem; cursor: pointer; }
+        .wp-trip-transit-summary-row:hover .wp-trip-transit-summary-text, .wp-trip-transit-summary-row:hover .wp-trip-transit-summary-edit { color: var(--ink); }
         .wp-trip-transit-summary-text { font-size: 0.76rem; color: var(--ink-soft); flex: 1; }
         .wp-trip-transit-summary-edit { background: none; border: none; color: var(--ink-soft); font-size: 0.72rem; text-decoration: underline; cursor: pointer; }
 
@@ -2891,14 +2892,14 @@ function Waypoint() {
                   </div>
 
                   {i < trip.stops.length - 1 && transit && !transitEditing && (
-                    <div className="wp-trip-transit-summary-row">
+                    <div className="wp-trip-transit-summary-row" onClick={() => togglePanel("transit:" + stop.id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); togglePanel("transit:" + stop.id); } }} role="button" tabIndex={0}>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B8863E" strokeWidth="1.8"><path d="M4 16h16M4 16l3-3M4 16l3 3M20 16a2 2 0 1 0-4 0"/></svg>
                       <span className="wp-trip-transit-summary-text">
                         {transit.mode
                           ? (transit.durationHours || transit.durationMinutes ? (transit.durationHours || "0") + "h" + (transit.durationMinutes ? transit.durationMinutes + "min" : "") + " · " : "") + (T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode)
                           : T.transitAddBtn}
                       </span>
-                      <button className="wp-trip-transit-summary-edit" onClick={() => togglePanel("transit:" + stop.id)}>{T.transitEditBtn}</button>
+                      <span className="wp-trip-transit-summary-edit">{transit.mode ? T.transitEditBtn : T.transitAddBtn}</span>
                     </div>
                   )}
                   {i < trip.stops.length - 1 && transit && transitEditing && (
