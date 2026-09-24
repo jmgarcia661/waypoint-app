@@ -695,8 +695,8 @@ function CountryMap({ country, accentColor }) {
     if (!containerRef.current || !window.L || stops.length === 0) return;
     const map = window.L.map(containerRef.current, { zoomControl: true, scrollWheelZoom: false });
     mapRef.current = map;
-    window.L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution: "&copy; OpenStreetMap &copy; CARTO",
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 18
     }).addTo(map);
     const latlngs = stops.map((s) => [s.lat, s.lng]);
@@ -741,8 +741,8 @@ function TripMap({ trip, countryName, geocodeCache, geocodeCity, accentColor, T 
     if (!containerRef.current || !window.L || resolved.length === 0) return;
     const map = window.L.map(containerRef.current, { zoomControl: true, scrollWheelZoom: false });
     mapRef.current = map;
-    window.L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution: "&copy; OpenStreetMap &copy; CARTO",
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 18
     }).addTo(map);
     const latlngs = resolved.map((p) => [p.hit.lat, p.hit.lng]);
@@ -2624,7 +2624,7 @@ function Waypoint() {
           onChange: (e) => updateTransit(trip.id, stop.id, "price", e.target.value)
         }
       ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-transit-summary-edit", onClick: () => togglePanel("transit:" + stop.id) }, T.doneEditingLabel)), i < trip.stops.length - 1 && transit && transit.mode && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-typical-hint" }, T.typicalRange, ": ", TRANSIT_TYPICAL[transit.mode]));
-    })), /* @__PURE__ */ React.createElement(TripMap, { trip, countryName: countryData ? countryData.name : trip.countryName || "", geocodeCache, geocodeCity, accentColor: countryData && countryData.continentColor || "#2F5D62", T })), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-stop-btn", onClick: () => addStop(trip.id) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 15 }), " ", T.addStop), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-share-box" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-share-row" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-share-title" }, T.shareTrip), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-share-desc" }, trip.isPublic ? T.shareTripOnDesc : T.shareTripOffDesc)), /* @__PURE__ */ React.createElement(
+    }), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-stop-btn", onClick: () => addStop(trip.id) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 15 }), " ", T.addStop)), /* @__PURE__ */ React.createElement(TripMap, { trip, countryName: countryData ? countryData.name : trip.countryName || "", geocodeCache, geocodeCity, accentColor: countryData && countryData.continentColor || "#2F5D62", T })), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-share-box" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-share-row" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-share-title" }, T.shareTrip), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-share-desc" }, trip.isPublic ? T.shareTripOnDesc : T.shareTripOffDesc)), /* @__PURE__ */ React.createElement(
       "button",
       {
         className: "wp-trip-share-toggle" + (trip.isPublic ? " wp-trip-share-toggle-on" : ""),
