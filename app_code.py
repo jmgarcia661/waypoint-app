@@ -687,6 +687,45 @@ function Waypoint() {
   const [tripSaveStatus, setTripSaveStatus] = useState("");
   const [openPanels, setOpenPanels] = useState({});
   const togglePanel = (key) => setOpenPanels((p) => ({ ...p, [key]: !p[key] }));
+
+  useEffect(() => {
+    if (view !== "trip-detail" || !activeTripId || !trips[activeTripId]) return;
+    const trip = trips[activeTripId];
+    const initial = {};
+    trip.stops.forEach((stop) => {
+      if ((stop.stays || []).length > 0) initial[stop.id + ":sleep"] = true;
+      if ((stop.meals || []).length > 0) initial[stop.id + ":eat"] = true;
+    });
+    setOpenPanels(initial);
+    // eslint-disable-next-line
+  }, [view, activeTripId]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (view !== "trip-detail" || !activeTripId || !trips[activeTripId]) return;
+      const trip = trips[activeTripId];
+      setOpenPanels((panels) => {
+        let changed = false;
+        const next = { ...panels };
+        Object.keys(panels).forEach((key) => {
+          if (!panels[key]) return;
+          const idx = key.lastIndexOf(":");
+          if (idx === -1) return;
+          const type = key.slice(idx + 1);
+          if (type !== "sleep" && type !== "eat" && type !== "highlights") return;
+          if (e.target.closest && e.target.closest('[data-panel-key="' + key + '"]')) return;
+          const stopId = key.slice(0, idx);
+          const stop = trip.stops.find((s) => s.id === stopId);
+          if (!stop) return;
+          const isEmpty = type === "sleep" ? (stop.stays || []).length === 0 : type === "eat" ? (stop.meals || []).length === 0 : stop.highlights.length === 0;
+          if (isEmpty) { next[key] = false; changed = true; }
+        });
+        return changed ? next : panels;
+      });
+    };
+    document.addEventListener("click", handler, true);
+    return () => document.removeEventListener("click", handler, true);
+  }, [view, activeTripId, trips]);
   const [geocodeCache, setGeocodeCache] = useState({});
   const geocodeCity = (query, countryName) => {
     const key = (query + "|" + (countryName || "")).toLowerCase();
@@ -2720,13 +2759,13 @@ function Waypoint() {
                             <button className="wp-trip-chip-remove" onClick={() => removeHighlight(trip.id, stop.id, h.id)} aria-label="Remove"><X size={11} /></button>
                           </span>
                         ))}
-                        <button className="wp-trip-chip wp-trip-chip-add" onClick={() => togglePanel(stop.id + ":highlights")}>
+                        <button className="wp-trip-chip wp-trip-chip-add" data-panel-key={stop.id + ":highlights"} onClick={() => togglePanel(stop.id + ":highlights")}>
                           <PlusIcon size={11} /> {T.highlightsChipLabel}
                         </button>
                       </div>
 
                       {openPanels[stop.id + ":highlights"] && (
-                        <div className="wp-trip-panel-box" style={{ marginBottom: "0.9rem" }}>
+                        <div className="wp-trip-panel-box" data-panel-key={stop.id + ":highlights"} style={{ marginBottom: "0.9rem" }}>
                           <div className="wp-trip-add-highlight-row">
                             <input
                               type="text"
@@ -2766,6 +2805,7 @@ function Waypoint() {
                       <div className="wp-trip-panel-row">
                         <button
                           className={"wp-trip-panel-btn" + (sleepOpen ? " wp-trip-panel-btn-active" : "") + ((stop.stays||[]).length === 0 ? " wp-trip-panel-btn-empty" : "")}
+                          data-panel-key={stop.id + ":sleep"}
                           onClick={() => togglePanel(stop.id + ":sleep")}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={sleepOpen ? "#B8863E" : "#83795F"} strokeWidth="1.8"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2M21 18v2M5 10V7a2 2 0 0 1 2-2h3v5"/></svg>
@@ -2773,6 +2813,7 @@ function Waypoint() {
                         </button>
                         <button
                           className={"wp-trip-panel-btn" + (eatOpen ? " wp-trip-panel-btn-active" : "") + ((stop.meals||[]).length === 0 ? " wp-trip-panel-btn-empty" : "")}
+                          data-panel-key={stop.id + ":eat"}
                           onClick={() => togglePanel(stop.id + ":eat")}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eatOpen ? "#B8863E" : "#83795F"} strokeWidth="1.8"><path d="M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11"/></svg>
@@ -2781,7 +2822,7 @@ function Waypoint() {
                       </div>
 
                       {sleepOpen && (
-                        <div className="wp-trip-panel-box">
+                        <div className="wp-trip-panel-box" data-panel-key={stop.id + ":sleep"}>
                           <p className="wp-trip-panel-box-label">{T.whereToSleep} · {stop.city || T.cityPlaceholder}</p>
                           {(stop.stays || []).map((st) => (
                             <div key={st.id} className="wp-trip-highlight-row">
@@ -2810,7 +2851,7 @@ function Waypoint() {
                       )}
 
                       {eatOpen && (
-                        <div className="wp-trip-panel-box">
+                        <div className="wp-trip-panel-box" data-panel-key={stop.id + ":eat"}>
                           <p className="wp-trip-panel-box-label">{T.whereToEat} · {stop.city || T.cityPlaceholder}</p>
                           {(stop.meals || []).map((m) => (
                             <div key={m.id} className="wp-trip-highlight-row">
