@@ -401,8 +401,8 @@ function CountryMap({ country, accentColor }) {
     const map = window.L.map(containerRef.current, { zoomControl: true, scrollWheelZoom: false });
     mapRef.current = map;
 
-    window.L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 18,
     }).addTo(map);
 
@@ -456,8 +456,8 @@ function TripMap({ trip, countryName, geocodeCache, geocodeCity, accentColor, T 
     if (!containerRef.current || !window.L || resolved.length === 0) return;
     const map = window.L.map(containerRef.current, { zoomControl: true, scrollWheelZoom: false });
     mapRef.current = map;
-    window.L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 18,
     }).addTo(map);
 
@@ -2907,14 +2907,13 @@ function Waypoint() {
                 </div>
               );})}
 
+              <button className="wp-trip-add-stop-btn" onClick={() => addStop(trip.id)}>
+                <PlusIcon size={15} /> {T.addStop}
+              </button>
 
               </div>
               <TripMap trip={trip} countryName={countryData ? countryData.name : (trip.countryName || "")} geocodeCache={geocodeCache} geocodeCity={geocodeCity} accentColor={(countryData && countryData.continentColor) || "#2F5D62"} T={T} />
               </div>
-
-              <button className="wp-trip-add-stop-btn" onClick={() => addStop(trip.id)}>
-                <PlusIcon size={15} /> {T.addStop}
-              </button>
 
               <div className="wp-trip-share-box">
                 <div className="wp-trip-share-row">
