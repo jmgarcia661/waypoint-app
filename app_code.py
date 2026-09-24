@@ -92,6 +92,7 @@ const UI_STRINGS = {
     mapVisitedListTitle: "Visited", mapWantListTitle: "Want to visit", mapListEmpty: "Nothing here yet.",
     mapLoading: "Loading map…", mapLoadError: "Couldn't load the map. Check your connection and try again.",
     countryDetailLoading: "Loading country details…",
+    countryDetailError: "Couldn't load this country's details. Check your connection and try again.", tryAgain: "Try again",
     pctOfWorldVisited: "of the world visited",
     myTrips: "Trips", tripsSubtitle: "Plan your next trip, day by day.",
     tripsStatTrips: "TRIPS", tripsStatContinents: "CONTINENTS", tripsStatNights: "NIGHTS PLANNED", tripsStatDone: "COMPLETED",
@@ -180,6 +181,7 @@ const UI_STRINGS = {
     mapVisitedListTitle: "Visitados", mapWantListTitle: "Quero visitar", mapListEmpty: "Ainda nada aqui.",
     mapLoading: "A carregar o mapa…", mapLoadError: "Não foi possível carregar o mapa. Verifica a ligação e tenta outra vez.",
     countryDetailLoading: "A carregar detalhes do país…",
+    countryDetailError: "Não foi possível carregar os detalhes deste país. Verifica a ligação e tenta outra vez.", tryAgain: "Tentar outra vez",
     pctOfWorldVisited: "do mundo visitado",
     myTrips: "Viagens", tripsSubtitle: "Planeia a tua próxima viagem, dia a dia.",
     tripsStatTrips: "VIAGENS", tripsStatContinents: "CONTINENTES", tripsStatNights: "NOITES PLANEADAS", tripsStatDone: "CONCLUÍDAS",
@@ -620,13 +622,21 @@ function Waypoint() {
   const [continentId, setContinentId] = useState(null);
   const [countryId, setCountryId] = useState(null);
   const [countryDataCache, setCountryDataCache] = useState({});
-  const ensureCountryData = (id) => {
+  const ensureCountryData = (id, attempt) => {
+    attempt = attempt || 0;
     if (!id || countryDataCache[id] || countryDataCache["__loading_" + id]) return;
-    setCountryDataCache((c) => ({ ...c, ["__loading_" + id]: true }));
+    setCountryDataCache((c) => { const n = { ...c, ["__loading_" + id]: true }; delete n["__error_" + id]; return n; });
     fetch("countries-data/" + id + ".json")
       .then((r) => { if (!r.ok) throw new Error("not found"); return r.json(); })
-      .then((data) => setCountryDataCache((c) => { const n = { ...c, [id]: data }; delete n["__loading_" + id]; return n; }))
-      .catch(() => setCountryDataCache((c) => { const n = { ...c }; delete n["__loading_" + id]; return n; }));
+      .then((data) => setCountryDataCache((c) => { const n = { ...c, [id]: data }; delete n["__loading_" + id]; delete n["__error_" + id]; return n; }))
+      .catch(() => {
+        if (attempt < 2) {
+          setCountryDataCache((c) => { const n = { ...c }; delete n["__loading_" + id]; return n; });
+          setTimeout(() => ensureCountryData(id, attempt + 1), 800 * (attempt + 1));
+        } else {
+          setCountryDataCache((c) => { const n = { ...c }; delete n["__loading_" + id]; n["__error_" + id] = true; return n; });
+        }
+      });
   };
   const withFullData = (cty) => {
     if (!cty) return cty;
@@ -978,8 +988,11 @@ function Waypoint() {
         document.body.appendChild(s);
       });
     }
-    window.__wpMapDataPromise.then(() => setMapDataReady(true)).catch(() => setMapDataError(true));
+    window.__wpMapDataPromise
+      .then(() => { setMapDataReady(true); setMapDataError(false); })
+      .catch(() => { window.__wpMapDataPromise = null; setMapDataError(true); });
   };
+  const retryMapData = () => { setMapDataError(false); loadMapData(); };
 
   const ISO2_TO_ID = {};
   Object.keys(ID_TO_ISO2).forEach((id) => { ISO2_TO_ID[ID_TO_ISO2[id]] = id; });
@@ -1924,10 +1937,10 @@ function Waypoint() {
           </button>
           <div className="wp-nav-links">
             <button className={"wp-nav-link" + ((view === "continents" || view === "countries" || view === "detail") ? " wp-nav-link-active" : "")} onClick={goToContinents}>{T.home}</button>
-            {firebaseReady && !authLoading && (
+            {firebaseReady && (
               <button className={"wp-nav-link" + (view === "map" ? " wp-nav-link-active" : "")} onClick={() => goToStatic("map")}>{T.myMap}</button>
             )}
-            {firebaseReady && !authLoading && (
+            {firebaseReady && (
               <button className={"wp-nav-link" + ((view === "trips" || view === "trip-detail") ? " wp-nav-link-active" : "")} onClick={() => { setActiveTripId(null); goToStatic("trips"); }}>{T.myTrips}</button>
             )}
             <button className={"wp-nav-link" + (view === "articles" ? " wp-nav-link-active" : "")} onClick={() => goToStatic("articles")}>{T.articles}</button>
@@ -2300,6 +2313,11 @@ function Waypoint() {
                   </div>
                 )}
               </>
+            ) : countryDataCache["__error_" + country.id] ? (
+              <div className="wp-detail-loading">
+                <span>{T.countryDetailError}</span>
+                <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ marginTop: "0.8rem" }} onClick={() => ensureCountryData(country.id)}>{T.tryAgain}</button>
+              </div>
             ) : (
               <div className="wp-detail-loading"><span className="wp-map-loading-spinner"></span>{T.countryDetailLoading}</div>
             )}
@@ -2407,7 +2425,10 @@ function Waypoint() {
                 <div className="wp-map-loading"><span className="wp-map-loading-spinner"></span>{T.mapLoading}</div>
               )}
               {mapDataError && (
-                <div className="wp-map-loading">{T.mapLoadError}</div>
+                <div className="wp-map-loading">
+                  <span>{T.mapLoadError}</span>
+                  <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ marginTop: "0.6rem" }} onClick={retryMapData}>{T.tryAgain}</button>
+                </div>
               )}
               <div ref={mapDivRef} className="wp-leaflet-map" style={{ visibility: mapDataReady ? "visible" : "hidden" }}></div>
               {mapDataReady && (
