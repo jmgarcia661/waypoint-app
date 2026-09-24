@@ -94,6 +94,12 @@ const UI_STRINGS = {
     countryDetailLoading: "Loading country details…",
     pctOfWorldVisited: "of the world visited",
     myTrips: "Trips", tripsSubtitle: "Plan your next trip, day by day.",
+    tripsStatTrips: "TRIPS", tripsStatContinents: "CONTINENTS", tripsStatNights: "NIGHTS PLANNED", tripsStatDone: "COMPLETED",
+    routeTab: "Route", daysTab: "Days", bookingsTab: "Bookings", comingSoonBadge: "coming soon",
+    whereToSleepBtn: "Where to sleep", whereToEatBtn: "Where to eat",
+    mapIllustrativeLabel: "Illustrative map", mapIllustrativeNote: "Overland route shown, not to scale.",
+    transitAddBtn: "Add travel time", transitEditBtn: "Edit",
+    highlightsChipLabel: "highlights", doneEditingLabel: "done",
     tripsSignInPrompt: "Sign in to start planning a trip.", noTripsYet: "No trips yet — start planning your next one.",
     newTrip: "New trip", tripNameLabel: "name", tripNamePlaceholder: "e.g. Thailand 2027",
     tripCountryLabel: "country", tripDatesLabel: "dates", daysWillBeCreated: "days will be created automatically",
@@ -176,6 +182,12 @@ const UI_STRINGS = {
     countryDetailLoading: "A carregar detalhes do país…",
     pctOfWorldVisited: "do mundo visitado",
     myTrips: "Viagens", tripsSubtitle: "Planeia a tua próxima viagem, dia a dia.",
+    tripsStatTrips: "VIAGENS", tripsStatContinents: "CONTINENTES", tripsStatNights: "NOITES PLANEADAS", tripsStatDone: "CONCLUÍDAS",
+    routeTab: "Percurso", daysTab: "Dias", bookingsTab: "Reservas", comingSoonBadge: "em breve",
+    whereToSleepBtn: "Onde dormir", whereToEatBtn: "Onde comer",
+    mapIllustrativeLabel: "Mapa ilustrativo", mapIllustrativeNote: "Percurso terrestre, não está à escala.",
+    transitAddBtn: "Adicionar tempo de viagem", transitEditBtn: "Editar",
+    highlightsChipLabel: "destaques", doneEditingLabel: "concluído",
     tripsSignInPrompt: "Entra para começares a planear uma viagem.", noTripsYet: "Ainda sem viagens — começa a planear a próxima.",
     newTrip: "Nova viagem", tripNameLabel: "nome", tripNamePlaceholder: "ex: Tailândia 2027",
     tripCountryLabel: "país", tripDatesLabel: "datas", daysWillBeCreated: "dias serão criados automaticamente",
@@ -419,6 +431,68 @@ function CountryMap({ country, accentColor }) {
   return <div ref={containerRef} className="wp-map" />;
 }
 
+/* ---------- Trip planner map: geocodes user-typed city names on demand (free, keyless Nominatim/OpenStreetMap lookup) ---------- */
+function TripMap({ trip, countryName, geocodeCache, geocodeCity, accentColor, T }) {
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+
+  const points = (trip.stops || []).map((s, i) => {
+    const key = ((s.city || "") + "|" + (countryName || "")).toLowerCase();
+    const hit = geocodeCache[key];
+    return { stop: s, index: i, hit };
+  });
+
+  useEffect(() => {
+    (trip.stops || []).forEach((s) => { if (s.city && s.city.trim()) geocodeCity(s.city.trim(), countryName); });
+    // eslint-disable-next-line
+  }, [JSON.stringify((trip.stops || []).map((s) => s.city)), countryName]);
+
+  const resolved = points.filter((p) => p.hit && p.hit.lat);
+  const stillLoading = points.some((p) => p.hit === "loading");
+
+  useEffect(() => {
+    if (!containerRef.current || !window.L || resolved.length === 0) return;
+    const map = window.L.map(containerRef.current, { zoomControl: true, scrollWheelZoom: false });
+    mapRef.current = map;
+    window.L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      maxZoom: 18,
+    }).addTo(map);
+
+    const latlngs = resolved.map((p) => [p.hit.lat, p.hit.lng]);
+    resolved.forEach((p) => {
+      const icon = window.L.divIcon({
+        className: "wp-map-pin",
+        html: '<div class="wp-map-pin-inner" style="background:' + accentColor + '">' + (p.index + 1) + "</div>",
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+      });
+      window.L.marker([p.hit.lat, p.hit.lng], { icon }).addTo(map).bindTooltip(p.stop.city, { direction: "top", offset: [0, -12] });
+    });
+    if (latlngs.length > 1) {
+      window.L.polyline(latlngs, { color: accentColor, weight: 2, dashArray: "5 7", opacity: 0.85 }).addTo(map);
+      map.fitBounds(window.L.latLngBounds(latlngs), { padding: [28, 28] });
+    } else {
+      map.setView(latlngs[0], 6);
+    }
+    return () => { map.remove(); };
+  }, [resolved.map((p) => p.stop.city + p.hit.lat).join(",")]);
+
+  return (
+    <div className="wp-trip-map-panel">
+      <p className="wp-trip-map-label">{T.mapIllustrativeLabel}</p>
+      {resolved.length > 0 ? (
+        <div ref={containerRef} className="wp-trip-map" />
+      ) : (
+        <div className="wp-trip-map wp-trip-map-empty">
+          {stillLoading ? <span className="wp-map-loading-spinner"></span> : null}
+        </div>
+      )}
+      <p className="wp-trip-map-note">{T.mapIllustrativeNote}</p>
+    </div>
+  );
+}
+
 /* ---------- Newsletter signup, backed by Firestore (single source of truth) ---------- */
 function NewsletterSignupForm({ user, T }) {
   const [email, setEmail] = useState(user ? (user.email || "") : "");
@@ -601,6 +675,22 @@ function Waypoint() {
   const [stayDrafts, setStayDrafts] = useState({});
   const [mealDrafts, setMealDrafts] = useState({});
   const [tripSaveStatus, setTripSaveStatus] = useState("");
+  const [openPanels, setOpenPanels] = useState({});
+  const togglePanel = (key) => setOpenPanels((p) => ({ ...p, [key]: !p[key] }));
+  const [geocodeCache, setGeocodeCache] = useState({});
+  const geocodeCity = (query, countryName) => {
+    const key = (query + "|" + (countryName || "")).toLowerCase();
+    if (!query || geocodeCache[key]) return;
+    setGeocodeCache((c) => ({ ...c, [key]: "loading" }));
+    const q = encodeURIComponent(query + (countryName ? ", " + countryName : ""));
+    fetch("https://nominatim.openstreetmap.org/search?format=json&limit=1&q=" + q)
+      .then((r) => r.json())
+      .then((results) => {
+        const hit = results && results[0];
+        setGeocodeCache((c) => ({ ...c, [key]: hit ? { lat: parseFloat(hit.lat), lng: parseFloat(hit.lon) } : null }));
+      })
+      .catch(() => setGeocodeCache((c) => ({ ...c, [key]: null })));
+  };
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [editingNoteDay, setEditingNoteDay] = useState(null);
@@ -1589,6 +1679,78 @@ function Waypoint() {
 
         .wp-trips-page { max-width: 640px; }
         .wp-trip-card { display: block; width: 100%; text-align: left; background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.9rem 1.1rem; margin-bottom: 0.7rem; cursor: pointer; }
+
+        /* ---- Trip planner redesign ---- */
+        .wp-trips-stat-strip { display: flex; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; margin-bottom: 1.4rem; }
+        .wp-trips-stat-cell { flex: 1; background: #fff; padding: 0.85rem 1.2rem; min-width: 120px; }
+        .wp-trips-stat-label { margin: 0 0 0.2rem; font-size: 0.68rem; color: var(--ink-soft); font-weight: 500; letter-spacing: 0.02em; }
+        .wp-trips-stat-value { margin: 0; font-family: 'Fraunces', serif; font-size: 1.35rem; }
+        .wp-trips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.1rem; }
+        .wp-trip-card-v2 { display: block; text-align: left; background: #fff; border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; cursor: pointer; box-shadow: 0 1px 2px rgba(20,32,53,0.04), 0 6px 18px rgba(20,32,53,0.05); }
+        .wp-trip-card-v2-photo { height: 128px; position: relative; }
+        .wp-trip-card-v2-flag { position: absolute; top: 0.7rem; right: 0.8rem; font-size: 1.4rem; }
+        .wp-trip-card-v2-icon { position: absolute; bottom: 0.6rem; left: 0.8rem; width: 30px; height: 30px; border-radius: 8px; background: rgba(20,32,53,0.35); display: flex; align-items: center; justify-content: center; color: var(--parchment); }
+        .wp-trip-card-v2-body { padding: 1rem 1.1rem 1.15rem; }
+        .wp-trip-card-v2-name { margin: 0 0 0.2rem; font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 600; }
+        .wp-trip-card-v2-meta { margin: 0 0 0.7rem; font-size: 0.78rem; color: var(--ink-soft); }
+        .wp-trip-card-v2-badge { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 6px; background: var(--navy); color: var(--parchment); }
+        .wp-trip-card-v2-badge-done { background: #3F8F6F; color: #fff; }
+
+        .wp-trip-hero { margin: -1.5rem -1.2rem 2rem; padding: 2.2rem 1.4rem 1.8rem; background: linear-gradient(120deg, var(--navy), var(--trip-accent, #2F5D62) 75%); border-radius: 0 0 20px 20px; position: relative; overflow: hidden; color: var(--parchment); }
+        .wp-trip-hero-icon-bg { position: absolute; right: -30px; top: -30px; opacity: 0.14; }
+        .wp-trip-hero-back { display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; color: rgba(246,242,232,0.75); font-size: 0.82rem; margin-bottom: 0.9rem; background: none; border: none; cursor: pointer; padding: 0; }
+        .wp-trip-hero-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; position: relative; z-index: 1; }
+        .wp-trip-hero-title { display: flex; align-items: center; gap: 0.6rem; }
+        .wp-trip-hero-flag { font-size: 1.7rem; }
+        .wp-trip-hero-name { margin: 0; font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.7rem; color: var(--parchment); }
+        .wp-trip-hero-meta { margin: 0.5rem 0 0 2.35rem; font-size: 0.85rem; color: rgba(246,242,232,0.8); }
+        .wp-trip-hero-cost { text-align: right; }
+        .wp-trip-hero-cost-label { margin: 0; font-size: 0.7rem; color: rgba(246,242,232,0.65); }
+        .wp-trip-hero-cost-value { margin: 0.15rem 0 0; font-family: 'Fraunces', serif; font-size: 1.4rem; color: var(--parchment); }
+
+        .wp-trip-tabs { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; flex-wrap: wrap; }
+        .wp-trip-tab-row { display: flex; gap: 0.3rem; }
+        .wp-trip-tab { padding: 0.7rem 1.1rem; font-size: 0.85rem; color: var(--ink-soft); display: flex; align-items: center; gap: 0.4rem; }
+        .wp-trip-tab-active { color: var(--navy); font-weight: 600; border-bottom: 2.5px solid var(--navy); }
+        .wp-trip-tab-badge { font-size: 0.62rem; background: var(--parchment-deep); color: var(--ink-soft); padding: 0.1rem 0.5rem; border-radius: 999px; }
+        .wp-trip-header-actions { display: flex; gap: 0.6rem; padding-bottom: 0.7rem; flex-wrap: wrap; }
+        .wp-trip-header-btn { display: flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.55rem 0.9rem; font-size: 0.78rem; font-weight: 600; color: var(--navy); cursor: pointer; }
+
+        .wp-trip-route-layout { display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1.6rem; flex-wrap: wrap; }
+        .wp-trip-timeline-col { flex: 1; min-width: 280px; position: relative; padding-left: 2.3rem; }
+        .wp-trip-route-line { position: absolute; left: 0.85rem; top: 1.7rem; bottom: 3rem; width: 1px; background: var(--hairline); }
+        .wp-trip-insert-link { display: flex; align-items: center; gap: 0.35rem; background: none; border: none; color: var(--ink-soft); font-size: 0.74rem; opacity: 0.65; cursor: pointer; padding: 0 0 0.8rem; margin-left: -0.1rem; }
+        .wp-trip-insert-link:hover { opacity: 1; color: var(--gold); }
+        .wp-trip-entry { position: relative; display: flex; gap: 1.2rem; margin-bottom: 0.4rem; }
+        .wp-trip-entry-dot { position: absolute; left: -2.3rem; top: 0.3rem; width: 15px; height: 15px; border-radius: 50%; background: var(--hairline); border: 3px solid var(--parchment); }
+        .wp-trip-entry-dot-active { background: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+        .wp-trip-entry-photo { width: 150px; height: 108px; border-radius: 14px; flex-shrink: 0; background-size: cover; }
+        .wp-trip-entry-body { flex: 1; padding-top: 0.2rem; min-width: 0; }
+        .wp-trip-entry-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+        .wp-trip-entry-days { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--ink-soft); background: var(--parchment); border-radius: 999px; padding: 0.25rem 0.35rem 0.25rem 0.6rem; }
+        .wp-trip-chips-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.7rem; }
+        .wp-trip-chip { display: inline-flex; align-items: center; gap: 0.3rem; font-family: 'Fraunces', serif; font-style: italic; font-size: 0.76rem; background: #fff; border: 1px solid var(--hairline); padding: 0.28rem 0.7rem; border-radius: 999px; }
+        .wp-trip-chip-remove { background: none; border: none; cursor: pointer; color: var(--ink-soft); display: flex; padding: 0; }
+        .wp-trip-chip-add { background: var(--parchment); border: 1px dashed var(--hairline); color: var(--ink-soft); cursor: pointer; }
+
+        .wp-trip-panel-row { display: flex; gap: 0.6rem; position: relative; flex-wrap: wrap; }
+        .wp-trip-panel-btn { display: flex; align-items: center; gap: 0.45rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 1rem 0.5rem 0.85rem; font-size: 0.78rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
+        .wp-trip-panel-btn-active { background: #FAF3E4; border: 1.5px solid var(--gold); color: #8A6425; font-weight: 600; }
+        .wp-trip-panel-btn-empty { border-style: dashed; }
+        .wp-trip-panel-connector { position: absolute; top: 100%; width: 12px; height: 12px; background: #fff; border-left: 1.5px solid var(--gold); border-top: 1.5px solid var(--gold); transform: rotate(45deg); margin-top: -1px; }
+        .wp-trip-panel-box { background: #fff; border: 1.5px solid var(--gold); border-radius: 12px; padding: 1rem 1.1rem; margin-top: 0.75rem; }
+        .wp-trip-panel-box-label { margin: 0 0 0.6rem; font-size: 0.66rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+
+        .wp-trip-transit-summary-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.7rem 0 0.7rem -2.3rem; padding-left: 2.3rem; }
+        .wp-trip-transit-summary-text { font-size: 0.76rem; color: var(--ink-soft); flex: 1; }
+        .wp-trip-transit-summary-edit { background: none; border: none; color: var(--ink-soft); font-size: 0.72rem; text-decoration: underline; cursor: pointer; }
+
+        .wp-trip-map-panel { width: 340px; flex-shrink: 0; background: #fff; border: 1px solid var(--hairline); border-radius: 16px; overflow: hidden; position: sticky; top: 20px; }
+        .wp-trip-map-label { margin: 0; position: absolute; z-index: 400; font-size: 0.68rem; color: #5B6B47; background: rgba(255,255,255,0.75); padding: 0.2rem 0.55rem; border-radius: 999px; margin: 0.7rem 0 0 0.7rem; }
+        .wp-trip-map, .wp-trip-map-empty { height: 340px; background: #DCE8DA; }
+        .wp-trip-map-empty { display: flex; align-items: center; justify-content: center; }
+        .wp-trip-map-note { margin: 0; padding: 0.7rem 0.9rem; font-size: 0.7rem; color: var(--ink-soft); border-top: 1px solid var(--hairline); }
+        @media (max-width: 900px) { .wp-trip-map-panel { width: 100%; position: static; } }
         .wp-trip-card:hover { border-color: var(--gold); }
         .wp-trip-card-top { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; }
         .wp-trip-card-name { font-family: 'Fraunces', serif; font-size: 1.02rem; display: flex; align-items: center; gap: 0.5rem; }
@@ -2340,26 +2502,58 @@ function Waypoint() {
               <p className="wp-map-list-empty" style={{ marginBottom: "1rem" }}>{T.noTripsYet}</p>
             )}
 
-            {user && Object.values(trips).map((trip) => (
-              <button
-                key={trip.id}
-                className="wp-trip-card"
-                onClick={() => { setActiveTripId(trip.id); setView("trip-detail"); window.scrollTo(0, 0); }}
-              >
-                <div className="wp-trip-card-top">
-                  <span className="wp-trip-card-name"><span>{trip.flag}</span>{trip.name}</span>
-                  <span className={"wp-trip-status-badge" + (trip.status === "done" ? " wp-trip-status-done" : "")}>
-                    {trip.status === "done" ? T.tripStatusDone : T.tripStatusPlanning}
-                  </span>
+            {user && Object.keys(trips).length > 0 && (() => {
+              const tripList = Object.values(trips);
+              const continentIds = new Set();
+              let totalNights = 0, totalDone = 0;
+              tripList.forEach((trip) => {
+                const tc = allCountriesFlat.find((c) => c.id === trip.countryId);
+                if (tc) continentIds.add(tc.continentId);
+                totalNights += Math.max(0, dayCount(trip.startDate, trip.endDate) - 1);
+                if (trip.status === "done") totalDone += 1;
+              });
+              return (
+                <div className="wp-trips-stat-strip">
+                  <div className="wp-trips-stat-cell"><p className="wp-trips-stat-label">{T.tripsStatTrips}</p><p className="wp-trips-stat-value">{tripList.length}</p></div>
+                  <div className="wp-trips-stat-cell"><p className="wp-trips-stat-label">{T.tripsStatContinents}</p><p className="wp-trips-stat-value">{continentIds.size}</p></div>
+                  <div className="wp-trips-stat-cell"><p className="wp-trips-stat-label">{T.tripsStatNights}</p><p className="wp-trips-stat-value">{totalNights}</p></div>
+                  <div className="wp-trips-stat-cell"><p className="wp-trips-stat-label">{T.tripsStatDone}</p><p className="wp-trips-stat-value">{totalDone}</p></div>
                 </div>
-                <p className="wp-trip-card-meta">
-                  {trip.startDate || "?"} – {trip.endDate || "?"} · {dayCount(trip.startDate, trip.endDate)} {T.days} · {trip.stops.length} {T.stops}
-                </p>
-              </button>
-            ))}
+              );
+            })()}
+
+            {user && Object.keys(trips).length > 0 && (
+              <div className="wp-trips-grid">
+                {Object.values(trips).map((trip) => {
+                  const tc = allCountriesFlat.find((c) => c.id === trip.countryId);
+                  const accent = (tc && tc.continentColor) || "#2F5D62";
+                  return (
+                    <button
+                      key={trip.id}
+                      className="wp-trip-card-v2"
+                      onClick={() => { setActiveTripId(trip.id); setView("trip-detail"); window.scrollTo(0, 0); }}
+                    >
+                      <div className="wp-trip-card-v2-photo" style={{ background: "linear-gradient(135deg, " + accent + ", #142035)" }}>
+                        <span className="wp-trip-card-v2-flag">{trip.flag}</span>
+                        {tc && (
+                          <span className="wp-trip-card-v2-icon"><ContinentIcon id={tc.continentId} size={16} /></span>
+                        )}
+                      </div>
+                      <div className="wp-trip-card-v2-body">
+                        <p className="wp-trip-card-v2-name">{trip.name}</p>
+                        <p className="wp-trip-card-v2-meta">{dayCount(trip.startDate, trip.endDate)} {T.days} · {trip.stops.length} {T.stops}</p>
+                        <span className={"wp-trip-card-v2-badge" + (trip.status === "done" ? " wp-trip-card-v2-badge-done" : "")}>
+                          {trip.status === "done" ? T.tripStatusDone : T.tripStatusPlanning}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {user && (
-              <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ marginTop: "0.6rem" }} onClick={openNewTripForm}>
+              <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ marginTop: "1.3rem" }} onClick={openNewTripForm}>
                 <PlusIcon size={15} /> {T.newTrip}
               </button>
             )}
@@ -2422,39 +2616,284 @@ function Waypoint() {
           const suggestions = countryData && countryData.attractions ? countryData.attractions.map((a) => a.name) : [];
           return (
             <div className="wp-trips-page">
-              <button className="wp-trip-back" onClick={() => { setActiveTripId(null); goToStatic("trips"); }}>
-                <ChevronRight size={15} style={{ transform: "rotate(180deg)" }} /> {T.myTrips}
+              <div className="wp-trip-hero" style={{ "--trip-accent": (countryData && countryData.continentColor) || "#2F5D62" }}>
+                <div className="wp-trip-hero-icon-bg">
+                  {countryData ? <ContinentIcon id={countryData.continentId} size={220} /> : null}
+                </div>
+                <button className="wp-trip-hero-back" onClick={() => { setActiveTripId(null); goToStatic("trips"); }}>
+                  <ChevronRight size={13} style={{ transform: "rotate(180deg)" }} /> {T.myTrips}
+                </button>
+                <div className="wp-trip-hero-row">
+                  <div>
+                    <div className="wp-trip-hero-title">
+                      <span className="wp-trip-hero-flag">{trip.flag}</span>
+                      <h1 className="wp-trip-hero-name">{trip.name}</h1>
+                    </div>
+                    <p className="wp-trip-hero-meta">{trip.startDate || "?"} – {trip.endDate || "?"} · {total} {T.days} · {trip.stops.length} {T.stops}</p>
+                  </div>
+                  <div className="wp-trip-hero-cost">
+                    <p className="wp-trip-hero-cost-label">{T.estimatedCost}</p>
+                    <p className="wp-trip-hero-cost-value">€{cost.toFixed(0)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="wp-trip-tabs">
+                <div className="wp-trip-tab-row">
+                  <span className="wp-trip-tab wp-trip-tab-active">{T.routeTab}</span>
+                  <span className="wp-trip-tab">{T.daysTab} <span className="wp-trip-tab-badge">{T.comingSoonBadge}</span></span>
+                  <span className="wp-trip-tab">{T.bookingsTab} <span className="wp-trip-tab-badge">{T.comingSoonBadge}</span></span>
+                </div>
+                <div className="wp-trip-header-actions">
+                  <button className="wp-trip-header-btn" onClick={() => saveTripNow(trip.id)}>
+                    <CheckCircle size={14} /> {tripSaveStatus === "saved" ? T.tripSaved : T.saveTrip}
+                  </button>
+                  <button className="wp-trip-header-btn" onClick={() => exportTripPDF(trip)}>
+                    <Download size={14} /> {T.exportPdf}
+                  </button>
+                </div>
+              </div>
+
+              <div className="wp-trip-route-layout">
+              <div className="wp-trip-timeline-col">
+              <div className="wp-trip-route-line"></div>
+
+              {trip.stops.map((stop, i) => {
+                const transit = trip.transits.find((tr) => tr.afterStopId === stop.id);
+                const transitEditing = openPanels["transit:" + stop.id];
+                const sleepOpen = openPanels[stop.id + ":sleep"];
+                const eatOpen = openPanels[stop.id + ":eat"];
+                return (
+                <div key={stop.id}>
+                  <button className="wp-trip-insert-link" onClick={() => insertStopBefore(trip.id, stop.id)}>
+                    <PlusIcon size={11} /> {T.insertStopHere}
+                  </button>
+
+                  <div className="wp-trip-entry">
+                    <span className={"wp-trip-entry-dot" + (stop.highlights.length || (stop.stays||[]).length || (stop.meals||[]).length ? " wp-trip-entry-dot-active" : "")}></span>
+                    <div className="wp-trip-entry-photo" style={{ background: "linear-gradient(160deg, " + ((countryData && countryData.continentColor) || "#2F5D62") + ", #142035)" }}></div>
+                    <div className="wp-trip-entry-body">
+                      <div className="wp-trip-entry-head">
+                        <input
+                          type="text"
+                          className="wp-trip-city-input"
+                          placeholder={T.cityPlaceholder}
+                          value={stop.city}
+                          onChange={(e) => updateStopField(trip.id, stop.id, "city", e.target.value)}
+                        />
+                        <span className="wp-trip-entry-days">
+                          {T.day}
+                          <input type="number" min="1" className="wp-trip-day-num" value={stop.dayStart} onChange={(e) => updateStopField(trip.id, stop.id, "dayStart", parseInt(e.target.value) || 1)} />
+                          -
+                          <input type="number" min="1" className="wp-trip-day-num" value={stop.dayEnd} onChange={(e) => updateStopField(trip.id, stop.id, "dayEnd", parseInt(e.target.value) || 1)} />
+                        </span>
+                        {trip.stops.length > 1 && (
+                          <button className="wp-trip-remove-btn" onClick={() => removeStop(trip.id, stop.id)} aria-label="Remove stop"><X size={14} /></button>
+                        )}
+                      </div>
+
+                      <div className="wp-trip-chips-row">
+                        {stop.highlights.map((h) => (
+                          <span key={h.id} className="wp-trip-chip">
+                            {h.text}
+                            <button className="wp-trip-chip-remove" onClick={() => removeHighlight(trip.id, stop.id, h.id)} aria-label="Remove"><X size={11} /></button>
+                          </span>
+                        ))}
+                        <button className="wp-trip-chip wp-trip-chip-add" onClick={() => togglePanel(stop.id + ":highlights")}>
+                          <PlusIcon size={11} /> {T.highlightsChipLabel}
+                        </button>
+                      </div>
+
+                      {openPanels[stop.id + ":highlights"] && (
+                        <div className="wp-trip-panel-box" style={{ marginBottom: "0.9rem" }}>
+                          <div className="wp-trip-add-highlight-row">
+                            <input
+                              type="text"
+                              className="wp-trip-highlight-input"
+                              placeholder={T.addHighlightPlaceholder}
+                              value={highlightDrafts[stop.id] || ""}
+                              onChange={(e) => setHighlightDrafts({ ...highlightDrafts, [stop.id]: e.target.value })}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && (highlightDrafts[stop.id] || "").trim()) {
+                                  addHighlight(trip.id, stop.id, highlightDrafts[stop.id], "custom");
+                                  setHighlightDrafts({ ...highlightDrafts, [stop.id]: "" });
+                                }
+                              }}
+                            />
+                            <button
+                              className="wp-trip-add-btn"
+                              onClick={() => {
+                                if ((highlightDrafts[stop.id] || "").trim()) {
+                                  addHighlight(trip.id, stop.id, highlightDrafts[stop.id], "custom");
+                                  setHighlightDrafts({ ...highlightDrafts, [stop.id]: "" });
+                                }
+                              }}
+                            ><PlusIcon size={14} /></button>
+                          </div>
+                          {suggestions.length > 0 && (
+                            <div className="wp-trip-suggestions">
+                              {suggestions.filter((s) => !stop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => (
+                                <button key={s} className="wp-trip-suggestion-chip" onClick={() => addHighlight(trip.id, stop.id, s, "attraction")}>
+                                  <PlusIcon size={11} /> {s}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="wp-trip-panel-row">
+                        <button
+                          className={"wp-trip-panel-btn" + (sleepOpen ? " wp-trip-panel-btn-active" : "") + ((stop.stays||[]).length === 0 ? " wp-trip-panel-btn-empty" : "")}
+                          onClick={() => togglePanel(stop.id + ":sleep")}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={sleepOpen ? "#B8863E" : "#83795F"} strokeWidth="1.8"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2M21 18v2M5 10V7a2 2 0 0 1 2-2h3v5"/></svg>
+                          {(stop.stays||[]).length > 0 ? (stop.stays[0].name + ((stop.stays.length > 1) ? " +" + (stop.stays.length - 1) : "")) : T.whereToSleepBtn}
+                        </button>
+                        <button
+                          className={"wp-trip-panel-btn" + (eatOpen ? " wp-trip-panel-btn-active" : "") + ((stop.meals||[]).length === 0 ? " wp-trip-panel-btn-empty" : "")}
+                          onClick={() => togglePanel(stop.id + ":eat")}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eatOpen ? "#B8863E" : "#83795F"} strokeWidth="1.8"><path d="M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11"/></svg>
+                          {(stop.meals||[]).length > 0 ? T.whereToEatBtn + " · " + stop.meals.length : T.whereToEatBtn}
+                        </button>
+                      </div>
+
+                      {sleepOpen && (
+                        <div className="wp-trip-panel-box">
+                          <p className="wp-trip-panel-box-label">{T.whereToSleep} · {stop.city || T.cityPlaceholder}</p>
+                          {(stop.stays || []).map((st) => (
+                            <div key={st.id} className="wp-trip-highlight-row">
+                              <span style={{ fontSize: "0.85rem" }}>🏨</span>
+                              <span className="wp-trip-highlight-text">{st.name}{st.nights ? " · " + st.nights + " " + T.nights : ""}{st.price ? " · " + st.price : ""}</span>
+                              <button className="wp-trip-remove-btn" onClick={() => removeStay(trip.id, stop.id, st.id)} aria-label="Remove"><X size={12} /></button>
+                            </div>
+                          ))}
+                          <div className="wp-trip-add-highlight-row">
+                            <input type="text" className="wp-trip-highlight-input" style={{ flex: 2 }} placeholder={T.stayNamePlaceholder}
+                              value={(stayDrafts[stop.id] || {}).name || ""}
+                              onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), name: e.target.value } })} />
+                            <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.nightsPlaceholder}
+                              value={(stayDrafts[stop.id] || {}).nights || ""}
+                              onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), nights: e.target.value } })} />
+                            <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.transitPrice}
+                              value={(stayDrafts[stop.id] || {}).price || ""}
+                              onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), price: e.target.value } })} />
+                            <button className="wp-trip-add-btn" onClick={() => {
+                              const d = stayDrafts[stop.id] || {};
+                              addStay(trip.id, stop.id, d.name || "", d.nights || "", d.price || "");
+                              setStayDrafts({ ...stayDrafts, [stop.id]: {} });
+                            }}><PlusIcon size={14} /></button>
+                          </div>
+                        </div>
+                      )}
+
+                      {eatOpen && (
+                        <div className="wp-trip-panel-box">
+                          <p className="wp-trip-panel-box-label">{T.whereToEat} · {stop.city || T.cityPlaceholder}</p>
+                          {(stop.meals || []).map((m) => (
+                            <div key={m.id} className="wp-trip-highlight-row">
+                              <span style={{ fontSize: "0.85rem" }}>🍽</span>
+                              <span className="wp-trip-highlight-text">{m.name}</span>
+                              <button className="wp-trip-remove-btn" onClick={() => removeMeal(trip.id, stop.id, m.id)} aria-label="Remove"><X size={12} /></button>
+                            </div>
+                          ))}
+                          <div className="wp-trip-add-highlight-row">
+                            <input type="text" className="wp-trip-highlight-input" placeholder={T.addMealPlaceholder}
+                              value={(mealDrafts[stop.id] || {}).name || ""}
+                              onChange={(e) => setMealDrafts({ ...mealDrafts, [stop.id]: { ...(mealDrafts[stop.id] || {}), name: e.target.value } })}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && ((mealDrafts[stop.id] || {}).name || "").trim()) {
+                                  addMeal(trip.id, stop.id, mealDrafts[stop.id].name);
+                                  setMealDrafts({ ...mealDrafts, [stop.id]: {} });
+                                }
+                              }} />
+                            <button className="wp-trip-add-btn" onClick={() => {
+                              const d = mealDrafts[stop.id] || {};
+                              addMeal(trip.id, stop.id, d.name || "");
+                              setMealDrafts({ ...mealDrafts, [stop.id]: {} });
+                            }}><PlusIcon size={14} /></button>
+                          </div>
+                          {countryData && countryData.food && countryData.food.length > 0 && (
+                            <div className="wp-trip-suggestions">
+                              {countryData.food.filter((f) => !stop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => (
+                                <button key={f.name} className="wp-trip-suggestion-chip" onClick={() => addMeal(trip.id, stop.id, f.name)}>
+                                  <PlusIcon size={11} /> {f.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {i < trip.stops.length - 1 && transit && !transitEditing && (
+                    <div className="wp-trip-transit-summary-row">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B8863E" strokeWidth="1.8"><path d="M4 16h16M4 16l3-3M4 16l3 3M20 16a2 2 0 1 0-4 0"/></svg>
+                      <span className="wp-trip-transit-summary-text">
+                        {transit.mode
+                          ? (transit.durationHours || transit.durationMinutes ? (transit.durationHours || "0") + "h" + (transit.durationMinutes ? transit.durationMinutes + "min" : "") + " · " : "") + (T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode)
+                          : T.transitAddBtn}
+                      </span>
+                      <button className="wp-trip-transit-summary-edit" onClick={() => togglePanel("transit:" + stop.id)}>{T.transitEditBtn}</button>
+                    </div>
+                  )}
+                  {i < trip.stops.length - 1 && transit && transitEditing && (
+                    <div className="wp-trip-transit-row">
+                      <select
+                        className="wp-trip-transit-select"
+                        value={transit.mode}
+                        onChange={(e) => updateTransit(trip.id, stop.id, "mode", e.target.value)}
+                      >
+                        <option value="">{T.chooseTransit}</option>
+                        <option value="flight">{T.transitFlight}</option>
+                        <option value="train">{T.transitTrain}</option>
+                        <option value="bus">{T.transitBus}</option>
+                        <option value="car">{T.transitCar}</option>
+                        <option value="boat">{T.transitBoat}</option>
+                      </select>
+                      <input
+                        type="number"
+                        min="0"
+                        className="wp-trip-transit-input wp-trip-transit-num"
+                        placeholder={T.hoursLabel}
+                        value={transit.durationHours}
+                        onChange={(e) => updateTransit(trip.id, stop.id, "durationHours", e.target.value)}
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        className="wp-trip-transit-input wp-trip-transit-num"
+                        placeholder={T.minutesLabel}
+                        value={transit.durationMinutes}
+                        onChange={(e) => updateTransit(trip.id, stop.id, "durationMinutes", e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        className="wp-trip-transit-input"
+                        placeholder={T.transitPrice}
+                        value={transit.price}
+                        onChange={(e) => updateTransit(trip.id, stop.id, "price", e.target.value)}
+                      />
+                      <button className="wp-trip-transit-summary-edit" onClick={() => togglePanel("transit:" + stop.id)}>{T.doneEditingLabel}</button>
+                    </div>
+                  )}
+                  {i < trip.stops.length - 1 && transit && transit.mode && (
+                    <p className="wp-trip-typical-hint">{T.typicalRange}: {TRANSIT_TYPICAL[transit.mode]}</p>
+                  )}
+                </div>
+              );})}
+
+
+              </div>
+              <TripMap trip={trip} countryName={countryData ? countryData.name : (trip.countryName || "")} geocodeCache={geocodeCache} geocodeCity={geocodeCity} accentColor={(countryData && countryData.continentColor) || "#2F5D62"} T={T} />
+              </div>
+
+              <button className="wp-trip-add-stop-btn" onClick={() => addStop(trip.id)}>
+                <PlusIcon size={15} /> {T.addStop}
               </button>
-
-              <div className="wp-trip-detail-header">
-                <div className="wp-trip-card-top">
-                  <span className="wp-trip-card-name"><span>{trip.flag}</span>{trip.name}</span>
-                  <span className={"wp-trip-status-badge" + (trip.status === "done" ? " wp-trip-status-done" : "")}>
-                    {trip.status === "done" ? T.tripStatusDone : T.tripStatusPlanning}
-                  </span>
-                </div>
-                <p className="wp-trip-card-meta">{trip.startDate || "?"} – {trip.endDate || "?"} · {total} {T.days} · {trip.stops.length} {T.stops}</p>
-              </div>
-
-              <div className="wp-trip-cost-row">
-                <div className="wp-trip-cost-box">
-                  <p className="wp-trip-cost-label">{T.estimatedCost}</p>
-                  <p className="wp-trip-cost-value">€{cost.toFixed(0)}</p>
-                </div>
-                <div className="wp-trip-cost-box">
-                  <p className="wp-trip-cost-label">{T.perDay}</p>
-                  <p className="wp-trip-cost-value">€{(cost / total).toFixed(0)}</p>
-                </div>
-              </div>
-
-              <div className="wp-trip-action-row">
-                <button className="wp-trip-export-btn" onClick={() => saveTripNow(trip.id)}>
-                  <CheckCircle size={14} /> {tripSaveStatus === "saved" ? T.tripSaved : T.saveTrip}
-                </button>
-                <button className="wp-trip-export-btn" onClick={() => exportTripPDF(trip)}>
-                  <Download size={14} /> {T.exportPdf}
-                </button>
-              </div>
 
               <div className="wp-trip-share-box">
                 <div className="wp-trip-share-row">
@@ -2486,188 +2925,6 @@ function Waypoint() {
                   </div>
                 )}
               </div>
-
-              {trip.stops.map((stop, i) => (
-                <div key={stop.id}>
-                  <button className="wp-trip-insert-before-btn" onClick={() => insertStopBefore(trip.id, stop.id)}>
-                    <PlusIcon size={11} /> {T.insertStopHere}
-                  </button>
-                  <div className="wp-trip-stop-card">
-                    <div className="wp-trip-stop-top">
-                      <input
-                        type="text"
-                        className="wp-trip-city-input"
-                        placeholder={T.cityPlaceholder}
-                        value={stop.city}
-                        onChange={(e) => updateStopField(trip.id, stop.id, "city", e.target.value)}
-                      />
-                      <span className="wp-trip-day-range-edit">
-                        {T.day}
-                        <input type="number" min="1" className="wp-trip-day-num" value={stop.dayStart} onChange={(e) => updateStopField(trip.id, stop.id, "dayStart", parseInt(e.target.value) || 1)} />
-                        -
-                        <input type="number" min="1" className="wp-trip-day-num" value={stop.dayEnd} onChange={(e) => updateStopField(trip.id, stop.id, "dayEnd", parseInt(e.target.value) || 1)} />
-                      </span>
-                      {trip.stops.length > 1 && (
-                        <button className="wp-trip-remove-btn" onClick={() => removeStop(trip.id, stop.id)} aria-label="Remove stop"><X size={14} /></button>
-                      )}
-                    </div>
-
-                    {stop.highlights.map((h) => (
-                      <div key={h.id} className="wp-trip-highlight-row">
-                        <CheckCircle size={14} style={{ color: "#6B9E68", flexShrink: 0 }} />
-                        <span className="wp-trip-highlight-text">{h.text}</span>
-                        <button className="wp-trip-remove-btn" onClick={() => removeHighlight(trip.id, stop.id, h.id)} aria-label="Remove"><X size={12} /></button>
-                      </div>
-                    ))}
-
-                    <div className="wp-trip-add-highlight-row">
-                      <input
-                        type="text"
-                        className="wp-trip-highlight-input"
-                        placeholder={T.addHighlightPlaceholder}
-                        value={highlightDrafts[stop.id] || ""}
-                        onChange={(e) => setHighlightDrafts({ ...highlightDrafts, [stop.id]: e.target.value })}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && (highlightDrafts[stop.id] || "").trim()) {
-                            addHighlight(trip.id, stop.id, highlightDrafts[stop.id], "custom");
-                            setHighlightDrafts({ ...highlightDrafts, [stop.id]: "" });
-                          }
-                        }}
-                      />
-                      <button
-                        className="wp-trip-add-btn"
-                        onClick={() => {
-                          if ((highlightDrafts[stop.id] || "").trim()) {
-                            addHighlight(trip.id, stop.id, highlightDrafts[stop.id], "custom");
-                            setHighlightDrafts({ ...highlightDrafts, [stop.id]: "" });
-                          }
-                        }}
-                      ><PlusIcon size={14} /></button>
-                    </div>
-
-                    {suggestions.length > 0 && (
-                      <div className="wp-trip-suggestions">
-                        {suggestions.filter((s) => !stop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => (
-                          <button key={s} className="wp-trip-suggestion-chip" onClick={() => addHighlight(trip.id, stop.id, s, "attraction")}>
-                            <PlusIcon size={11} /> {s}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="wp-trip-subsection">
-                      <p className="wp-trip-subsection-label">{T.whereToSleep}</p>
-                      {(stop.stays || []).map((st) => (
-                        <div key={st.id} className="wp-trip-highlight-row">
-                          <span style={{ fontSize: "0.85rem" }}>🏨</span>
-                          <span className="wp-trip-highlight-text">{st.name}{st.nights ? " · " + st.nights + " " + T.nights : ""}{st.price ? " · " + st.price : ""}</span>
-                          <button className="wp-trip-remove-btn" onClick={() => removeStay(trip.id, stop.id, st.id)} aria-label="Remove"><X size={12} /></button>
-                        </div>
-                      ))}
-                      <div className="wp-trip-add-highlight-row">
-                        <input type="text" className="wp-trip-highlight-input" style={{ flex: 2 }} placeholder={T.stayNamePlaceholder}
-                          value={(stayDrafts[stop.id] || {}).name || ""}
-                          onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), name: e.target.value } })} />
-                        <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.nightsPlaceholder}
-                          value={(stayDrafts[stop.id] || {}).nights || ""}
-                          onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), nights: e.target.value } })} />
-                        <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.transitPrice}
-                          value={(stayDrafts[stop.id] || {}).price || ""}
-                          onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), price: e.target.value } })} />
-                        <button className="wp-trip-add-btn" onClick={() => {
-                          const d = stayDrafts[stop.id] || {};
-                          addStay(trip.id, stop.id, d.name || "", d.nights || "", d.price || "");
-                          setStayDrafts({ ...stayDrafts, [stop.id]: {} });
-                        }}><PlusIcon size={14} /></button>
-                      </div>
-                    </div>
-
-                    <div className="wp-trip-subsection">
-                      <p className="wp-trip-subsection-label">{T.whereToEat}</p>
-                      {(stop.meals || []).map((m) => (
-                        <div key={m.id} className="wp-trip-highlight-row">
-                          <span style={{ fontSize: "0.85rem" }}>🍽</span>
-                          <span className="wp-trip-highlight-text">{m.name}</span>
-                          <button className="wp-trip-remove-btn" onClick={() => removeMeal(trip.id, stop.id, m.id)} aria-label="Remove"><X size={12} /></button>
-                        </div>
-                      ))}
-                      <div className="wp-trip-add-highlight-row">
-                        <input type="text" className="wp-trip-highlight-input" placeholder={T.addMealPlaceholder}
-                          value={(mealDrafts[stop.id] || {}).name || ""}
-                          onChange={(e) => setMealDrafts({ ...mealDrafts, [stop.id]: { ...(mealDrafts[stop.id] || {}), name: e.target.value } })}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && ((mealDrafts[stop.id] || {}).name || "").trim()) {
-                              addMeal(trip.id, stop.id, mealDrafts[stop.id].name);
-                              setMealDrafts({ ...mealDrafts, [stop.id]: {} });
-                            }
-                          }} />
-                        <button className="wp-trip-add-btn" onClick={() => {
-                          const d = mealDrafts[stop.id] || {};
-                          addMeal(trip.id, stop.id, d.name || "");
-                          setMealDrafts({ ...mealDrafts, [stop.id]: {} });
-                        }}><PlusIcon size={14} /></button>
-                      </div>
-                      {countryData && countryData.food && countryData.food.length > 0 && (
-                        <div className="wp-trip-suggestions">
-                          {countryData.food.filter((f) => !stop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => (
-                            <button key={f.name} className="wp-trip-suggestion-chip" onClick={() => addMeal(trip.id, stop.id, f.name)}>
-                              <PlusIcon size={11} /> {f.name}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {i < trip.stops.length - 1 && trip.transits.find((tr) => tr.afterStopId === stop.id) && (
-                    <div className="wp-trip-transit-row">
-                      <select
-                        className="wp-trip-transit-select"
-                        value={trip.transits.find((tr) => tr.afterStopId === stop.id).mode}
-                        onChange={(e) => updateTransit(trip.id, stop.id, "mode", e.target.value)}
-                      >
-                        <option value="">{T.chooseTransit}</option>
-                        <option value="flight">{T.transitFlight}</option>
-                        <option value="train">{T.transitTrain}</option>
-                        <option value="bus">{T.transitBus}</option>
-                        <option value="car">{T.transitCar}</option>
-                        <option value="boat">{T.transitBoat}</option>
-                      </select>
-                      <input
-                        type="number"
-                        min="0"
-                        className="wp-trip-transit-input wp-trip-transit-num"
-                        placeholder={T.hoursLabel}
-                        value={trip.transits.find((tr) => tr.afterStopId === stop.id).durationHours}
-                        onChange={(e) => updateTransit(trip.id, stop.id, "durationHours", e.target.value)}
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="59"
-                        className="wp-trip-transit-input wp-trip-transit-num"
-                        placeholder={T.minutesLabel}
-                        value={trip.transits.find((tr) => tr.afterStopId === stop.id).durationMinutes}
-                        onChange={(e) => updateTransit(trip.id, stop.id, "durationMinutes", e.target.value)}
-                      />
-                      <input
-                        type="text"
-                        className="wp-trip-transit-input"
-                        placeholder={T.transitPrice}
-                        value={trip.transits.find((tr) => tr.afterStopId === stop.id).price}
-                        onChange={(e) => updateTransit(trip.id, stop.id, "price", e.target.value)}
-                      />
-                    </div>
-                  )}
-                  {i < trip.stops.length - 1 && trip.transits.find((tr) => tr.afterStopId === stop.id) && trip.transits.find((tr) => tr.afterStopId === stop.id).mode && (
-                    <p className="wp-trip-typical-hint">{T.typicalRange}: {TRANSIT_TYPICAL[trip.transits.find((tr) => tr.afterStopId === stop.id).mode]}</p>
-                  )}
-                </div>
-              ))}
-
-              <button className="wp-trip-add-stop-btn" onClick={() => addStop(trip.id)}>
-                <PlusIcon size={15} /> {T.addStop}
-              </button>
 
               <div className="wp-trip-notes-box">
                 <p className="wp-trip-notes-title">{T.dayNotes}</p>
