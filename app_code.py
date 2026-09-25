@@ -806,7 +806,11 @@ function Waypoint() {
       });
     };
     document.addEventListener("click", handler, true);
-    return () => document.removeEventListener("click", handler, true);
+    document.addEventListener("touchend", handler, true);
+    return () => {
+      document.removeEventListener("click", handler, true);
+      document.removeEventListener("touchend", handler, true);
+    };
   }, [view, activeTripId, trips]);
   const [geocodeCache, setGeocodeCache] = useState({});
   const geocodeCity = (query, countryName) => {
@@ -1156,7 +1160,7 @@ function Waypoint() {
         });
       },
     }).addTo(map);
-    try { map.fitBounds(geoLayer.getBounds().pad(0.02)); } catch (e) {}
+    setTimeout(() => { map.invalidateSize(); }, 0);
 
     Object.keys(window.WORLD_MAP_POINTS).forEach((iso2) => {
       const p = window.WORLD_MAP_POINTS[iso2];
@@ -1891,8 +1895,8 @@ function Waypoint() {
         .wp-trip-panel-btn-active { background: #FAF3E4; border: 1.5px solid var(--gold); color: #8A6425; font-weight: 600; }
         .wp-trip-panel-btn-empty { border-style: dashed; }
         .wp-trip-panel-connector { position: absolute; top: 100%; width: 12px; height: 12px; background: #fff; border-left: 1.5px solid var(--gold); border-top: 1.5px solid var(--gold); transform: rotate(45deg); margin-top: -1px; }
-        .wp-trip-panel-box { background: #fff; border: 1.5px solid var(--gold); border-radius: 12px; padding: 1rem 1.1rem; margin-top: 0.75rem; }
-        .wp-trip-panel-box-label { margin: 0 0 0.6rem; font-size: 0.66rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+        .wp-trip-panel-box { background: #fff; border: 1.5px solid var(--gold); border-radius: 12px; padding: 1.2rem 1.35rem; margin-top: 0.75rem; }
+        .wp-trip-panel-box-label { margin: 0 0 0.8rem; font-size: 0.66rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
 
         .wp-trip-transit-summary-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.7rem 0 0.7rem -2.3rem; padding-left: 2.3rem; cursor: pointer; }
         .wp-trip-transit-summary-row:hover .wp-trip-transit-summary-text, .wp-trip-transit-summary-row:hover .wp-trip-transit-summary-edit { color: var(--ink); }
@@ -1949,8 +1953,14 @@ function Waypoint() {
         .wp-trip-remove-btn:hover { color: #B5453D; }
         .wp-trip-highlight-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0; border-top: 1px solid var(--hairline); }
         .wp-trip-highlight-text { flex: 1; font-size: 0.85rem; }
-        .wp-trip-add-highlight-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
-        .wp-trip-highlight-input { flex: 1 1 100px; min-width: 0; font-size: 0.85rem; padding: 0.4rem 0.6rem; border: 1px solid var(--hairline); border-radius: 8px; }
+        .wp-trip-add-highlight-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.4rem; }
+        .wp-trip-highlight-input { flex: 1 1 100px; min-width: 0; font-size: 0.9rem; padding: 0.6rem 0.75rem; border: 1px solid var(--hairline); border-radius: 8px; }
+        @media (max-width: 640px) {
+          .wp-trip-add-highlight-row { flex-direction: column; align-items: stretch; gap: 0.6rem; }
+          .wp-trip-add-highlight-row input.wp-trip-highlight-input { flex: 1 1 auto; width: 100%; box-sizing: border-box; }
+          .wp-trip-add-highlight-row .wp-trip-add-btn { align-self: flex-end; }
+          .wp-trip-panel-box { padding: 1.1rem; }
+        }
         .wp-trip-add-btn { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; }
         .wp-trip-suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
         .wp-trip-suggestion-chip { display: flex; align-items: center; gap: 0.25rem; font-size: 0.76rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.25rem 0.6rem; cursor: pointer; color: var(--ink-soft); }
