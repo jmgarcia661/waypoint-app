@@ -290,6 +290,7 @@ const UI_STRINGS = {
     doneEditingLabel: "done",
     dayListEmpty: "Nothing planned for this day yet.",
     dayMapEmpty: "Add a place to this day to see it on the map.",
+    daySuggestionsLabel: "From your highlights \u2014 tap to add to this day",
     addActivityPlaceholder: "place or activity name",
     activityTimePlaceholder: "time",
     listViewLabel: "List",
@@ -503,6 +504,7 @@ const UI_STRINGS = {
     doneEditingLabel: "conclu\xEDdo",
     dayListEmpty: "Ainda nada planeado para este dia.",
     dayMapEmpty: "Adiciona um s\xEDtio a este dia para o veres no mapa.",
+    daySuggestionsLabel: "Dos teus destaques \u2014 toca para adicionar a este dia",
     addActivityPlaceholder: "nome do s\xEDtio ou atividade",
     activityTimePlaceholder: "hora",
     listViewLabel: "Lista",
@@ -1077,14 +1079,8 @@ function Waypoint() {
           const type = key.slice(idx + 1);
           if (type !== "sleep" && type !== "eat" && type !== "highlights") return;
           if (e.target.closest && e.target.closest('[data-panel-key="' + key + '"]')) return;
-          const stopId = key.slice(0, idx);
-          const stop = trip.stops.find((s) => s.id === stopId);
-          if (!stop) return;
-          const isEmpty = type === "sleep" ? (stop.stays || []).length === 0 : type === "eat" ? (stop.meals || []).length === 0 : stop.highlights.length === 0;
-          if (isEmpty) {
-            next[key] = false;
-            changed = true;
-          }
+          next[key] = false;
+          changed = true;
         });
         return changed ? next : panels;
       });
@@ -1659,6 +1655,14 @@ function Waypoint() {
     return diff > 0 ? diff : 1;
   };
   const toISODate = (d) => d.toISOString().slice(0, 10);
+  const formatDayRange = (trip, dayStart, dayEnd) => {
+    if (!trip.startDate || !dayStart || !dayEnd) return "";
+    const start = new Date(new Date(trip.startDate).getTime() + (dayStart - 1) * 864e5);
+    const end = new Date(new Date(trip.startDate).getTime() + (dayEnd - 1) * 864e5);
+    const locale = lang === "pt" ? "pt-PT" : "en-GB";
+    const opts = { day: "numeric", month: "short" };
+    return start.toLocaleDateString(locale, opts) + " \u2013 " + end.toLocaleDateString(locale, opts);
+  };
   const openNewTripForm = () => {
     if (!user) {
       openAuthModal("signin");
@@ -2279,6 +2283,7 @@ function Waypoint() {
         .wp-trip-entry-body { flex: 1; padding-top: 0.2rem; min-width: 0; }
         .wp-trip-entry-head { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
         .wp-trip-entry-days { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--ink-soft); background: var(--parchment); border-radius: 999px; padding: 0.25rem 0.35rem 0.25rem 0.6rem; }
+        .wp-trip-date-range-hint { margin: -0.3rem 0 0.7rem; font-size: 0.72rem; color: var(--ink-soft); opacity: 0.8; }
         .wp-trip-chips-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.7rem; }
         .wp-trip-chip { display: inline-flex; align-items: center; gap: 0.3rem; font-family: 'Fraunces', serif; font-style: italic; font-size: 0.76rem; background: #fff; border: 1px solid var(--hairline); padding: 0.28rem 0.7rem; border-radius: 999px; }
         .wp-trip-chip-remove { background: none; border: none; cursor: pointer; color: var(--ink-soft); display: flex; padding: 0; }
@@ -2289,8 +2294,10 @@ function Waypoint() {
         .wp-trip-panel-btn-active { background: #FAF3E4; border: 1.5px solid var(--gold); color: #8A6425; font-weight: 600; }
         .wp-trip-panel-btn-empty { border-style: dashed; }
         .wp-trip-panel-connector { position: absolute; top: 100%; width: 12px; height: 12px; background: #fff; border-left: 1.5px solid var(--gold); border-top: 1.5px solid var(--gold); transform: rotate(45deg); margin-top: -1px; }
-        .wp-trip-panel-box { background: #fff; border: 1.5px solid var(--gold); border-radius: 12px; padding: 1.2rem 1.35rem; margin-top: 0.75rem; }
-        .wp-trip-panel-box-label { margin: 0 0 0.8rem; font-size: 0.66rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+        .wp-trip-panel-box { background: #fff; border: 1.5px solid var(--gold); border-radius: 12px; padding: 1.2rem 1.35rem; margin-top: 0.75rem; position: relative; }
+        .wp-trip-panel-box-label { margin: 0 0 0.8rem; font-size: 0.66rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold); font-weight: 600; padding-right: 1.6rem; }
+        .wp-trip-panel-close { position: absolute; top: 0.85rem; right: 0.85rem; background: none; border: none; color: var(--ink-soft); cursor: pointer; padding: 0.2rem; line-height: 0; }
+        .wp-trip-panel-close:hover { color: var(--ink); }
 
         .wp-trip-transit-summary-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.7rem 0 0.7rem -2.3rem; padding-left: 2.3rem; cursor: pointer; }
         .wp-trip-transit-summary-row:hover .wp-trip-transit-summary-text, .wp-trip-transit-summary-row:hover .wp-trip-transit-summary-edit { color: var(--ink); }
@@ -2309,6 +2316,8 @@ function Waypoint() {
         .wp-trip-day-pill { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 1.05rem; font-size: 0.82rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
         .wp-trip-day-pill-active { background: var(--navy); border-color: var(--navy); color: var(--parchment); font-weight: 600; }
         .wp-trip-day-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.6rem; }
+        .wp-trip-day-suggestions { margin-bottom: 1.1rem; }
+        .wp-trip-day-suggestions-label { margin: 0 0 0.5rem; font-size: 0.72rem; color: var(--ink-soft); }
         .wp-trip-day-city { margin: 0; font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 600; }
         .wp-trip-day-view-toggle { display: flex; background: var(--parchment-deep); border-radius: 8px; padding: 0.2rem; gap: 0.2rem; }
         .wp-trip-day-view-btn { background: none; border: none; padding: 0.4rem 0.9rem; font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); border-radius: 6px; cursor: pointer; }
@@ -2698,7 +2707,33 @@ function Waypoint() {
           value: stop.city,
           onChange: (e) => updateStopField(trip.id, stop.id, "city", e.target.value)
         }
-      ), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-entry-days" }, T.day, /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", className: "wp-trip-day-num", value: stop.dayStart, onChange: (e) => updateStopField(trip.id, stop.id, "dayStart", parseInt(e.target.value) || 1) }), "-", /* @__PURE__ */ React.createElement("input", { type: "number", min: "1", className: "wp-trip-day-num", value: stop.dayEnd, onChange: (e) => updateStopField(trip.id, stop.id, "dayEnd", parseInt(e.target.value) || 1) })), trip.stops.length > 1 && /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeStop(trip.id, stop.id), "aria-label": "Remove stop" }, /* @__PURE__ */ React.createElement(X, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row" }, stop.highlights.map((h) => /* @__PURE__ */ React.createElement("span", { key: h.id, className: "wp-trip-chip" }, h.text, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-chip-remove", onClick: () => removeHighlight(trip.id, stop.id, h.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 11 })))), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-chip wp-trip-chip-add", "data-panel-key": stop.id + ":highlights", onClick: () => togglePanel(stop.id + ":highlights") }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", T.highlightsChipLabel)), openPanels[stop.id + ":highlights"] && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-box", "data-panel-key": stop.id + ":highlights", style: { marginBottom: "0.9rem" } }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-entry-days" }, T.day, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "number",
+          min: "1",
+          className: "wp-trip-day-num",
+          value: stop.dayStart,
+          onChange: (e) => updateStopField(trip.id, stop.id, "dayStart", e.target.value === "" ? "" : parseInt(e.target.value)),
+          onBlur: (e) => {
+            const n = parseInt(e.target.value);
+            updateStopField(trip.id, stop.id, "dayStart", n > 0 ? n : 1);
+          }
+        }
+      ), "-", /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "number",
+          min: "1",
+          className: "wp-trip-day-num",
+          value: stop.dayEnd,
+          onChange: (e) => updateStopField(trip.id, stop.id, "dayEnd", e.target.value === "" ? "" : parseInt(e.target.value)),
+          onBlur: (e) => {
+            const n = parseInt(e.target.value);
+            updateStopField(trip.id, stop.id, "dayEnd", n > 0 ? n : 1);
+          }
+        }
+      )), trip.stops.length > 1 && /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeStop(trip.id, stop.id), "aria-label": "Remove stop" }, /* @__PURE__ */ React.createElement(X, { size: 14 }))), formatDayRange(trip, stop.dayStart, stop.dayEnd) && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-date-range-hint" }, formatDayRange(trip, stop.dayStart, stop.dayEnd)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row" }, stop.highlights.map((h) => /* @__PURE__ */ React.createElement("span", { key: h.id, className: "wp-trip-chip" }, h.text, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-chip-remove", onClick: () => removeHighlight(trip.id, stop.id, h.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 11 })))), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-chip wp-trip-chip-add", "data-panel-key": stop.id + ":highlights", onClick: () => togglePanel(stop.id + ":highlights") }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", T.highlightsChipLabel)), openPanels[stop.id + ":highlights"] && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-box", "data-panel-key": stop.id + ":highlights", style: { marginBottom: "0.9rem" } }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-close", onClick: () => togglePanel(stop.id + ":highlights"), "aria-label": "Close" }, /* @__PURE__ */ React.createElement(X, { size: 13 })), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "text",
@@ -2733,7 +2768,7 @@ function Waypoint() {
           onClick: () => togglePanel(stop.id + ":sleep")
         },
         /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: sleepOpen ? "#B8863E" : "#83795F", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2M21 18v2M5 10V7a2 2 0 0 1 2-2h3v5" })),
-        (stop.stays || []).length > 0 ? stop.stays[0].name + (stop.stays.length > 1 ? " +" + (stop.stays.length - 1) : "") : T.whereToSleepBtn
+        T.whereToSleepBtn
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -2742,8 +2777,8 @@ function Waypoint() {
           onClick: () => togglePanel(stop.id + ":eat")
         },
         /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: eatOpen ? "#B8863E" : "#83795F", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11" })),
-        (stop.meals || []).length > 0 ? T.whereToEatBtn + " \xB7 " + stop.meals.length : T.whereToEatBtn
-      )), sleepOpen && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-box", "data-panel-key": stop.id + ":sleep" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-panel-box-label" }, T.whereToSleep, " \xB7 ", stop.city || T.cityPlaceholder), (stop.stays || []).map((st) => /* @__PURE__ */ React.createElement("div", { key: st.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F3E8}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, st.name, st.nights ? " \xB7 " + st.nights + " " + T.nights : "", st.price ? " \xB7 " + st.price : ""), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeStay(trip.id, stop.id, st.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
+        T.whereToEatBtn
+      )), !sleepOpen && (stop.stays || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row", style: { marginTop: "0.55rem" } }, stop.stays.map((st) => /* @__PURE__ */ React.createElement("span", { key: st.id, className: "wp-trip-chip" }, "\u{1F3E8} ", st.name, st.nights ? " \xB7 " + st.nights + " " + T.nights : "", st.price ? " \xB7 " + st.price : ""))), !eatOpen && (stop.meals || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row", style: { marginTop: "0.55rem" } }, stop.meals.map((m) => /* @__PURE__ */ React.createElement("span", { key: m.id, className: "wp-trip-chip" }, "\u{1F37D} ", m.name))), sleepOpen && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-box", "data-panel-key": stop.id + ":sleep" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-close", onClick: () => togglePanel(stop.id + ":sleep"), "aria-label": "Close" }, /* @__PURE__ */ React.createElement(X, { size: 13 })), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-panel-box-label" }, T.whereToSleep, " \xB7 ", stop.city || T.cityPlaceholder), (stop.stays || []).map((st) => /* @__PURE__ */ React.createElement("div", { key: st.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F3E8}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, st.name, st.nights ? " \xB7 " + st.nights + " " + T.nights : "", st.price ? " \xB7 " + st.price : ""), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeStay(trip.id, stop.id, st.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "text",
@@ -2777,7 +2812,7 @@ function Waypoint() {
         const d = stayDrafts[stop.id] || {};
         addStay(trip.id, stop.id, d.name || "", d.nights || "", d.price || "");
         setStayDrafts({ ...stayDrafts, [stop.id]: {} });
-      } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })))), eatOpen && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-box", "data-panel-key": stop.id + ":eat" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-panel-box-label" }, T.whereToEat, " \xB7 ", stop.city || T.cityPlaceholder), (stop.meals || []).map((m) => /* @__PURE__ */ React.createElement("div", { key: m.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F37D}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, m.name), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeMeal(trip.id, stop.id, m.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
+      } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })))), eatOpen && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-box", "data-panel-key": stop.id + ":eat" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-close", onClick: () => togglePanel(stop.id + ":eat"), "aria-label": "Close" }, /* @__PURE__ */ React.createElement(X, { size: 13 })), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-panel-box-label" }, T.whereToEat, " \xB7 ", stop.city || T.cityPlaceholder), (stop.meals || []).map((m) => /* @__PURE__ */ React.createElement("div", { key: m.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F37D}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, m.name), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeMeal(trip.id, stop.id, m.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "text",
@@ -2861,7 +2896,7 @@ function Waypoint() {
           },
           dt ? dt.toLocaleDateString(lang === "pt" ? "pt-PT" : "en-GB", { day: "numeric", month: "short" }) : T.day + " " + d
         );
-      })), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-header-row" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-city" }, dayStop ? dayStop.city || T.cityPlaceholder : ""), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-view-toggle" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (dayView === "list" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setDayView("list") }, T.listViewLabel), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (dayView === "map" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setDayView("map") }, T.mapViewLabel))), dayView === "list" ? /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-list" }, dayActivities.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-list-empty" }, T.dayListEmpty), dayActivities.map((a) => /* @__PURE__ */ React.createElement("div", { key: a.id, className: "wp-trip-day-activity-row" }, a.time && /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-time" }, a.time), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-name" }, a.name), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeDayActivity(trip.id, selectedDay, a.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row", style: { marginTop: "0.7rem" } }, /* @__PURE__ */ React.createElement(
+      })), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-header-row" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-city" }, dayStop ? dayStop.city || T.cityPlaceholder : ""), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-view-toggle" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (dayView === "list" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setDayView("list") }, T.listViewLabel), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (dayView === "map" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setDayView("map") }, T.mapViewLabel))), dayStop && dayStop.highlights.filter((h) => !dayActivities.some((a) => a.name === h.text)).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-suggestions" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-suggestions-label" }, T.daySuggestionsLabel), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row" }, dayStop.highlights.filter((h) => !dayActivities.some((a) => a.name === h.text)).map((h) => /* @__PURE__ */ React.createElement("button", { key: h.id, className: "wp-trip-suggestion-chip", onClick: () => addDayActivity(trip.id, selectedDay, "", h.text) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", h.text)))), dayView === "list" ? /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-list" }, dayActivities.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-list-empty" }, T.dayListEmpty), dayActivities.map((a) => /* @__PURE__ */ React.createElement("div", { key: a.id, className: "wp-trip-day-activity-row" }, a.time && /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-time" }, a.time), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-name" }, a.name), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeDayActivity(trip.id, selectedDay, a.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row", style: { marginTop: "0.7rem" } }, /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "text",
