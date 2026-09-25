@@ -101,6 +101,9 @@ const UI_STRINGS = {
     mapIllustrativeLabel: "Illustrative map", mapIllustrativeNote: "Overland route shown, not to scale.",
     transitAddBtn: "Add travel time", transitEditBtn: "Edit",
     highlightsChipLabel: "highlights", doneEditingLabel: "done",
+    dayListEmpty: "Nothing planned for this day yet.", dayMapEmpty: "Add a place to this day to see it on the map.",
+    addActivityPlaceholder: "place or activity name", activityTimePlaceholder: "time",
+    listViewLabel: "List", mapViewLabel: "Map",
     tripsSignInPrompt: "Sign in to start planning a trip.", noTripsYet: "No trips yet — start planning your next one.",
     newTrip: "New trip", tripNameLabel: "name", tripNamePlaceholder: "e.g. Thailand 2027",
     tripCountryLabel: "country", tripDatesLabel: "dates", daysWillBeCreated: "days will be created automatically",
@@ -190,6 +193,9 @@ const UI_STRINGS = {
     mapIllustrativeLabel: "Mapa ilustrativo", mapIllustrativeNote: "Percurso terrestre, não está à escala.",
     transitAddBtn: "Adicionar tempo de viagem", transitEditBtn: "Editar",
     highlightsChipLabel: "destaques", doneEditingLabel: "concluído",
+    dayListEmpty: "Ainda nada planeado para este dia.", dayMapEmpty: "Adiciona um sítio a este dia para o veres no mapa.",
+    addActivityPlaceholder: "nome do sítio ou atividade", activityTimePlaceholder: "hora",
+    listViewLabel: "Lista", mapViewLabel: "Mapa",
     tripsSignInPrompt: "Entra para começares a planear uma viagem.", noTripsYet: "Ainda sem viagens — começa a planear a próxima.",
     newTrip: "Nova viagem", tripNameLabel: "nome", tripNamePlaceholder: "ex: Tailândia 2027",
     tripCountryLabel: "país", tripDatesLabel: "datas", daysWillBeCreated: "dias serão criados automaticamente",
@@ -495,6 +501,76 @@ function TripMap({ trip, countryName, geocodeCache, geocodeCity, accentColor, T 
   );
 }
 
+/* ---------- Day map: same geocoding mechanism, scoped to one day's activities ---------- */
+function DayMap({ activities, cityName, countryName, geocodeCache, geocodeCity, accentColor, T }) {
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+
+  const locationContext = [cityName, countryName].filter(Boolean).join(", ");
+  const points = activities.map((a, i) => {
+    const key = ((a.name || "") + "|" + locationContext).toLowerCase();
+    const hit = geocodeCache[key];
+    return { activity: a, index: i, hit, key };
+  });
+
+  useEffect(() => {
+    activities.forEach((a) => { if (a.name && a.name.trim()) geocodeCity(a.name.trim(), locationContext); });
+    // eslint-disable-next-line
+  }, [JSON.stringify(activities.map((a) => a.name)), locationContext]);
+
+  const resolved = points.filter((p) => p.hit && p.hit.lat);
+  const stillLoading = points.some((p) => p.hit === "loading");
+
+  useEffect(() => {
+    if (!containerRef.current || !window.L || resolved.length === 0) return;
+    const map = window.L.map(containerRef.current, { zoomControl: true, scrollWheelZoom: false });
+    mapRef.current = map;
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(map);
+
+    const latlngs = resolved.map((p) => [p.hit.lat, p.hit.lng]);
+    resolved.forEach((p) => {
+      const icon = window.L.divIcon({
+        className: "wp-map-pin",
+        html: '<div class="wp-map-pin-inner" style="background:' + accentColor + '">' + (p.index + 1) + "</div>",
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+      });
+      window.L.marker([p.hit.lat, p.hit.lng], { icon }).addTo(map).bindTooltip(p.activity.name, { direction: "top", offset: [0, -12] });
+    });
+    if (latlngs.length > 1) {
+      window.L.polyline(latlngs, { color: accentColor, weight: 2, dashArray: "5 7", opacity: 0.85 }).addTo(map);
+      map.fitBounds(window.L.latLngBounds(latlngs), { padding: [28, 28] });
+    } else {
+      map.setView(latlngs[0], 14);
+    }
+    return () => { map.remove(); };
+  }, [resolved.map((p) => p.activity.name + p.hit.lat).join(",")]);
+
+  if (activities.length === 0) {
+    return (
+      <div className="wp-trip-map-panel">
+        <div className="wp-trip-map wp-trip-map-empty"><span className="wp-day-map-empty-text">{T.dayMapEmpty}</span></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="wp-trip-map-panel">
+      <p className="wp-trip-map-label">{T.mapIllustrativeLabel}</p>
+      {resolved.length > 0 ? (
+        <div ref={containerRef} className="wp-trip-map" />
+      ) : (
+        <div className="wp-trip-map wp-trip-map-empty">
+          {stillLoading ? <span className="wp-map-loading-spinner"></span> : <span className="wp-day-map-empty-text">{T.dayMapEmpty}</span>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ---------- Newsletter signup, backed by Firestore (single source of truth) ---------- */
 function NewsletterSignupForm({ user, T }) {
   const [email, setEmail] = useState(user ? (user.email || "") : "");
@@ -687,6 +763,12 @@ function Waypoint() {
   const [tripSaveStatus, setTripSaveStatus] = useState("");
   const [openPanels, setOpenPanels] = useState({});
   const togglePanel = (key) => setOpenPanels((p) => ({ ...p, [key]: !p[key] }));
+
+  const [activeTripTab, setActiveTripTab] = useState("route");
+  const [selectedDay, setSelectedDay] = useState(1);
+  const [dayView, setDayView] = useState("list");
+  const [activityDrafts, setActivityDrafts] = useState({});
+  useEffect(() => { if (view === "trip-detail") { setActiveTripTab("route"); setSelectedDay(1); } }, [view, activeTripId]);
 
   useEffect(() => {
     if (view !== "trip-detail" || !activeTripId || !trips[activeTripId]) return;
@@ -1339,6 +1421,24 @@ function Waypoint() {
     }));
   };
 
+  const addDayActivity = (tripId, dayNum, time, name) => {
+    if (!name.trim()) return;
+    updateTrip(tripId, (t) => {
+      const days = { ...(t.days || {}) };
+      const list = days[dayNum] || [];
+      days[dayNum] = [...list, { id: "act_" + Date.now(), time: (time || "").trim(), name: name.trim() }];
+      return { ...t, days };
+    });
+  };
+  const removeDayActivity = (tripId, dayNum, activityId) => {
+    updateTrip(tripId, (t) => {
+      const days = { ...(t.days || {}) };
+      days[dayNum] = (days[dayNum] || []).filter((a) => a.id !== activityId);
+      return { ...t, days };
+    });
+  };
+  const stopForDay = (trip, dayNum) => trip.stops.find((s) => dayNum >= s.dayStart && dayNum <= s.dayEnd) || trip.stops[0];
+
   const tripTotalCost = (trip) => {
     const transitSum = trip.transits.reduce((sum, tr) => sum + (parseFloat(tr.price) || 0), 0);
     const staySum = trip.stops.reduce((sum, s) => sum + (s.stays || []).reduce((ss, st) => ss + (parseFloat(st.price) || 0), 0), 0);
@@ -1762,7 +1862,8 @@ function Waypoint() {
 
         .wp-trip-tabs { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; flex-wrap: wrap; }
         .wp-trip-tab-row { display: flex; gap: 0.3rem; }
-        .wp-trip-tab { padding: 0.7rem 1.1rem; font-size: 0.85rem; color: var(--ink-soft); display: flex; align-items: center; gap: 0.4rem; }
+        .wp-trip-tab { padding: 0.7rem 1.1rem; font-size: 0.85rem; color: var(--ink-soft); display: flex; align-items: center; gap: 0.4rem; background: none; border: none; font-family: 'Work Sans', sans-serif; cursor: default; }
+        button.wp-trip-tab { cursor: pointer; }
         .wp-trip-tab-active { color: var(--navy); font-weight: 600; border-bottom: 2.5px solid var(--navy); }
         .wp-trip-tab-badge { font-size: 0.62rem; background: var(--parchment-deep); color: var(--ink-soft); padding: 0.1rem 0.5rem; border-radius: 999px; }
         .wp-trip-header-actions { display: flex; gap: 0.6rem; padding-bottom: 0.7rem; flex-wrap: wrap; }
@@ -1804,6 +1905,22 @@ function Waypoint() {
         .wp-trip-map-empty { display: flex; align-items: center; justify-content: center; }
         .wp-trip-map-note { margin: 0; padding: 0.7rem 0.9rem; font-size: 0.7rem; color: var(--ink-soft); border-top: 1px solid var(--hairline); }
         @media (max-width: 900px) { .wp-trip-map-panel { width: 100%; position: static; } }
+
+        .wp-trip-days-tab { margin-bottom: 1.6rem; }
+        .wp-trip-day-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.3rem; }
+        .wp-trip-day-pill { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 1.05rem; font-size: 0.82rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
+        .wp-trip-day-pill-active { background: var(--navy); border-color: var(--navy); color: var(--parchment); font-weight: 600; }
+        .wp-trip-day-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.6rem; }
+        .wp-trip-day-city { margin: 0; font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 600; }
+        .wp-trip-day-view-toggle { display: flex; background: var(--parchment-deep); border-radius: 8px; padding: 0.2rem; gap: 0.2rem; }
+        .wp-trip-day-view-btn { background: none; border: none; padding: 0.4rem 0.9rem; font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); border-radius: 6px; cursor: pointer; }
+        .wp-trip-day-view-btn-active { background: #fff; color: var(--navy); box-shadow: 0 1px 2px rgba(20,32,53,0.08); }
+        .wp-trip-day-list { background: #fff; border: 1px solid var(--hairline); border-radius: 14px; padding: 1.2rem 1.3rem; }
+        .wp-trip-day-list-empty { margin: 0 0 0.8rem; font-size: 0.85rem; color: var(--ink-soft); }
+        .wp-trip-day-activity-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.55rem 0; border-bottom: 1px solid var(--parchment-deep); }
+        .wp-trip-day-activity-time { font-family: 'Fraunces', serif; font-size: 0.82rem; color: var(--gold); min-width: 3.2rem; }
+        .wp-trip-day-activity-name { flex: 1; font-size: 0.9rem; }
+        .wp-day-map-empty-text { font-size: 0.82rem; color: var(--ink-soft); padding: 0 1rem; text-align: center; }
         .wp-trip-card:hover { border-color: var(--gold); }
         .wp-trip-card-top { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; }
         .wp-trip-card-name { font-family: 'Fraunces', serif; font-size: 1.02rem; display: flex; align-items: center; gap: 0.5rem; }
@@ -2701,8 +2818,8 @@ function Waypoint() {
 
               <div className="wp-trip-tabs">
                 <div className="wp-trip-tab-row">
-                  <span className="wp-trip-tab wp-trip-tab-active">{T.routeTab}</span>
-                  <span className="wp-trip-tab">{T.daysTab} <span className="wp-trip-tab-badge">{T.comingSoonBadge}</span></span>
+                  <button className={"wp-trip-tab" + (activeTripTab === "route" ? " wp-trip-tab-active" : "")} onClick={() => setActiveTripTab("route")}>{T.routeTab}</button>
+                  <button className={"wp-trip-tab" + (activeTripTab === "days" ? " wp-trip-tab-active" : "")} onClick={() => setActiveTripTab("days")}>{T.daysTab}</button>
                   <span className="wp-trip-tab">{T.bookingsTab} <span className="wp-trip-tab-badge">{T.comingSoonBadge}</span></span>
                 </div>
                 <div className="wp-trip-header-actions">
@@ -2715,6 +2832,7 @@ function Waypoint() {
                 </div>
               </div>
 
+              {activeTripTab === "route" && (
               <div className="wp-trip-route-layout">
               <div className="wp-trip-timeline-col">
               <div className="wp-trip-route-line"></div>
@@ -2956,6 +3074,95 @@ function Waypoint() {
               </div>
               <TripMap trip={trip} countryName={countryData ? countryData.name : (trip.countryName || "")} geocodeCache={geocodeCache} geocodeCity={geocodeCity} accentColor={(countryData && countryData.continentColor) || "#2F5D62"} T={T} />
               </div>
+              )}
+
+              {activeTripTab === "days" && (() => {
+                const dayStop = stopForDay(trip, selectedDay);
+                const dayActivities = (trip.days && trip.days[selectedDay]) || [];
+                const dayDate = trip.startDate ? new Date(new Date(trip.startDate).getTime() + (selectedDay - 1) * 86400000) : null;
+                const draft = activityDrafts[selectedDay] || {};
+                return (
+                  <div className="wp-trip-days-tab">
+                    <div className="wp-trip-day-pills">
+                      {Array.from({ length: total }, (_, i) => i + 1).map((d) => {
+                        const dt = trip.startDate ? new Date(new Date(trip.startDate).getTime() + (d - 1) * 86400000) : null;
+                        return (
+                          <button
+                            key={d}
+                            className={"wp-trip-day-pill" + (selectedDay === d ? " wp-trip-day-pill-active" : "")}
+                            onClick={() => setSelectedDay(d)}
+                          >
+                            {dt ? dt.toLocaleDateString(lang === "pt" ? "pt-PT" : "en-GB", { day: "numeric", month: "short" }) : T.day + " " + d}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="wp-trip-day-header-row">
+                      <p className="wp-trip-day-city">{dayStop ? dayStop.city || T.cityPlaceholder : ""}</p>
+                      <div className="wp-trip-day-view-toggle">
+                        <button className={"wp-trip-day-view-btn" + (dayView === "list" ? " wp-trip-day-view-btn-active" : "")} onClick={() => setDayView("list")}>{T.listViewLabel}</button>
+                        <button className={"wp-trip-day-view-btn" + (dayView === "map" ? " wp-trip-day-view-btn-active" : "")} onClick={() => setDayView("map")}>{T.mapViewLabel}</button>
+                      </div>
+                    </div>
+
+                    {dayView === "list" ? (
+                      <div className="wp-trip-day-list">
+                        {dayActivities.length === 0 && <p className="wp-trip-day-list-empty">{T.dayListEmpty}</p>}
+                        {dayActivities.map((a) => (
+                          <div key={a.id} className="wp-trip-day-activity-row">
+                            {a.time && <span className="wp-trip-day-activity-time">{a.time}</span>}
+                            <span className="wp-trip-day-activity-name">{a.name}</span>
+                            <button className="wp-trip-remove-btn" onClick={() => removeDayActivity(trip.id, selectedDay, a.id)} aria-label="Remove"><X size={12} /></button>
+                          </div>
+                        ))}
+                        <div className="wp-trip-add-highlight-row" style={{ marginTop: "0.7rem" }}>
+                          <input
+                            type="text"
+                            className="wp-trip-highlight-input"
+                            style={{ flex: "0 0 90px" }}
+                            placeholder={T.activityTimePlaceholder}
+                            value={draft.time || ""}
+                            onChange={(e) => setActivityDrafts({ ...activityDrafts, [selectedDay]: { ...draft, time: e.target.value } })}
+                          />
+                          <input
+                            type="text"
+                            className="wp-trip-highlight-input"
+                            placeholder={T.addActivityPlaceholder}
+                            value={draft.name || ""}
+                            onChange={(e) => setActivityDrafts({ ...activityDrafts, [selectedDay]: { ...draft, name: e.target.value } })}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && (draft.name || "").trim()) {
+                                addDayActivity(trip.id, selectedDay, draft.time, draft.name);
+                                setActivityDrafts({ ...activityDrafts, [selectedDay]: { time: "", name: "" } });
+                              }
+                            }}
+                          />
+                          <button
+                            className="wp-trip-add-btn"
+                            onClick={() => {
+                              if ((draft.name || "").trim()) {
+                                addDayActivity(trip.id, selectedDay, draft.time, draft.name);
+                                setActivityDrafts({ ...activityDrafts, [selectedDay]: { time: "", name: "" } });
+                              }
+                            }}
+                          ><PlusIcon size={14} /></button>
+                        </div>
+                      </div>
+                    ) : (
+                      <DayMap
+                        activities={dayActivities}
+                        cityName={dayStop ? dayStop.city : ""}
+                        countryName={countryData ? countryData.name : (trip.countryName || "")}
+                        geocodeCache={geocodeCache}
+                        geocodeCity={geocodeCity}
+                        accentColor={(countryData && countryData.continentColor) || "#2F5D62"}
+                        T={T}
+                      />
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="wp-trip-share-box">
                 <div className="wp-trip-share-row">
