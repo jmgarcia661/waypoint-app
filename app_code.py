@@ -104,6 +104,13 @@ const UI_STRINGS = {
     dayListEmpty: "Nothing planned for this day yet.", dayMapEmpty: "Add a place to this day to see it on the map.",
     addActivityPlaceholder: "place or activity name", activityTimePlaceholder: "time",
     listViewLabel: "List", mapViewLabel: "Map",
+    bookingsAll: "All", bookingsFlights: "Flights", bookingsHotels: "Hotels",
+    flightNumberPlaceholder: "flight number", flightTimePlaceholder: "time", flightRefPlaceholder: "booking reference",
+    noFlightsYet: "No flights added yet — set a stop's travel mode to \"Flight\" in Route to add one here.",
+    noHotelsYet: "No stays added yet — add one under \"Where to sleep\" in Route.",
+    confirmedLabel: "Confirmed", pendingLabel: "Pending",
+    documentsTitle: "Documents", addDocumentPlaceholder: "e.g. Passport — no. ABC123, valid until 2029",
+    noDocumentsYet: "No documents added yet.", viewInRoute: "View in Route",
     tripsSignInPrompt: "Sign in to start planning a trip.", noTripsYet: "No trips yet — start planning your next one.",
     newTrip: "New trip", tripNameLabel: "name", tripNamePlaceholder: "e.g. Thailand 2027",
     tripCountryLabel: "country", tripDatesLabel: "dates", daysWillBeCreated: "days will be created automatically",
@@ -196,6 +203,13 @@ const UI_STRINGS = {
     dayListEmpty: "Ainda nada planeado para este dia.", dayMapEmpty: "Adiciona um sítio a este dia para o veres no mapa.",
     addActivityPlaceholder: "nome do sítio ou atividade", activityTimePlaceholder: "hora",
     listViewLabel: "Lista", mapViewLabel: "Mapa",
+    bookingsAll: "Tudo", bookingsFlights: "Voos", bookingsHotels: "Hotéis",
+    flightNumberPlaceholder: "número do voo", flightTimePlaceholder: "hora", flightRefPlaceholder: "referência da reserva",
+    noFlightsYet: "Ainda sem voos adicionados — muda o meio de transporte de uma paragem para \"Voo\" no Percurso para o adicionar aqui.",
+    noHotelsYet: "Ainda sem dormidas adicionadas — adiciona uma em \"Onde dormir\" no Percurso.",
+    confirmedLabel: "Confirmado", pendingLabel: "Por confirmar",
+    documentsTitle: "Documentos", addDocumentPlaceholder: "ex: Passaporte — nº ABC123, válido até 2029",
+    noDocumentsYet: "Ainda sem documentos adicionados.", viewInRoute: "Ver no Percurso",
     tripsSignInPrompt: "Entra para começares a planear uma viagem.", noTripsYet: "Ainda sem viagens — começa a planear a próxima.",
     newTrip: "Nova viagem", tripNameLabel: "nome", tripNamePlaceholder: "ex: Tailândia 2027",
     tripCountryLabel: "país", tripDatesLabel: "datas", daysWillBeCreated: "dias serão criados automaticamente",
@@ -765,6 +779,8 @@ function Waypoint() {
   const togglePanel = (key) => setOpenPanels((p) => ({ ...p, [key]: !p[key] }));
 
   const [activeTripTab, setActiveTripTab] = useState("route");
+  const [bookingsSubTab, setBookingsSubTab] = useState("all");
+  const [documentDraft, setDocumentDraft] = useState("");
   const [selectedDay, setSelectedDay] = useState(1);
   const [dayView, setDayView] = useState("list");
   const [activityDrafts, setActivityDrafts] = useState({});
@@ -1411,6 +1427,25 @@ function Waypoint() {
       stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: s.stays.filter((st) => st.id !== stayId) } : s)),
     }));
   };
+  const toggleStayConfirmed = (tripId, stopId, stayId) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: s.stays.map((st) => (st.id === stayId ? { ...st, confirmed: !st.confirmed } : st)) } : s)),
+    }));
+  };
+  const toggleTransitConfirmed = (tripId, afterStopId) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      transits: t.transits.map((tr) => (tr.afterStopId === afterStopId ? { ...tr, confirmed: !tr.confirmed } : tr)),
+    }));
+  };
+  const addDocument = (tripId, text) => {
+    if (!text.trim()) return;
+    updateTrip(tripId, (t) => ({ ...t, documents: [...(t.documents || []), { id: "doc_" + Date.now(), text: text.trim() }] }));
+  };
+  const removeDocument = (tripId, docId) => {
+    updateTrip(tripId, (t) => ({ ...t, documents: (t.documents || []).filter((d) => d.id !== docId) }));
+  };
   const addMeal = (tripId, stopId, name) => {
     if (!name.trim()) return;
     updateTrip(tripId, (t) => ({
@@ -1925,6 +1960,17 @@ function Waypoint() {
         .wp-trip-day-activity-time { font-family: 'Fraunces', serif; font-size: 0.82rem; color: var(--gold); min-width: 3.2rem; }
         .wp-trip-day-activity-name { flex: 1; font-size: 0.9rem; }
         .wp-day-map-empty-text { font-size: 0.82rem; color: var(--ink-soft); padding: 0 1rem; text-align: center; }
+
+        .wp-trip-bookings-tab { margin-bottom: 1.6rem; }
+        .wp-trip-booking-section { background: #fff; border: 1px solid var(--hairline); border-radius: 14px; padding: 1.2rem 1.3rem; margin-bottom: 1.1rem; }
+        .wp-trip-booking-section-title { margin: 0 0 0.9rem; font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 600; }
+        .wp-trip-booking-card { border: 1px solid var(--parchment-deep); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.7rem; }
+        .wp-trip-booking-card:last-child { margin-bottom: 0; }
+        .wp-trip-booking-card-head { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+        .wp-trip-booking-route { font-size: 0.88rem; font-weight: 500; }
+        .wp-trip-confirm-toggle { font-size: 0.7rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; border: 1px solid var(--hairline); background: var(--parchment); color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
+        .wp-trip-confirm-toggle-on { background: #E4EFE9; border-color: #3F8F6F; color: #2E6B52; }
+        .wp-trip-view-in-route-link { background: none; border: none; color: var(--ink-soft); font-size: 0.85rem; text-decoration: underline; cursor: pointer; padding: 0; }
         .wp-trip-card:hover { border-color: var(--gold); }
         .wp-trip-card-top { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; }
         .wp-trip-card-name { font-family: 'Fraunces', serif; font-size: 1.02rem; display: flex; align-items: center; gap: 0.5rem; }
@@ -2830,7 +2876,7 @@ function Waypoint() {
                 <div className="wp-trip-tab-row">
                   <button className={"wp-trip-tab" + (activeTripTab === "route" ? " wp-trip-tab-active" : "")} onClick={() => setActiveTripTab("route")}>{T.routeTab}</button>
                   <button className={"wp-trip-tab" + (activeTripTab === "days" ? " wp-trip-tab-active" : "")} onClick={() => setActiveTripTab("days")}>{T.daysTab}</button>
-                  <span className="wp-trip-tab">{T.bookingsTab} <span className="wp-trip-tab-badge">{T.comingSoonBadge}</span></span>
+                  <button className={"wp-trip-tab" + (activeTripTab === "bookings" ? " wp-trip-tab-active" : "")} onClick={() => setActiveTripTab("bookings")}>{T.bookingsTab}</button>
                 </div>
                 <div className="wp-trip-header-actions">
                   <button className="wp-trip-header-btn" onClick={() => saveTripNow(trip.id)}>
@@ -3173,6 +3219,99 @@ function Waypoint() {
                   </div>
                 );
               })()}
+
+              {activeTripTab === "bookings" && (
+                <div className="wp-trip-bookings-tab">
+                  <div className="wp-trip-day-view-toggle" style={{ marginBottom: "1.3rem" }}>
+                    <button className={"wp-trip-day-view-btn" + (bookingsSubTab === "all" ? " wp-trip-day-view-btn-active" : "")} onClick={() => setBookingsSubTab("all")}>{T.bookingsAll}</button>
+                    <button className={"wp-trip-day-view-btn" + (bookingsSubTab === "flights" ? " wp-trip-day-view-btn-active" : "")} onClick={() => setBookingsSubTab("flights")}>{T.bookingsFlights}</button>
+                    <button className={"wp-trip-day-view-btn" + (bookingsSubTab === "hotels" ? " wp-trip-day-view-btn-active" : "")} onClick={() => setBookingsSubTab("hotels")}>{T.bookingsHotels}</button>
+                  </div>
+
+                  {(bookingsSubTab === "all" || bookingsSubTab === "flights") && (() => {
+                    const flightTransits = trip.transits.filter((tr) => tr.mode === "flight");
+                    return (
+                      <div className="wp-trip-booking-section">
+                        <p className="wp-trip-booking-section-title">✈️ {T.bookingsFlights}</p>
+                        {flightTransits.length === 0 && <p className="wp-trip-day-list-empty">{T.noFlightsYet}</p>}
+                        {flightTransits.map((tr) => {
+                          const fromStop = trip.stops.find((s) => s.id === tr.afterStopId);
+                          const fromIdx = trip.stops.findIndex((s) => s.id === tr.afterStopId);
+                          const toStop = trip.stops[fromIdx + 1];
+                          return (
+                            <div key={tr.afterStopId} className="wp-trip-booking-card">
+                              <div className="wp-trip-booking-card-head">
+                                <span className="wp-trip-booking-route">{fromStop ? fromStop.city : "?"} → {toStop ? toStop.city : "?"}</span>
+                                <button
+                                  className={"wp-trip-confirm-toggle" + (tr.confirmed ? " wp-trip-confirm-toggle-on" : "")}
+                                  onClick={() => toggleTransitConfirmed(trip.id, tr.afterStopId)}
+                                >
+                                  {tr.confirmed ? T.confirmedLabel : T.pendingLabel}
+                                </button>
+                              </div>
+                              <div className="wp-trip-add-highlight-row">
+                                <input type="text" className="wp-trip-highlight-input" placeholder={T.flightNumberPlaceholder}
+                                  value={tr.flightNumber || ""} onChange={(e) => updateTransit(trip.id, tr.afterStopId, "flightNumber", e.target.value)} />
+                                <input type="text" className="wp-trip-highlight-input" placeholder={T.flightTimePlaceholder}
+                                  value={tr.flightTime || ""} onChange={(e) => updateTransit(trip.id, tr.afterStopId, "flightTime", e.target.value)} />
+                                <input type="text" className="wp-trip-highlight-input" placeholder={T.flightRefPlaceholder}
+                                  value={tr.reference || ""} onChange={(e) => updateTransit(trip.id, tr.afterStopId, "reference", e.target.value)} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+
+                  {(bookingsSubTab === "all" || bookingsSubTab === "hotels") && (() => {
+                    const stopsWithStays = trip.stops.filter((s) => (s.stays || []).length > 0);
+                    return (
+                      <div className="wp-trip-booking-section">
+                        <p className="wp-trip-booking-section-title">🛏 {T.bookingsHotels}</p>
+                        {stopsWithStays.length === 0 && <p className="wp-trip-day-list-empty">{T.noHotelsYet}</p>}
+                        {stopsWithStays.map((s) => s.stays.map((st) => (
+                          <div key={st.id} className="wp-trip-booking-card">
+                            <div className="wp-trip-booking-card-head">
+                              <span className="wp-trip-booking-route">{st.name} · {s.city}{st.nights ? " · " + st.nights + " " + T.nights : ""}{st.price ? " · " + st.price : ""}</span>
+                              <button
+                                className={"wp-trip-confirm-toggle" + (st.confirmed ? " wp-trip-confirm-toggle-on" : "")}
+                                onClick={() => toggleStayConfirmed(trip.id, s.id, st.id)}
+                              >
+                                {st.confirmed ? T.confirmedLabel : T.pendingLabel}
+                              </button>
+                            </div>
+                          </div>
+                        )))}
+                      </div>
+                    );
+                  })()}
+
+                  <div className="wp-trip-booking-section">
+                    <p className="wp-trip-booking-section-title">📄 {T.documentsTitle}</p>
+                    {(trip.documents || []).length === 0 && <p className="wp-trip-day-list-empty">{T.noDocumentsYet}</p>}
+                    {(trip.documents || []).map((d) => (
+                      <div key={d.id} className="wp-trip-day-activity-row">
+                        <span className="wp-trip-day-activity-name">{d.text}</span>
+                        <button className="wp-trip-remove-btn" onClick={() => removeDocument(trip.id, d.id)} aria-label="Remove"><X size={12} /></button>
+                      </div>
+                    ))}
+                    <div className="wp-trip-add-highlight-row" style={{ marginTop: "0.7rem" }}>
+                      <input
+                        type="text"
+                        className="wp-trip-highlight-input"
+                        placeholder={T.addDocumentPlaceholder}
+                        value={documentDraft}
+                        onChange={(e) => setDocumentDraft(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter" && documentDraft.trim()) { addDocument(trip.id, documentDraft); setDocumentDraft(""); } }}
+                      />
+                      <button className="wp-trip-add-btn" onClick={() => { if (documentDraft.trim()) { addDocument(trip.id, documentDraft); setDocumentDraft(""); } }}><PlusIcon size={14} /></button>
+                    </div>
+                  </div>
+
+                  <button className="wp-trip-view-in-route-link" onClick={() => setActiveTripTab("route")}>{T.viewInRoute} →</button>
+                </div>
+              )}
 
               <div className="wp-trip-share-box">
                 <div className="wp-trip-share-row">

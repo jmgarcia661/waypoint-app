@@ -294,6 +294,20 @@ const UI_STRINGS = {
     activityTimePlaceholder: "time",
     listViewLabel: "List",
     mapViewLabel: "Map",
+    bookingsAll: "All",
+    bookingsFlights: "Flights",
+    bookingsHotels: "Hotels",
+    flightNumberPlaceholder: "flight number",
+    flightTimePlaceholder: "time",
+    flightRefPlaceholder: "booking reference",
+    noFlightsYet: `No flights added yet \u2014 set a stop's travel mode to "Flight" in Route to add one here.`,
+    noHotelsYet: 'No stays added yet \u2014 add one under "Where to sleep" in Route.',
+    confirmedLabel: "Confirmed",
+    pendingLabel: "Pending",
+    documentsTitle: "Documents",
+    addDocumentPlaceholder: "e.g. Passport \u2014 no. ABC123, valid until 2029",
+    noDocumentsYet: "No documents added yet.",
+    viewInRoute: "View in Route",
     tripsSignInPrompt: "Sign in to start planning a trip.",
     noTripsYet: "No trips yet \u2014 start planning your next one.",
     newTrip: "New trip",
@@ -493,6 +507,20 @@ const UI_STRINGS = {
     activityTimePlaceholder: "hora",
     listViewLabel: "Lista",
     mapViewLabel: "Mapa",
+    bookingsAll: "Tudo",
+    bookingsFlights: "Voos",
+    bookingsHotels: "Hot\xE9is",
+    flightNumberPlaceholder: "n\xFAmero do voo",
+    flightTimePlaceholder: "hora",
+    flightRefPlaceholder: "refer\xEAncia da reserva",
+    noFlightsYet: 'Ainda sem voos adicionados \u2014 muda o meio de transporte de uma paragem para "Voo" no Percurso para o adicionar aqui.',
+    noHotelsYet: 'Ainda sem dormidas adicionadas \u2014 adiciona uma em "Onde dormir" no Percurso.',
+    confirmedLabel: "Confirmado",
+    pendingLabel: "Por confirmar",
+    documentsTitle: "Documentos",
+    addDocumentPlaceholder: "ex: Passaporte \u2014 n\xBA ABC123, v\xE1lido at\xE9 2029",
+    noDocumentsYet: "Ainda sem documentos adicionados.",
+    viewInRoute: "Ver no Percurso",
     tripsSignInPrompt: "Entra para come\xE7ares a planear uma viagem.",
     noTripsYet: "Ainda sem viagens \u2014 come\xE7a a planear a pr\xF3xima.",
     newTrip: "Nova viagem",
@@ -1014,6 +1042,8 @@ function Waypoint() {
   const [openPanels, setOpenPanels] = useState({});
   const togglePanel = (key) => setOpenPanels((p) => ({ ...p, [key]: !p[key] }));
   const [activeTripTab, setActiveTripTab] = useState("route");
+  const [bookingsSubTab, setBookingsSubTab] = useState("all");
+  const [documentDraft, setDocumentDraft] = useState("");
   const [selectedDay, setSelectedDay] = useState(1);
   const [dayView, setDayView] = useState("list");
   const [activityDrafts, setActivityDrafts] = useState({});
@@ -1759,6 +1789,25 @@ function Waypoint() {
       stops: t.stops.map((s) => s.id === stopId ? { ...s, stays: s.stays.filter((st) => st.id !== stayId) } : s)
     }));
   };
+  const toggleStayConfirmed = (tripId, stopId, stayId) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => s.id === stopId ? { ...s, stays: s.stays.map((st) => st.id === stayId ? { ...st, confirmed: !st.confirmed } : st) } : s)
+    }));
+  };
+  const toggleTransitConfirmed = (tripId, afterStopId) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      transits: t.transits.map((tr) => tr.afterStopId === afterStopId ? { ...tr, confirmed: !tr.confirmed } : tr)
+    }));
+  };
+  const addDocument = (tripId, text) => {
+    if (!text.trim()) return;
+    updateTrip(tripId, (t) => ({ ...t, documents: [...t.documents || [], { id: "doc_" + Date.now(), text: text.trim() }] }));
+  };
+  const removeDocument = (tripId, docId) => {
+    updateTrip(tripId, (t) => ({ ...t, documents: (t.documents || []).filter((d) => d.id !== docId) }));
+  };
   const addMeal = (tripId, stopId, name) => {
     if (!name.trim()) return;
     updateTrip(tripId, (t) => ({
@@ -2270,6 +2319,17 @@ function Waypoint() {
         .wp-trip-day-activity-time { font-family: 'Fraunces', serif; font-size: 0.82rem; color: var(--gold); min-width: 3.2rem; }
         .wp-trip-day-activity-name { flex: 1; font-size: 0.9rem; }
         .wp-day-map-empty-text { font-size: 0.82rem; color: var(--ink-soft); padding: 0 1rem; text-align: center; }
+
+        .wp-trip-bookings-tab { margin-bottom: 1.6rem; }
+        .wp-trip-booking-section { background: #fff; border: 1px solid var(--hairline); border-radius: 14px; padding: 1.2rem 1.3rem; margin-bottom: 1.1rem; }
+        .wp-trip-booking-section-title { margin: 0 0 0.9rem; font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 600; }
+        .wp-trip-booking-card { border: 1px solid var(--parchment-deep); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.7rem; }
+        .wp-trip-booking-card:last-child { margin-bottom: 0; }
+        .wp-trip-booking-card-head { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+        .wp-trip-booking-route { font-size: 0.88rem; font-weight: 500; }
+        .wp-trip-confirm-toggle { font-size: 0.7rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; border: 1px solid var(--hairline); background: var(--parchment); color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
+        .wp-trip-confirm-toggle-on { background: #E4EFE9; border-color: #3F8F6F; color: #2E6B52; }
+        .wp-trip-view-in-route-link { background: none; border: none; color: var(--ink-soft); font-size: 0.85rem; text-decoration: underline; cursor: pointer; padding: 0; }
         .wp-trip-card:hover { border-color: var(--gold); }
         .wp-trip-card-top { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; }
         .wp-trip-card-name { font-family: 'Fraunces', serif; font-size: 1.02rem; display: flex; align-items: center; gap: 0.5rem; }
@@ -2624,7 +2684,7 @@ function Waypoint() {
     return /* @__PURE__ */ React.createElement("div", { className: "wp-trips-page" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero", style: { "--trip-accent": countryData && countryData.continentColor || "#2F5D62" } }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero-icon-bg" }, countryData ? /* @__PURE__ */ React.createElement(ContinentIcon, { id: countryData.continentId, size: 220 }) : null), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-hero-back", onClick: () => {
       setActiveTripId(null);
       goToStatic("trips");
-    } }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 13, style: { transform: "rotate(180deg)" } }), " ", T.myTrips), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero-row" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero-title" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-hero-flag" }, trip.flag), /* @__PURE__ */ React.createElement("h1", { className: "wp-trip-hero-name" }, trip.name)), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-hero-meta" }, trip.startDate || "?", " \u2013 ", trip.endDate || "?", " \xB7 ", total, " ", T.days, " \xB7 ", trip.stops.length, " ", T.stops)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero-cost" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-hero-cost-label" }, T.estimatedCost), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-hero-cost-value" }, "\u20AC", cost.toFixed(0))))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-tabs" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-tab-row" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-tab" + (activeTripTab === "route" ? " wp-trip-tab-active" : ""), onClick: () => setActiveTripTab("route") }, T.routeTab), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-tab" + (activeTripTab === "days" ? " wp-trip-tab-active" : ""), onClick: () => setActiveTripTab("days") }, T.daysTab), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-tab" }, T.bookingsTab, " ", /* @__PURE__ */ React.createElement("span", { className: "wp-trip-tab-badge" }, T.comingSoonBadge))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-header-actions" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-header-btn", onClick: () => saveTripNow(trip.id) }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 14 }), " ", tripSaveStatus === "saved" ? T.tripSaved : T.saveTrip), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-header-btn", onClick: () => exportTripPDF(trip) }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", T.exportPdf))), activeTripTab === "route" && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-route-layout" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-timeline-col" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-route-line" }), trip.stops.map((stop, i) => {
+    } }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 13, style: { transform: "rotate(180deg)" } }), " ", T.myTrips), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero-row" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero-title" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-hero-flag" }, trip.flag), /* @__PURE__ */ React.createElement("h1", { className: "wp-trip-hero-name" }, trip.name)), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-hero-meta" }, trip.startDate || "?", " \u2013 ", trip.endDate || "?", " \xB7 ", total, " ", T.days, " \xB7 ", trip.stops.length, " ", T.stops)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero-cost" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-hero-cost-label" }, T.estimatedCost), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-hero-cost-value" }, "\u20AC", cost.toFixed(0))))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-tabs" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-tab-row" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-tab" + (activeTripTab === "route" ? " wp-trip-tab-active" : ""), onClick: () => setActiveTripTab("route") }, T.routeTab), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-tab" + (activeTripTab === "days" ? " wp-trip-tab-active" : ""), onClick: () => setActiveTripTab("days") }, T.daysTab), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-tab" + (activeTripTab === "bookings" ? " wp-trip-tab-active" : ""), onClick: () => setActiveTripTab("bookings") }, T.bookingsTab)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-header-actions" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-header-btn", onClick: () => saveTripNow(trip.id) }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 14 }), " ", tripSaveStatus === "saved" ? T.tripSaved : T.saveTrip), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-header-btn", onClick: () => exportTripPDF(trip) }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", T.exportPdf))), activeTripTab === "route" && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-route-layout" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-timeline-col" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-route-line" }), trip.stops.map((stop, i) => {
       const transit = trip.transits.find((tr) => tr.afterStopId === stop.id);
       const transitEditing = openPanels["transit:" + stop.id];
       const sleepOpen = openPanels[stop.id + ":sleep"];
@@ -2850,7 +2910,79 @@ function Waypoint() {
           T
         }
       ));
-    })(), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-share-box" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-share-row" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-share-title" }, T.shareTrip), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-share-desc" }, trip.isPublic ? T.shareTripOnDesc : T.shareTripOffDesc)), /* @__PURE__ */ React.createElement(
+    })(), activeTripTab === "bookings" && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-bookings-tab" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-view-toggle", style: { marginBottom: "1.3rem" } }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (bookingsSubTab === "all" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setBookingsSubTab("all") }, T.bookingsAll), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (bookingsSubTab === "flights" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setBookingsSubTab("flights") }, T.bookingsFlights), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (bookingsSubTab === "hotels" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setBookingsSubTab("hotels") }, T.bookingsHotels)), (bookingsSubTab === "all" || bookingsSubTab === "flights") && (() => {
+      const flightTransits = trip.transits.filter((tr) => tr.mode === "flight");
+      return /* @__PURE__ */ React.createElement("div", { className: "wp-trip-booking-section" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-booking-section-title" }, "\u2708\uFE0F ", T.bookingsFlights), flightTransits.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-list-empty" }, T.noFlightsYet), flightTransits.map((tr) => {
+        const fromStop = trip.stops.find((s) => s.id === tr.afterStopId);
+        const fromIdx = trip.stops.findIndex((s) => s.id === tr.afterStopId);
+        const toStop = trip.stops[fromIdx + 1];
+        return /* @__PURE__ */ React.createElement("div", { key: tr.afterStopId, className: "wp-trip-booking-card" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-booking-card-head" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-booking-route" }, fromStop ? fromStop.city : "?", " \u2192 ", toStop ? toStop.city : "?"), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            className: "wp-trip-confirm-toggle" + (tr.confirmed ? " wp-trip-confirm-toggle-on" : ""),
+            onClick: () => toggleTransitConfirmed(trip.id, tr.afterStopId)
+          },
+          tr.confirmed ? T.confirmedLabel : T.pendingLabel
+        )), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "text",
+            className: "wp-trip-highlight-input",
+            placeholder: T.flightNumberPlaceholder,
+            value: tr.flightNumber || "",
+            onChange: (e) => updateTransit(trip.id, tr.afterStopId, "flightNumber", e.target.value)
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "text",
+            className: "wp-trip-highlight-input",
+            placeholder: T.flightTimePlaceholder,
+            value: tr.flightTime || "",
+            onChange: (e) => updateTransit(trip.id, tr.afterStopId, "flightTime", e.target.value)
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "text",
+            className: "wp-trip-highlight-input",
+            placeholder: T.flightRefPlaceholder,
+            value: tr.reference || "",
+            onChange: (e) => updateTransit(trip.id, tr.afterStopId, "reference", e.target.value)
+          }
+        )));
+      }));
+    })(), (bookingsSubTab === "all" || bookingsSubTab === "hotels") && (() => {
+      const stopsWithStays = trip.stops.filter((s) => (s.stays || []).length > 0);
+      return /* @__PURE__ */ React.createElement("div", { className: "wp-trip-booking-section" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-booking-section-title" }, "\u{1F6CF} ", T.bookingsHotels), stopsWithStays.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-list-empty" }, T.noHotelsYet), stopsWithStays.map((s) => s.stays.map((st) => /* @__PURE__ */ React.createElement("div", { key: st.id, className: "wp-trip-booking-card" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-booking-card-head" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-booking-route" }, st.name, " \xB7 ", s.city, st.nights ? " \xB7 " + st.nights + " " + T.nights : "", st.price ? " \xB7 " + st.price : ""), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          className: "wp-trip-confirm-toggle" + (st.confirmed ? " wp-trip-confirm-toggle-on" : ""),
+          onClick: () => toggleStayConfirmed(trip.id, s.id, st.id)
+        },
+        st.confirmed ? T.confirmedLabel : T.pendingLabel
+      ))))));
+    })(), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-booking-section" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-booking-section-title" }, "\u{1F4C4} ", T.documentsTitle), (trip.documents || []).length === 0 && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-list-empty" }, T.noDocumentsYet), (trip.documents || []).map((d) => /* @__PURE__ */ React.createElement("div", { key: d.id, className: "wp-trip-day-activity-row" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-name" }, d.text), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeDocument(trip.id, d.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row", style: { marginTop: "0.7rem" } }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "text",
+        className: "wp-trip-highlight-input",
+        placeholder: T.addDocumentPlaceholder,
+        value: documentDraft,
+        onChange: (e) => setDocumentDraft(e.target.value),
+        onKeyDown: (e) => {
+          if (e.key === "Enter" && documentDraft.trim()) {
+            addDocument(trip.id, documentDraft);
+            setDocumentDraft("");
+          }
+        }
+      }
+    ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-btn", onClick: () => {
+      if (documentDraft.trim()) {
+        addDocument(trip.id, documentDraft);
+        setDocumentDraft("");
+      }
+    } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })))), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-view-in-route-link", onClick: () => setActiveTripTab("route") }, T.viewInRoute, " \u2192")), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-share-box" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-share-row" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-share-title" }, T.shareTrip), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-share-desc" }, trip.isPublic ? T.shareTripOnDesc : T.shareTripOffDesc)), /* @__PURE__ */ React.createElement(
       "button",
       {
         className: "wp-trip-share-toggle" + (trip.isPublic ? " wp-trip-share-toggle-on" : ""),
