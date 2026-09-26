@@ -103,6 +103,11 @@ const UI_STRINGS = {
     highlightsChipLabel: "highlights", doneEditingLabel: "done",
     dayListEmpty: "Nothing planned for this day yet.", dayMapEmpty: "Add a place to this day to see it on the map.",
     daySuggestionsLabel: "From your highlights — tap to add to this day",
+    pdfCoverTagline: "A slow, ad-free way to explore the world.",
+    pdfEssentialsTitle: "Trip essentials", pdfAboutTitle: "About",
+    pdfRouteTitle: "Your route", pdfFarewellTitle: "Have a wonderful trip!",
+    pdfFarewellLine: "Wherever these days take you, we hope they're unhurried, well-fed, and full of good light.",
+    pdfFarewellSign: "— Waypoint", pdfPopulation: "Population", pdfLanguage: "Language", pdfCurrency: "Currency", pdfBestTime: "Best time to visit",
     addActivityPlaceholder: "place or activity name", activityTimePlaceholder: "time",
     listViewLabel: "List", mapViewLabel: "Map",
     bookingsAll: "All", bookingsFlights: "Flights", bookingsHotels: "Hotels",
@@ -203,6 +208,11 @@ const UI_STRINGS = {
     highlightsChipLabel: "destaques", doneEditingLabel: "concluído",
     dayListEmpty: "Ainda nada planeado para este dia.", dayMapEmpty: "Adiciona um sítio a este dia para o veres no mapa.",
     daySuggestionsLabel: "Dos teus destaques — toca para adicionar a este dia",
+    pdfCoverTagline: "Uma forma tranquila e sem publicidade de explorar o mundo.",
+    pdfEssentialsTitle: "Essencial de viagem", pdfAboutTitle: "Sobre",
+    pdfRouteTitle: "O teu percurso", pdfFarewellTitle: "Boa viagem!",
+    pdfFarewellLine: "Onde quer que estes dias te levem, esperamos que sejam tranquilos, bem regados a boa comida, e cheios de luz bonita.",
+    pdfFarewellSign: "— Waypoint", pdfPopulation: "População", pdfLanguage: "Língua", pdfCurrency: "Moeda", pdfBestTime: "Melhor altura para visitar",
     addActivityPlaceholder: "nome do sítio ou atividade", activityTimePlaceholder: "hora",
     listViewLabel: "Lista", mapViewLabel: "Mapa",
     bookingsAll: "Tudo", bookingsFlights: "Voos", bookingsHotels: "Hotéis",
@@ -1498,122 +1508,303 @@ function Waypoint() {
     boat: "1-6h · €10-40",
   };
 
-  const exportTripPDF = (trip) => {
+  const exportTripPDF = (trip, countryData) => {
     if (!window.jspdf) return;
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 15;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 18;
     const navy = [20, 32, 53];
     const gold = [184, 134, 62];
     const inkSoft = [131, 121, 95];
     const ink = [31, 27, 20];
     const hairline = [225, 214, 188];
+    const parchment = [246, 242, 232];
+    const accentRgb = (() => {
+      const hex = (countryData && countryData.continentColor) || "#2F5D62";
+      const n = parseInt(hex.slice(1), 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    })();
 
+    const paintBg = () => { doc.setFillColor(parchment[0], parchment[1], parchment[2]); doc.rect(0, 0, pageWidth, pageHeight, "F"); };
+    const compassMark = (cx, cy, r, ringColor, dotColor) => {
+      doc.setDrawColor(ringColor[0], ringColor[1], ringColor[2]);
+      doc.setLineWidth(0.6);
+      doc.circle(cx, cy, r, "S");
+      doc.setFillColor(dotColor[0], dotColor[1], dotColor[2]);
+      doc.circle(cx, cy, r * 0.35, "F");
+    };
+    const brandStamp = (color) => {
+      compassMark(margin + 3.2, margin + 3, 3.2, color, gold);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(color[0], color[1], color[2]);
+      doc.text("WAYPOINT", margin + 9, margin + 4.5);
+    };
+    const footer = (pageColor) => {
+      doc.setFontSize(7.5);
+      doc.setTextColor(pageColor[0], pageColor[1], pageColor[2]);
+      doc.text("hellowaypoint.com", pageWidth / 2, pageHeight - 9, { align: "center" });
+    };
+
+    // ---------- Page 1: cover ----------
     doc.setFillColor(navy[0], navy[1], navy[2]);
-    doc.rect(0, 0, pageWidth, 34, "F");
-    doc.setDrawColor(255, 255, 255);
-    doc.circle(margin + 5, 17, 5, "S");
-    doc.setFillColor(gold[0], gold[1], gold[2]);
-    doc.circle(margin + 5, 17, 2, "F");
+    doc.rect(0, 0, pageWidth, pageHeight, "F");
+    doc.setFillColor(255, 255, 255);
+    if (doc.GState && doc.setGState) {
+      doc.setGState(new doc.GState({ opacity: 0.05 }));
+      doc.circle(pageWidth - 25, 40, 55, "F");
+      doc.setGState(new doc.GState({ opacity: 1 }));
+    }
+    brandStamp([246, 242, 232]);
+
+    doc.setTextColor(246, 242, 232);
+    doc.setFont("times", "bold");
+    doc.setFontSize(13);
+    doc.text((countryData ? countryData.name : (trip.countryName || "")).toUpperCase(), margin, pageHeight / 2 - 28);
+    doc.setFontSize(34);
+    const titleLines = doc.splitTextToSize(trip.name, pageWidth - margin * 2);
+    let cy = pageHeight / 2 - 14;
+    titleLines.forEach((line) => { doc.text(line, margin, cy); cy += 13; });
+
+    doc.setDrawColor(184, 134, 62);
+    doc.setLineWidth(0.6);
+    doc.line(margin, cy + 2, margin + 30, cy + 2);
+
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    doc.setTextColor(255, 255, 255);
-    doc.text("WAYPOINT", margin + 15, 14);
-    doc.setFontSize(18);
-    doc.text(trip.name, margin + 15, 25);
+    doc.setTextColor(220, 214, 196);
+    doc.text((trip.startDate || "?") + "  –  " + (trip.endDate || "?"), margin, cy + 14);
+    doc.setFontSize(9.5);
+    doc.setTextColor(180, 190, 195);
+    doc.text(dayCount(trip.startDate, trip.endDate) + " " + T.days + "  ·  " + trip.stops.length + " " + T.stops, margin, cy + 21);
 
-    let y = 46;
+    doc.setFont("times", "italic");
     doc.setFontSize(10);
-    doc.setTextColor(inkSoft[0], inkSoft[1], inkSoft[2]);
-    doc.text((trip.startDate || "?") + " - " + (trip.endDate || "?") + "  ·  " + dayCount(trip.startDate, trip.endDate) + " " + T.days, margin, y);
-    y += 10;
+    doc.setTextColor(190, 198, 200);
+    doc.text(T.pdfCoverTagline, margin, pageHeight - 16);
 
-    trip.stops.forEach((stop) => {
-      const lineCount = stop.highlights.length + (stop.stays || []).length + (stop.meals || []).length;
-      const boxHeight = 16 + lineCount * 5.5;
-      if (y + boxHeight > 275) { doc.addPage(); y = 20; }
+    // ---------- Page 2: country summary (only if the full country data has loaded) ----------
+    if (countryData && countryData.blurb) {
+      doc.addPage();
+      paintBg();
+      brandStamp(navy);
 
-      doc.setDrawColor(hairline[0], hairline[1], hairline[2]);
-      doc.setLineWidth(0.4);
-      doc.roundedRect(margin, y, pageWidth - margin * 2, boxHeight, 3, 3, "S");
-
-      let iy = y + 10;
-      doc.setFontSize(13);
+      let y2 = margin + 22;
+      doc.setFont("times", "bold");
+      doc.setFontSize(20);
       doc.setTextColor(ink[0], ink[1], ink[2]);
-      doc.text(stop.city || T.cityPlaceholder, margin + 6, iy);
+      doc.text(countryData.name, margin, y2);
+      y2 += 6;
+      doc.setDrawColor(accentRgb[0], accentRgb[1], accentRgb[2]);
+      doc.setLineWidth(0.8);
+      doc.line(margin, y2, margin + 22, y2);
+      y2 += 10;
+
+      if (countryData.blurb) {
+        doc.setFont("times", "italic");
+        doc.setFontSize(11.5);
+        doc.setTextColor(60, 55, 45);
+        const blurbLines = doc.splitTextToSize(countryData.blurb, pageWidth - margin * 2);
+        blurbLines.forEach((line) => { doc.text(line, margin, y2); y2 += 6.2; });
+        y2 += 8;
+      }
+
+      const stats = [
+        [T.pdfPopulation, countryData.population], [T.pdfLanguage, countryData.language],
+        [T.pdfCurrency, countryData.currency], [T.pdfBestTime, countryData.bestTime],
+      ].filter((s) => s[1]);
+      if (stats.length > 0) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(gold[0], gold[1], gold[2]);
+        doc.text(T.pdfEssentialsTitle.toUpperCase(), margin, y2);
+        y2 += 7;
+        const colW = (pageWidth - margin * 2) / 2;
+        stats.forEach((s, i) => {
+          const cx = margin + (i % 2) * colW;
+          const cyy = y2 + Math.floor(i / 2) * 16;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8);
+          doc.setTextColor(inkSoft[0], inkSoft[1], inkSoft[2]);
+          doc.text(String(s[0]).toUpperCase(), cx, cyy);
+          doc.setFont("times", "normal");
+          doc.setFontSize(11);
+          doc.setTextColor(ink[0], ink[1], ink[2]);
+          doc.text(String(s[1]), cx, cyy + 6);
+        });
+        y2 += Math.ceil(stats.length / 2) * 16 + 6;
+      }
+
+      if (countryData.budget) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(gold[0], gold[1], gold[2]);
+        doc.text(T.dailyBudget ? T.dailyBudget.toUpperCase() : "BUDGET", margin, y2);
+        y2 += 6;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(60, 55, 45);
+        const budgetLines = doc.splitTextToSize(countryData.budget, pageWidth - margin * 2);
+        budgetLines.forEach((line) => { doc.text(line, margin, y2); y2 += 5.2; });
+        y2 += 6;
+      }
+      if (countryData.visa) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(gold[0], gold[1], gold[2]);
+        doc.text(T.visa.toUpperCase(), margin, y2);
+        y2 += 6;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(60, 55, 45);
+        const visaLines = doc.splitTextToSize(countryData.visa, pageWidth - margin * 2);
+        visaLines.forEach((line) => { doc.text(line, margin, y2); y2 += 5.2; });
+      }
+      footer(inkSoft);
+    }
+
+    // ---------- Page 3+: route timeline ----------
+    doc.addPage();
+    paintBg();
+    brandStamp(navy);
+    doc.setFont("times", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(ink[0], ink[1], ink[2]);
+    doc.text(T.pdfRouteTitle, margin, margin + 20);
+
+    let y = margin + 32;
+    const dotX = margin + 3;
+    const textX = margin + 12;
+    const textWidth = pageWidth - textX - margin;
+
+    trip.stops.forEach((stop, i) => {
+      const dateRange = formatDayRange(trip, stop.dayStart, stop.dayEnd);
+      const rawLines = [
+        ...stop.highlights.map((h) => "· " + h.text),
+        ...(stop.stays || []).map((st) => "🏨 " + st.name + (st.nights ? " (" + st.nights + " " + T.nights + ")" : "") + (st.price ? " · " + st.price : "")),
+        ...(stop.meals || []).map((m) => "🍽 " + m.name),
+      ];
+      const allLines = rawLines.reduce((acc, line) => acc.concat(doc.splitTextToSize(line, textWidth)), []);
+      const blockHeight = 16 + (dateRange ? 5 : 0) + allLines.length * 5.4 + 6;
+
+      if (y + blockHeight > pageHeight - 20) { doc.addPage(); paintBg(); brandStamp(navy); y = margin + 20; }
+
+      const dotTop = y;
+      doc.setFillColor(i === 0 ? gold[0] : 255, i === 0 ? gold[1] : 255, i === 0 ? gold[2] : 255);
+      doc.setDrawColor(gold[0], gold[1], gold[2]);
+      doc.setLineWidth(0.5);
+      doc.circle(dotX, dotTop, 2, i === 0 ? "F" : "FD");
+
+      doc.setFont("times", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(ink[0], ink[1], ink[2]);
+      doc.text(stop.city || T.cityPlaceholder, textX, y + 1.5);
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor(inkSoft[0], inkSoft[1], inkSoft[2]);
-      doc.text(T.day + " " + stop.dayStart + "-" + stop.dayEnd, pageWidth - margin - 6, iy, { align: "right" });
-      iy += 7;
+      doc.text(T.day + " " + stop.dayStart + "-" + stop.dayEnd, pageWidth - margin, y + 1.5, { align: "right" });
+      y += 6.5;
+      if (dateRange) {
+        doc.setFontSize(8);
+        doc.setTextColor(inkSoft[0], inkSoft[1], inkSoft[2]);
+        doc.text(dateRange, textX, y);
+        y += 6;
+      } else { y += 1; }
 
-      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
       doc.setTextColor(60, 55, 45);
-      stop.highlights.forEach((h) => { doc.text("- " + h.text, margin + 8, iy); iy += 5.5; });
-      (stop.stays || []).forEach((st) => { doc.text(T.whereToSleep + ": " + st.name + (st.nights ? " (" + st.nights + " " + T.nights + ")" : "") + (st.price ? " - " + st.price : ""), margin + 8, iy); iy += 5.5; });
-      (stop.meals || []).forEach((m) => { doc.text(T.whereToEat + ": " + m.name, margin + 8, iy); iy += 5.5; });
+      allLines.forEach((line) => { doc.text(line, textX, y); y += 5.4; });
 
-      y += boxHeight + 4;
+      const stopBottom = y + 3;
 
       const transit = trip.transits.find((tr) => tr.afterStopId === stop.id);
-      if (transit && transit.mode) {
-        const durTxt = (transit.durationHours || transit.durationMinutes) ? " · " + (transit.durationHours || 0) + "h" + (transit.durationMinutes ? transit.durationMinutes + "m" : "") : "";
-        doc.setFontSize(9);
-        doc.setTextColor(gold[0], gold[1], gold[2]);
-        doc.text(transit.mode.toUpperCase() + durTxt + (transit.price ? " · " + transit.price : ""), margin + 6, y);
-        y += 8;
+      const hasNext = i < trip.stops.length - 1;
+      if (hasNext) {
+        const lineBottom = transit && transit.mode ? stopBottom + 9 : stopBottom + 4;
+        doc.setDrawColor(hairline[0], hairline[1], hairline[2]);
+        doc.setLineWidth(0.4);
+        doc.line(dotX, dotTop + 2, dotX, lineBottom);
+        if (transit && transit.mode) {
+          const durTxt = (transit.durationHours || transit.durationMinutes) ? " · " + (transit.durationHours || 0) + "h" + (transit.durationMinutes ? transit.durationMinutes + "m" : "") : "";
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setTextColor(gold[0], gold[1], gold[2]);
+          doc.text((T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode).toUpperCase() + durTxt + (transit.price ? " · " + transit.price : ""), textX, stopBottom + 5);
+        }
+        y = lineBottom + 6;
+      } else {
+        y = stopBottom + 4;
       }
     });
 
-    const noteDays = Array.from({ length: dayCount(trip.startDate, trip.endDate) }, (_, i) => i + 1)
-      .filter((day) => ((trip.dailyNotes || {})[day] || "").trim());
-    if (noteDays.length > 0) {
-      const maxTextWidth = pageWidth - margin * 2 - 14;
-      const wrappedNotes = noteDays.map((day) => {
-        const text = String(trip.dailyNotes[day]).trim();
-        const covering = trip.stops.find((s) => day >= s.dayStart && day <= s.dayEnd);
-        return { day, city: covering ? covering.city : "", wrapped: doc.splitTextToSize(text, maxTextWidth) };
-      });
-      let noteLinesTotal = 0;
-      wrappedNotes.forEach(({ wrapped }) => { noteLinesTotal += 1 + wrapped.length; });
-      const boxHeight = 14 + noteLinesTotal * 5.5;
-      if (y + boxHeight > 275) { doc.addPage(); y = 20; }
-
-      doc.setDrawColor(hairline[0], hairline[1], hairline[2]);
-      doc.setLineWidth(0.4);
-      doc.roundedRect(margin, y, pageWidth - margin * 2, boxHeight, 3, 3, "S");
-
-      let iy = y + 9;
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(gold[0], gold[1], gold[2]);
-      doc.text(T.dayNotes.toUpperCase(), margin + 6, iy);
-      doc.setFont("helvetica", "normal");
-      iy += 7;
-
-      wrappedNotes.forEach(({ day, city, wrapped }) => {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9.5);
-        doc.setTextColor(ink[0], ink[1], ink[2]);
-        doc.text(T.day + " " + day + (city ? " · " + city : ""), margin + 6, iy);
-        iy += 5;
-        doc.setFont("helvetica", "italic");
-        doc.setFontSize(9.5);
-        doc.setTextColor(70, 64, 52);
-        wrapped.forEach((line) => { doc.text(line, margin + 8, iy); iy += 4.6; });
-        doc.setFont("helvetica", "normal");
-        iy += 2;
-      });
-
-      y += boxHeight + 4;
-    }
-
-    y += 3;
+    if (y + 20 > pageHeight - 15) { doc.addPage(); paintBg(); brandStamp(navy); y = margin + 20; }
+    y += 4;
     doc.setDrawColor(hairline[0], hairline[1], hairline[2]);
     doc.line(margin, y, pageWidth - margin, y);
     y += 9;
-    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
     doc.setTextColor(ink[0], ink[1], ink[2]);
     doc.text(T.estimatedCost + ": EUR " + tripTotalCost(trip).toFixed(0), margin, y);
+    footer(inkSoft);
+
+    // ---------- Day notes (if any) ----------
+    const noteDays = Array.from({ length: dayCount(trip.startDate, trip.endDate) }, (_, i) => i + 1)
+      .filter((day) => ((trip.dailyNotes || {})[day] || "").trim());
+    if (noteDays.length > 0) {
+      doc.addPage();
+      paintBg();
+      brandStamp(navy);
+      let ny = margin + 20;
+      doc.setFont("times", "bold");
+      doc.setFontSize(16);
+      doc.setTextColor(ink[0], ink[1], ink[2]);
+      doc.text(T.dayNotes, margin, ny);
+      ny += 12;
+      const maxTextWidth = pageWidth - margin * 2 - 4;
+      noteDays.forEach((day) => {
+        const text = String(trip.dailyNotes[day]).trim();
+        const covering = trip.stops.find((s) => day >= s.dayStart && day <= s.dayEnd);
+        const wrapped = doc.splitTextToSize(text, maxTextWidth);
+        const blockH = 8 + wrapped.length * 5.4 + 4;
+        if (ny + blockH > pageHeight - 20) { doc.addPage(); paintBg(); brandStamp(navy); ny = margin + 20; }
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.setTextColor(gold[0], gold[1], gold[2]);
+        doc.text(T.day + " " + day + (covering ? " · " + covering.city : ""), margin, ny);
+        ny += 6;
+        doc.setFont("times", "italic");
+        doc.setFontSize(10);
+        doc.setTextColor(60, 55, 45);
+        wrapped.forEach((line) => { doc.text(line, margin, ny); ny += 5.4; });
+        ny += 5;
+      });
+      footer(inkSoft);
+    }
+
+    // ---------- Final page: farewell ----------
+    doc.addPage();
+    doc.setFillColor(navy[0], navy[1], navy[2]);
+    doc.rect(0, 0, pageWidth, pageHeight, "F");
+    compassMark(pageWidth / 2, pageHeight / 2 - 26, 9, [246, 242, 232], gold);
+    doc.setFont("times", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(246, 242, 232);
+    doc.text(T.pdfFarewellTitle, pageWidth / 2, pageHeight / 2 - 2, { align: "center" });
+    doc.setFont("times", "italic");
+    doc.setFontSize(11.5);
+    doc.setTextColor(210, 216, 210);
+    const farewellLines = doc.splitTextToSize(T.pdfFarewellLine, pageWidth - margin * 4);
+    let fy = pageHeight / 2 + 10;
+    farewellLines.forEach((line) => { doc.text(line, pageWidth / 2, fy, { align: "center" }); fy += 6.5; });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(gold[0], gold[1], gold[2]);
+    doc.text(T.pdfFarewellSign, pageWidth / 2, fy + 8, { align: "center" });
+
     doc.save(trip.name.replace(/[^a-z0-9]/gi, "_") + ".pdf");
   };
 
@@ -1626,9 +1817,11 @@ function Waypoint() {
   return (
     <div className="wp-root">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap');
         .wp-root {
-          --parchment: #F6F2E8; --ink: #1F1B14; --ink-soft: #83795F; --hairline: #E1D6BC; --navy: #142035; --gold: #B8863E;
+          --parchment: #F6F8FC; --parchment-deep: #E9EEF5; --ink: #14213D; --ink-soft: #586579; --hairline: #E3E8EF;
+          --navy: #2457E6; --navy-hover: #1843BF; --navy-subtle: #EDF3FF; --gold: #FF8A3D; --gold-subtle: #FFF2E8;
+          --success: #1E8E5A; --danger: #D64545;
           font-family: 'Work Sans', sans-serif; background: var(--parchment); color: var(--ink);
           min-height: 100vh; width: 100%; box-sizing: border-box;
           padding: calc(env(safe-area-inset-top, 0px) + 1.75rem) 1.25rem 4rem;
@@ -1645,18 +1838,18 @@ function Waypoint() {
         }
         .wp-brand { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.4rem; }
         .wp-brand-mark { width: 30px; height: 30px; border-radius: 50%; background: var(--navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .wp-title { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
-        .wp-hero-headline { font-family: 'Fraunces', serif; font-size: 2.6rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.04; margin: 0 0 0.9rem; }
+        .wp-title { font-size: 2rem; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+        .wp-hero-headline { font-size: 2.6rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.04; margin: 0 0 0.9rem; }
         @media (min-width: 600px) { .wp-hero-headline { font-size: 3.1rem; } }
         .wp-tagline { font-size: 0.96rem; color: var(--ink-soft); margin: 0 0 1.1rem; max-width: 54ch; line-height: 1.5; }
         .wp-hero-stats { display: flex; gap: 1.7rem; margin-bottom: 1.4rem; }
-        .wp-hero-stat b { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; display: block; line-height: 1.2; }
+        .wp-hero-stat b { font-size: 1.4rem; font-weight: 600; display: block; line-height: 1.2; }
         .wp-hero-stat span { font-size: 0.76rem; color: var(--ink-soft); }
         .wp-hero-features { display: flex; flex-direction: column; gap: 0.6rem; max-width: 30rem; }
         .wp-hero-feature-card { display: flex; align-items: flex-start; gap: 0.7rem; text-align: left; background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.7rem 0.9rem; cursor: pointer; color: var(--ink); }
         .wp-hero-feature-card:hover { border-color: var(--gold); }
         .wp-hero-feature-card svg { flex-shrink: 0; margin-top: 0.15rem; color: var(--gold); }
-        .wp-hero-feature-card b { display: block; font-family: 'Fraunces', serif; font-size: 0.95rem; font-weight: 600; margin-bottom: 0.1rem; }
+        .wp-hero-feature-card b { display: block; font-size: 0.95rem; font-weight: 600; margin-bottom: 0.1rem; }
         .wp-hero-feature-card span { display: block; font-size: 0.8rem; color: var(--ink-soft); line-height: 1.35; }
         @media (min-width: 640px) { .wp-hero-features { flex-direction: row; } .wp-hero-feature-card { flex: 1; } }
 
@@ -1685,9 +1878,9 @@ function Waypoint() {
         }
         .wp-continent-tile:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(31,27,20,0.1); }
         .wp-continent-icon { color: var(--tile-color); opacity: 0.9; }
-        .wp-continent-name { font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 600; }
+        .wp-continent-name { font-size: 1.25rem; font-weight: 600; }
         .wp-continent-tagline { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.35; margin-top: 0.2rem; }
-        .wp-continent-count { font-family: 'Fraunces', serif; font-size: 0.95rem; color: var(--tile-color); }
+        .wp-continent-count { font-size: 0.95rem; color: var(--tile-color); }
         .wp-continent-count b { font-size: 1.5rem; font-weight: 700; margin-right: 0.3rem; }
         .wp-tile-big { grid-column: span 2; }
         .wp-tile-big .wp-continent-name { font-size: 1.55rem; }
@@ -1707,7 +1900,7 @@ function Waypoint() {
         .wp-quiz-progress { font-size: 0.8rem; color: var(--ink-soft); font-weight: 600; margin-bottom: 0.9rem; }
         .wp-quiz-clue-wrap { min-height: 70px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; }
         .wp-quiz-flag-big { font-size: 3.5rem; line-height: 1; }
-        .wp-quiz-clue-text { font-family: 'Fraunces', serif; font-style: italic; font-size: 1.25rem; text-align: center; line-height: 1.4; color: var(--ink); }
+        .wp-quiz-clue-text { font-size: 1.25rem; text-align: center; line-height: 1.4; color: var(--ink); }
         .wp-quiz-clue-food { font-size: 1.05rem; text-align: center; line-height: 1.5; }
         .wp-quiz-prompt { text-align: center; font-size: 0.9rem; color: var(--ink-soft); margin: 0 0 1.1rem; }
         .wp-quiz-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
@@ -1719,7 +1912,7 @@ function Waypoint() {
         .wp-quiz-option-wrong { background: #F5E2E0; border-color: #C1665F; }
         .wp-quiz-btn { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.65rem 1.4rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--ink); display: inline-flex; align-items: center; gap: 0.4rem; }
         .wp-quiz-btn-primary { background: var(--navy); color: #F3EDE0; border-color: var(--navy); }
-        .wp-quiz-score { font-family: 'Fraunces', serif; font-size: 2.6rem; font-weight: 600; margin: 0.5rem 0 0.15rem; color: #fff; }
+        .wp-quiz-score { font-size: 2.6rem; font-weight: 600; margin: 0.5rem 0 0.15rem; color: #fff; }
         .wp-quiz-rank { font-size: 1rem; color: #B7BECC; margin-bottom: 1.2rem; }
         .wp-quiz-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
 
@@ -1733,7 +1926,7 @@ function Waypoint() {
         .wp-now-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.9rem; }
         .wp-now-card { text-align: left; cursor: pointer; font-family: inherit; background: none; border: none; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
         .wp-now-flag { font-size: 1.5rem; line-height: 1; }
-        .wp-now-name { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 600; border-bottom: 2px solid transparent; display: inline-block; width: fit-content; transition: border-color 0.15s ease; }
+        .wp-now-name { font-size: 1.1rem; font-weight: 600; border-bottom: 2px solid transparent; display: inline-block; width: fit-content; transition: border-color 0.15s ease; }
         .wp-now-card:hover .wp-now-name { border-bottom-color: var(--gold); }
         .wp-now-reason { font-size: 0.85rem; color: #4a4436; line-height: 1.5; }
 
@@ -1748,17 +1941,17 @@ function Waypoint() {
 
         .wp-country-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; background: #fff; border: 1px solid var(--hairline); border-left: 4px solid var(--row-color); border-radius: 2px; padding: 0.95rem 1.1rem; cursor: pointer; text-align: left; font-family: inherit; margin-bottom: 0.6rem; }
         .wp-country-row:hover { background: #FBF8F1; }
-        .wp-country-name { font-family: 'Fraunces', serif; font-size: 1.08rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+        .wp-country-name { font-size: 1.08rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
         .wp-country-capital { font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.15rem; }
 
         .wp-detail-hero { margin-bottom: 1.6rem; }
-        .wp-detail-name { font-family: 'Fraunces', serif; font-size: 2.1rem; font-weight: 600; margin: 0 0 0.2rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+        .wp-detail-name { font-size: 2.1rem; font-weight: 600; margin: 0 0 0.2rem; letter-spacing: -0.01em; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
         .wp-detail-sub { font-size: 0.92rem; color: var(--ink-soft); }
 
         .wp-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.1rem; background: #fff; border: 1px solid var(--hairline); border-radius: 3px; padding: 1.1rem 1.2rem; margin-bottom: 1.6rem; }
         @media (min-width: 520px) { .wp-stat-grid { grid-template-columns: repeat(4, 1fr); } }
 
-        .wp-section-title { font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 500; margin: 0 0 0.9rem; }
+        .wp-section-title { font-size: 1.25rem; font-weight: 500; margin: 0 0 0.9rem; }
         .wp-blurb { font-size: 0.98rem; line-height: 1.6; margin-bottom: 1.9rem; max-width: 62ch; }
 
         .wp-attractions-grid { display: grid; grid-template-columns: 1fr; gap: 1.8rem; margin-bottom: 1.9rem; }
@@ -1767,7 +1960,7 @@ function Waypoint() {
         .wp-attraction-img-loading { background: linear-gradient(90deg, #EDE6D4 25%, #F5F0E3 37%, #EDE6D4 63%); background-size: 400% 100%; animation: wp-shimmer 1.4s ease infinite; }
         @keyframes wp-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
         .wp-attraction-img-empty { display: flex; align-items: center; justify-content: center; }
-        .wp-attraction-name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.05rem; margin-bottom: 0.35rem; }
+        .wp-attraction-name { font-weight: 600; font-size: 1.05rem; margin-bottom: 0.35rem; }
         .wp-attraction-desc { font-size: 0.88rem; color: #4a4436; line-height: 1.55; }
 
         .wp-itinerary-wrap { margin-top: 1.9rem; margin-bottom: 0.5rem; }
@@ -1781,11 +1974,11 @@ function Waypoint() {
         .wp-day:last-child::before { background: var(--gold); }
         .wp-day:last-child { padding-bottom: 0; }
         .wp-day-label { font-size: 0.8rem; color: var(--gold); font-weight: 600; margin-bottom: 0.2rem; display: block; }
-        .wp-day-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.12rem; margin-bottom: 0.3rem; }
+        .wp-day-title { font-weight: 600; font-size: 1.12rem; margin-bottom: 0.3rem; }
         .wp-day-desc { font-size: 0.9rem; color: #4a4436; line-height: 1.5; }
 
         .wp-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 0 1.3rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; flex-wrap: wrap; }
-        .wp-nav-brand { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 600; color: var(--ink); padding: 0; }
+        .wp-nav-brand { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; font-size: 1.05rem; font-weight: 600; color: var(--ink); padding: 0; }
         .wp-nav-links { display: flex; gap: 1.4rem; flex-wrap: wrap; row-gap: 0.7rem; align-items: center; }
         @media (max-width: 680px) {
           .wp-nav-links { flex-basis: 100%; justify-content: center; gap: 0.7rem 0.9rem; margin-top: 0.7rem; }
@@ -1846,7 +2039,7 @@ function Waypoint() {
 
         .wp-map-progress-row { display: flex; align-items: center; gap: 1.2rem; background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; }
         .wp-map-progress-stat { flex-shrink: 0; }
-        .wp-map-progress-value { font-family: 'Fraunces', serif; font-size: 1.8rem; margin: 0; color: var(--ink); line-height: 1; }
+        .wp-map-progress-value { font-size: 1.8rem; margin: 0; color: var(--ink); line-height: 1; }
         .wp-map-progress-label { font-size: 0.75rem; color: var(--ink-soft); margin: 0.2rem 0 0; }
         .wp-map-sparkline { flex: 1; height: 46px; min-width: 0; }
 
@@ -1856,7 +2049,7 @@ function Waypoint() {
         .wp-map-zoom-reset { margin-top: 0.2rem; }
 
         .wp-map-popover { background: #fff; border-radius: 14px; padding: 1.3rem 1.4rem; max-width: 320px; width: 90%; position: relative; }
-        .wp-map-popover-name { font-family: 'Fraunces', serif; font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+        .wp-map-popover-name { font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
         .wp-map-popover-cont { font-size: 0.82rem; color: var(--ink-soft); margin: 0.2rem 0 0; }
 
         .wp-map-search-results { background: #fff; border: 1px solid var(--hairline); border-top: none; border-radius: 0 0 10px 10px; margin-bottom: 1.4rem; overflow: hidden; }
@@ -1867,7 +2060,7 @@ function Waypoint() {
 
         .wp-map-lists { display: grid; grid-template-columns: 1fr; gap: 1.6rem; margin-top: 1.6rem; }
         @media (min-width: 700px) { .wp-map-lists { grid-template-columns: 1fr 1fr; } }
-        .wp-map-list-title { font-family: 'Fraunces', serif; font-size: 1.2rem; margin: 0 0 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+        .wp-map-list-title { font-size: 1.2rem; margin: 0 0 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
         .wp-map-list-count { font-family: 'Work Sans', sans-serif; font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); background: var(--parchment); border-radius: 999px; padding: 0.1rem 0.6rem; }
         .wp-map-list-empty { color: var(--ink-soft); font-size: 0.9rem; }
         .wp-map-list-group { margin-bottom: 1rem; }
@@ -1881,14 +2074,14 @@ function Waypoint() {
         .wp-trips-stat-strip { display: flex; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; margin-bottom: 1.4rem; }
         .wp-trips-stat-cell { flex: 1; background: #fff; padding: 0.85rem 1.2rem; min-width: 120px; }
         .wp-trips-stat-label { margin: 0 0 0.2rem; font-size: 0.68rem; color: var(--ink-soft); font-weight: 500; letter-spacing: 0.02em; }
-        .wp-trips-stat-value { margin: 0; font-family: 'Fraunces', serif; font-size: 1.35rem; }
+        .wp-trips-stat-value { margin: 0; font-size: 1.35rem; }
         .wp-trips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.1rem; }
         .wp-trip-card-v2 { display: block; text-align: left; background: #fff; border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; cursor: pointer; box-shadow: 0 1px 2px rgba(20,32,53,0.04), 0 6px 18px rgba(20,32,53,0.05); }
         .wp-trip-card-v2-photo { height: 128px; position: relative; }
         .wp-trip-card-v2-flag { position: absolute; top: 0.7rem; right: 0.8rem; font-size: 1.4rem; }
         .wp-trip-card-v2-icon { position: absolute; bottom: 0.6rem; left: 0.8rem; width: 30px; height: 30px; border-radius: 8px; background: rgba(20,32,53,0.35); display: flex; align-items: center; justify-content: center; color: var(--parchment); }
         .wp-trip-card-v2-body { padding: 1rem 1.1rem 1.15rem; }
-        .wp-trip-card-v2-name { margin: 0 0 0.2rem; font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 600; }
+        .wp-trip-card-v2-name { margin: 0 0 0.2rem; font-size: 1.1rem; font-weight: 600; }
         .wp-trip-card-v2-meta { margin: 0 0 0.7rem; font-size: 0.78rem; color: var(--ink-soft); }
         .wp-trip-card-v2-badge { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 6px; background: var(--navy); color: var(--parchment); }
         .wp-trip-card-v2-badge-done { background: #3F8F6F; color: #fff; }
@@ -1899,11 +2092,11 @@ function Waypoint() {
         .wp-trip-hero-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; position: relative; z-index: 1; }
         .wp-trip-hero-title { display: flex; align-items: center; gap: 0.6rem; }
         .wp-trip-hero-flag { font-size: 1.7rem; }
-        .wp-trip-hero-name { margin: 0; font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.7rem; color: var(--parchment); }
+        .wp-trip-hero-name { margin: 0; font-weight: 600; font-size: 1.7rem; color: var(--parchment); }
         .wp-trip-hero-meta { margin: 0.5rem 0 0 2.35rem; font-size: 0.85rem; color: rgba(246,242,232,0.8); }
         .wp-trip-hero-cost { text-align: right; }
         .wp-trip-hero-cost-label { margin: 0; font-size: 0.7rem; color: rgba(246,242,232,0.65); }
-        .wp-trip-hero-cost-value { margin: 0.15rem 0 0; font-family: 'Fraunces', serif; font-size: 1.4rem; color: var(--parchment); }
+        .wp-trip-hero-cost-value { margin: 0.15rem 0 0; font-size: 1.4rem; color: var(--parchment); }
 
         .wp-trip-tabs { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; flex-wrap: wrap; }
         .wp-trip-tab-row { display: flex; gap: 0.3rem; }
@@ -1928,7 +2121,7 @@ function Waypoint() {
         .wp-trip-entry-days { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--ink-soft); background: var(--parchment); border-radius: 999px; padding: 0.25rem 0.35rem 0.25rem 0.6rem; }
         .wp-trip-date-range-hint { margin: -0.3rem 0 0.7rem; font-size: 0.72rem; color: var(--ink-soft); opacity: 0.8; }
         .wp-trip-chips-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.7rem; }
-        .wp-trip-chip { display: inline-flex; align-items: center; gap: 0.3rem; font-family: 'Fraunces', serif; font-style: italic; font-size: 0.76rem; background: #fff; border: 1px solid var(--hairline); padding: 0.28rem 0.7rem; border-radius: 999px; }
+        .wp-trip-chip { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.76rem; background: #fff; border: 1px solid var(--hairline); padding: 0.28rem 0.7rem; border-radius: 999px; }
         .wp-trip-chip-remove { background: none; border: none; cursor: pointer; color: var(--ink-soft); display: flex; padding: 0; }
         .wp-trip-chip-add { background: var(--parchment); border: 1px dashed var(--hairline); color: var(--ink-soft); cursor: pointer; }
 
@@ -1961,20 +2154,20 @@ function Waypoint() {
         .wp-trip-day-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.6rem; }
         .wp-trip-day-suggestions { margin-bottom: 1.1rem; }
         .wp-trip-day-suggestions-label { margin: 0 0 0.5rem; font-size: 0.72rem; color: var(--ink-soft); }
-        .wp-trip-day-city { margin: 0; font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 600; }
+        .wp-trip-day-city { margin: 0; font-size: 1.25rem; font-weight: 600; }
         .wp-trip-day-view-toggle { display: flex; background: var(--parchment-deep); border-radius: 8px; padding: 0.2rem; gap: 0.2rem; }
         .wp-trip-day-view-btn { background: none; border: none; padding: 0.4rem 0.9rem; font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); border-radius: 6px; cursor: pointer; }
         .wp-trip-day-view-btn-active { background: #fff; color: var(--navy); box-shadow: 0 1px 2px rgba(20,32,53,0.08); }
         .wp-trip-day-list { background: #fff; border: 1px solid var(--hairline); border-radius: 14px; padding: 1.2rem 1.3rem; }
         .wp-trip-day-list-empty { margin: 0 0 0.8rem; font-size: 0.85rem; color: var(--ink-soft); }
         .wp-trip-day-activity-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.55rem 0; border-bottom: 1px solid var(--parchment-deep); }
-        .wp-trip-day-activity-time { font-family: 'Fraunces', serif; font-size: 0.82rem; color: var(--gold); min-width: 3.2rem; }
+        .wp-trip-day-activity-time { font-size: 0.82rem; color: var(--gold); min-width: 3.2rem; }
         .wp-trip-day-activity-name { flex: 1; font-size: 0.9rem; }
         .wp-day-map-empty-text { font-size: 0.82rem; color: var(--ink-soft); padding: 0 1rem; text-align: center; }
 
         .wp-trip-bookings-tab { margin-bottom: 1.6rem; }
         .wp-trip-booking-section { background: #fff; border: 1px solid var(--hairline); border-radius: 14px; padding: 1.2rem 1.3rem; margin-bottom: 1.1rem; }
-        .wp-trip-booking-section-title { margin: 0 0 0.9rem; font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 600; }
+        .wp-trip-booking-section-title { margin: 0 0 0.9rem; font-size: 1.05rem; font-weight: 600; }
         .wp-trip-booking-card { border: 1px solid var(--parchment-deep); border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 0.7rem; }
         .wp-trip-booking-card:last-child { margin-bottom: 0; }
         .wp-trip-booking-card-head { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
@@ -1984,7 +2177,7 @@ function Waypoint() {
         .wp-trip-view-in-route-link { background: none; border: none; color: var(--ink-soft); font-size: 0.85rem; text-decoration: underline; cursor: pointer; padding: 0; }
         .wp-trip-card:hover { border-color: var(--gold); }
         .wp-trip-card-top { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; }
-        .wp-trip-card-name { font-family: 'Fraunces', serif; font-size: 1.02rem; display: flex; align-items: center; gap: 0.5rem; }
+        .wp-trip-card-name { font-size: 1.02rem; display: flex; align-items: center; gap: 0.5rem; }
         .wp-trip-card-meta { font-size: 0.82rem; color: var(--ink-soft); margin: 0.3rem 0 0; }
         .wp-trip-status-badge { font-size: 0.72rem; background: var(--parchment); color: var(--ink-soft); padding: 0.2rem 0.6rem; border-radius: 999px; white-space: nowrap; }
         .wp-trip-status-done { background: #E3EDE1; color: #3E6B3A; }
@@ -2000,10 +2193,10 @@ function Waypoint() {
         .wp-trip-cost-row { display: flex; gap: 0.7rem; margin-bottom: 1.2rem; }
         .wp-trip-cost-box { flex: 1; background: var(--parchment); border-radius: 10px; padding: 0.6rem 0.8rem; }
         .wp-trip-cost-label { font-size: 0.7rem; color: var(--ink-soft); margin: 0; }
-        .wp-trip-cost-value { font-family: 'Fraunces', serif; font-size: 1.2rem; margin: 0.1rem 0 0; }
+        .wp-trip-cost-value { font-size: 1.2rem; margin: 0.1rem 0 0; }
         .wp-trip-stop-card { background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.8rem 1rem; margin-bottom: 0.4rem; }
         .wp-trip-stop-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; }
-        .wp-trip-city-input { flex: 1; border: none; border-bottom: 1px solid var(--hairline); font-family: 'Fraunces', serif; font-size: 0.98rem; padding: 0.2rem 0; background: none; }
+        .wp-trip-city-input { flex: 1; border: none; border-bottom: 1px solid var(--hairline); font-size: 0.98rem; padding: 0.2rem 0; background: none; }
         .wp-trip-city-input:focus { outline: none; border-color: var(--gold); }
         .wp-trip-day-range { font-size: 0.75rem; color: var(--ink-soft); white-space: nowrap; }
         .wp-trip-remove-btn { background: none; border: none; color: var(--ink-soft); cursor: pointer; padding: 0.15rem; display: flex; flex-shrink: 0; }
@@ -2044,7 +2237,7 @@ function Waypoint() {
         .wp-trip-transit-num { flex: 0 0 3.4rem; text-align: center; }
 
         .wp-trip-notes-box { background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 1.1rem 1.2rem 0.4rem; margin: 0.2rem 0 1.2rem; }
-        .wp-trip-notes-title { font-family: 'Fraunces', serif; font-size: 1rem; margin: 0 0 0.15rem; }
+        .wp-trip-notes-title { font-size: 1rem; margin: 0 0 0.15rem; }
         .wp-trip-notes-subtitle { font-size: 0.78rem; color: var(--ink-soft); margin: 0 0 1.1rem; }
         .wp-trip-timeline { position: relative; padding-left: 1.35rem; }
         .wp-trip-timeline-line { position: absolute; left: 0.3rem; top: 0.35rem; bottom: 1rem; width: 1px; background: var(--hairline); }
@@ -2053,17 +2246,17 @@ function Waypoint() {
         .wp-trip-timeline-dot-filled { background: var(--gold); }
         .wp-trip-timeline-day { font-size: 0.85rem; margin: 0 0 0.35rem; }
         .wp-trip-timeline-city { color: var(--ink-soft); }
-        .wp-trip-timeline-note { border-left: 2px solid var(--gold); padding: 0.1rem 0 0.1rem 0.75rem; margin: 0; font-size: 0.85rem; font-style: italic; color: #3a352b; cursor: pointer; white-space: pre-wrap; }
+        .wp-trip-timeline-note { border-left: 2px solid var(--gold); padding: 0.1rem 0 0.1rem 0.75rem; margin: 0; font-size: 0.85rem; color: #3a352b; cursor: pointer; white-space: pre-wrap; }
         .wp-trip-timeline-note-readonly { cursor: default; }
         .wp-trip-timeline-add { font-size: 0.78rem; color: var(--ink-soft); background: none; border: none; padding: 0; cursor: pointer; text-align: left; }
         .wp-trip-timeline-add:hover { color: var(--gold); }
         .wp-trip-timeline-input { width: 100%; font-family: 'Work Sans', sans-serif; font-size: 0.85rem; padding: 0.5rem 0.6rem; border: 1px solid var(--hairline); border-radius: 8px; resize: vertical; background: #fff; color: var(--ink); box-sizing: border-box; }
         .wp-trip-timeline-input:focus { outline: none; border-color: var(--gold); }
-        .wp-trip-city-readonly { flex: 1; font-family: 'Fraunces', serif; font-size: 0.98rem; }
+        .wp-trip-city-readonly { flex: 1; font-size: 0.98rem; }
 
         .wp-trip-share-box { background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.9rem 1.1rem; margin-bottom: 1.2rem; }
         .wp-trip-share-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-        .wp-trip-share-title { font-family: 'Fraunces', serif; font-size: 0.95rem; margin: 0; }
+        .wp-trip-share-title { font-size: 0.95rem; margin: 0; }
         .wp-trip-share-desc { font-size: 0.78rem; color: var(--ink-soft); margin: 0.2rem 0 0; }
         .wp-trip-share-toggle { flex-shrink: 0; width: 42px; height: 24px; border-radius: 999px; background: var(--hairline); border: none; position: relative; cursor: pointer; padding: 0; transition: background 0.15s ease; }
         .wp-trip-share-toggle-on { background: var(--gold); }
@@ -2078,7 +2271,7 @@ function Waypoint() {
         .wp-modal-overlay { position: fixed; inset: 0; background: rgba(20,32,53,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1.2rem; }
         .wp-auth-modal { position: relative; background: #fff; border-radius: 14px; padding: 2rem 1.8rem; max-width: 380px; width: 100%; box-shadow: 0 20px 50px rgba(20,32,53,0.25); }
         .wp-modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; cursor: pointer; color: var(--ink-soft); padding: 0.2rem; }
-        .wp-auth-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; margin: 0 0 0.4rem; }
+        .wp-auth-title { font-size: 1.4rem; font-weight: 600; margin: 0 0 0.4rem; }
         .wp-auth-subtitle { font-size: 0.86rem; color: var(--ink-soft); line-height: 1.45; margin: 0 0 1.3rem; }
         .wp-google-btn { display: flex; align-items: center; justify-content: center; gap: 0.6rem; width: 100%; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.65rem 1rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; font-weight: 600; color: var(--ink); cursor: pointer; }
         .wp-google-btn:hover { background: var(--parchment); }
@@ -2101,7 +2294,7 @@ function Waypoint() {
         .wp-coming-soon-visual { width: 170px; margin: 0 auto; }
         .wp-soon-svg { width: 100%; height: auto; display: block; }
 
-        .wp-detail-tagline { font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 1.3rem; color: #463F30; margin: 0.5rem 0 1rem; max-width: 50ch; line-height: 1.45; }
+        .wp-detail-tagline { font-weight: 500; font-size: 1.3rem; color: #463F30; margin: 0.5rem 0 1rem; max-width: 50ch; line-height: 1.45; }
         .wp-chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
         .wp-chip { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.3rem 0.8rem; font-size: 0.8rem; color: var(--ink); }
 
@@ -2131,7 +2324,7 @@ function Waypoint() {
 
         .wp-faq-wrap { margin-top: 2rem; }
         .wp-faq-item { background: #fff; border: 1px solid var(--hairline); border-radius: 3px; padding: 0.9rem 1.1rem; margin-top: 0.8rem; }
-        .wp-faq-q { font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.94rem; margin-bottom: 0.35rem; color: var(--ink); }
+        .wp-faq-q { font-weight: 600; font-size: 0.94rem; margin-bottom: 0.35rem; color: var(--ink); }
         .wp-faq-a { font-size: 0.86rem; line-height: 1.55; color: #4a4436; }
 
         .wp-pairs-wrap { margin-top: 2rem; }
@@ -2142,7 +2335,7 @@ function Waypoint() {
         .wp-footer { margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid var(--hairline); }
         .wp-footer-top { display: flex; flex-wrap: wrap; gap: 2.5rem; justify-content: space-between; margin-bottom: 1.6rem; }
         .wp-footer-brand { display: flex; gap: 0.65rem; max-width: 340px; }
-        .wp-footer-brand-name { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .wp-footer-brand-name { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.25rem; }
         .wp-footer-tagline { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.45; }
         .wp-footer-col { display: flex; flex-direction: column; gap: 0.5rem; min-width: 120px; }
         .wp-footer-col-title { font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 0.2rem; }
@@ -2893,7 +3086,7 @@ function Waypoint() {
                   <button className="wp-trip-header-btn" onClick={() => saveTripNow(trip.id)}>
                     <CheckCircle size={14} /> {tripSaveStatus === "saved" ? T.tripSaved : T.saveTrip}
                   </button>
-                  <button className="wp-trip-header-btn" onClick={() => exportTripPDF(trip)}>
+                  <button className="wp-trip-header-btn" onClick={() => exportTripPDF(trip, countryData)}>
                     <Download size={14} /> {T.exportPdf}
                   </button>
                 </div>
@@ -3571,7 +3764,7 @@ function Waypoint() {
             <h2 className="wp-section-title" style={{ marginBottom: "1.3rem" }}>{T.articles}</h2>
             <a href="articles/namibia-solo-road-trip.html" style={{ display: "block", background: "#fff", border: "1px solid var(--hairline)", borderRadius: "10px", padding: "1.3rem 1.4rem", textDecoration: "none", color: "var(--ink)", marginBottom: "1rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--gold)", fontWeight: 600, marginBottom: "0.6rem" }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }}></span>Trip report · Namibia</div>
-              <div style={{ fontFamily: "'Fraunces', serif", fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.5rem" }}>Ten Days of Silence: A Solo Self-Drive Through Namibia</div>
+              <div style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.5rem" }}>Ten Days of Silence: A Solo Self-Drive Through Namibia</div>
               <div style={{ fontSize: "0.92rem", color: "#4a4436", lineHeight: 1.55 }}>A practical, honest account of driving myself across Namibia — Etosha's waterholes, Cape Cross's seals, sleeping on the roof of a 4x4, and everything I'd do again.</div>
             </a>
             <p className="wp-blurb" style={{ color: "var(--ink-soft)", fontSize: "0.88rem" }}>More articles are on their way — check back soon.</p>
@@ -3583,7 +3776,7 @@ function Waypoint() {
             <h2 className="wp-section-title" style={{ marginBottom: "1.3rem" }}>{T.products}</h2>
             <div style={{ background: "#fff", border: "1px solid var(--hairline)", borderRadius: "10px", padding: "1.5rem 1.6rem", marginBottom: "1rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--gold)", fontWeight: 600, marginBottom: "0.6rem" }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }}></span>Free download</div>
-              <div style={{ fontFamily: "'Fraunces', serif", fontSize: "1.3rem", fontWeight: 600, marginBottom: "0.6rem" }}>Namibia Self-Drive Checklist &amp; Planner</div>
+              <div style={{ fontSize: "1.3rem", fontWeight: 600, marginBottom: "0.6rem" }}>Namibia Self-Drive Checklist &amp; Planner</div>
               <p style={{ fontSize: "0.95rem", color: "#4a4436", lineHeight: 1.6, marginBottom: "1.1rem" }}>The route at a glance, what to book months ahead, offline driving apps that actually work, and a gear checklist — everything from the Namibia trip report, organized into a printable planner.</p>
               <button
                 onClick={() => goToStatic("newsletter")}
