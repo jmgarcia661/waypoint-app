@@ -104,6 +104,7 @@ const UI_STRINGS = {
     tripsStatTrips: "TRIPS", tripsStatContinents: "CONTINENTS", tripsStatNights: "NIGHTS PLANNED", tripsStatDone: "COMPLETED",
     routeTab: "Route", daysTab: "Days", bookingsTab: "Bookings", comingSoonBadge: "coming soon",
     whereToSleepBtn: "Where to sleep", whereToEatBtn: "Where to eat",
+    placesBtn: "Places", placesCountSuffix: "places",
     mapIllustrativeLabel: "Illustrative map", mapIllustrativeNote: "Overland route shown, not to scale.",
     transitAddBtn: "Add travel time", transitEditBtn: "Edit",
     highlightsChipLabel: "highlights", doneEditingLabel: "done",
@@ -210,6 +211,7 @@ const UI_STRINGS = {
     tripsStatTrips: "VIAGENS", tripsStatContinents: "CONTINENTES", tripsStatNights: "NOITES PLANEADAS", tripsStatDone: "CONCLUÍDAS",
     routeTab: "Percurso", daysTab: "Dias", bookingsTab: "Reservas", comingSoonBadge: "em breve",
     whereToSleepBtn: "Onde dormir", whereToEatBtn: "Onde comer",
+    placesBtn: "Locais", placesCountSuffix: "locais",
     mapIllustrativeLabel: "Mapa ilustrativo", mapIllustrativeNote: "Percurso terrestre, não está à escala.",
     transitAddBtn: "Adicionar tempo de viagem", transitEditBtn: "Editar",
     highlightsChipLabel: "destaques", doneEditingLabel: "concluído",
@@ -2176,12 +2178,14 @@ function Waypoint() {
         .wp-trip-chip-add { background: var(--parchment); border: 1px dashed var(--hairline); color: var(--ink-soft); cursor: pointer; }
 
         .wp-trip-panel-row { display: flex; gap: 0.6rem; position: relative; flex-wrap: wrap; }
-        .wp-trip-panel-btn { display: flex; align-items: center; gap: 0.45rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 1rem 0.5rem 0.85rem; font-size: 0.78rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
-        .wp-trip-panel-btn-active { background: #FAF3E4; border: 1.5px solid var(--gold); color: #8A6425; font-weight: 600; }
+        .wp-trip-panel-btn { display: flex; align-items: center; gap: 0.45rem; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.5rem 1rem 0.5rem 0.85rem; font-size: 0.78rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
+        .wp-trip-panel-btn-active { background: var(--navy-subtle); border: 1.5px solid var(--navy); color: var(--navy); font-weight: 600; }
         .wp-trip-panel-btn-empty { border-style: dashed; }
-        .wp-trip-panel-connector { position: absolute; top: 100%; width: 12px; height: 12px; background: #fff; border-left: 1.5px solid var(--gold); border-top: 1.5px solid var(--gold); transform: rotate(45deg); margin-top: -1px; }
-        .wp-trip-panel-box { background: #fff; border: 1.5px solid var(--gold); border-radius: 12px; padding: 1.2rem 1.35rem; margin-top: 0.75rem; position: relative; }
-        .wp-trip-panel-box-label { margin: 0 0 0.8rem; font-size: 0.66rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--gold); font-weight: 600; padding-right: 1.6rem; }
+        .wp-trip-panel-connector { position: absolute; top: 100%; width: 12px; height: 12px; background: #fff; border-left: 1.5px solid var(--navy); border-top: 1.5px solid var(--navy); transform: rotate(45deg); margin-top: -1px; }
+        .wp-trip-panel-box { background: #fff; border: 1.5px solid var(--navy); border-radius: 12px; padding: 1.2rem 1.35rem; margin-top: 0.75rem; position: relative; }
+        .wp-trip-panel-box-label { margin: 0 0 0.8rem; font-size: 0.66rem; letter-spacing: 0.03em; text-transform: uppercase; color: var(--navy); font-weight: 600; padding-right: 1.6rem; }
+        .wp-trip-summary-line { display: block; width: 100%; text-align: left; background: none; border: none; padding: 0.4rem 0.1rem; margin-top: 0.2rem; font-size: 0.82rem; color: var(--ink); cursor: pointer; }
+        .wp-trip-summary-line:hover { color: var(--navy); }
         .wp-trip-panel-close { position: absolute; top: 0.85rem; right: 0.85rem; background: none; border: none; color: var(--ink-soft); cursor: pointer; padding: 0.2rem; line-height: 0; }
         .wp-trip-panel-close:hover { color: var(--ink); }
 
@@ -3240,6 +3244,7 @@ function Waypoint() {
                 const transitEditing = openPanels["transit:" + stop.id];
                 const sleepOpen = openPanels[stop.id + ":sleep"];
                 const eatOpen = openPanels[stop.id + ":eat"];
+                const highlightsOpen = openPanels[stop.id + ":highlights"];
                 return (
                 <div key={stop.id}>
                   <button className="wp-trip-insert-link" onClick={() => insertStopBefore(trip.id, stop.id)}>
@@ -3289,12 +3294,9 @@ function Waypoint() {
                             <button className="wp-trip-chip-remove" onClick={() => removeHighlight(trip.id, stop.id, h.id)} aria-label="Remove"><X size={11} /></button>
                           </span>
                         ))}
-                        <button className="wp-trip-chip wp-trip-chip-add" data-panel-key={stop.id + ":highlights"} onClick={() => togglePanel(stop.id + ":highlights")}>
-                          <PlusIcon size={11} /> {T.highlightsChipLabel}
-                        </button>
                       </div>
 
-                      {openPanels[stop.id + ":highlights"] && (
+                      {highlightsOpen && (
                         <div className="wp-trip-panel-box" data-panel-key={stop.id + ":highlights"} style={{ marginBottom: "0.9rem" }}>
                           <button className="wp-trip-panel-close" onClick={() => togglePanel(stop.id + ":highlights")} aria-label="Close"><X size={13} /></button>
                           <div className="wp-trip-add-highlight-row">
@@ -3335,11 +3337,19 @@ function Waypoint() {
 
                       <div className="wp-trip-panel-row">
                         <button
+                          className={"wp-trip-panel-btn" + (highlightsOpen ? " wp-trip-panel-btn-active" : "") + (stop.highlights.length === 0 ? " wp-trip-panel-btn-empty" : "")}
+                          data-panel-key={stop.id + ":highlights"}
+                          onClick={() => togglePanel(stop.id + ":highlights")}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={highlightsOpen ? "#2457E6" : "#586579"} strokeWidth="1.8"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                          {T.placesBtn}
+                        </button>
+                        <button
                           className={"wp-trip-panel-btn" + (sleepOpen ? " wp-trip-panel-btn-active" : "") + ((stop.stays||[]).length === 0 ? " wp-trip-panel-btn-empty" : "")}
                           data-panel-key={stop.id + ":sleep"}
                           onClick={() => togglePanel(stop.id + ":sleep")}
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={sleepOpen ? "#B8863E" : "#83795F"} strokeWidth="1.8"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2M21 18v2M5 10V7a2 2 0 0 1 2-2h3v5"/></svg>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={sleepOpen ? "#2457E6" : "#586579"} strokeWidth="1.8"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2M21 18v2M5 10V7a2 2 0 0 1 2-2h3v5"/></svg>
                           {T.whereToSleepBtn}
                         </button>
                         <button
@@ -3347,24 +3357,20 @@ function Waypoint() {
                           data-panel-key={stop.id + ":eat"}
                           onClick={() => togglePanel(stop.id + ":eat")}
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eatOpen ? "#B8863E" : "#83795F"} strokeWidth="1.8"><path d="M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11"/></svg>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eatOpen ? "#2457E6" : "#586579"} strokeWidth="1.8"><path d="M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11"/></svg>
                           {T.whereToEatBtn}
                         </button>
                       </div>
 
                       {!sleepOpen && (stop.stays || []).length > 0 && (
-                        <div className="wp-trip-chips-row" style={{ marginTop: "0.55rem" }}>
-                          {stop.stays.map((st) => (
-                            <span key={st.id} className="wp-trip-chip">🏨 {st.name}{st.nights ? " · " + st.nights + " " + T.nights : ""}{st.price ? " · " + st.price : ""}</span>
-                          ))}
-                        </div>
+                        <button className="wp-trip-summary-line" onClick={() => togglePanel(stop.id + ":sleep")}>
+                          🛏 {stop.stays[0].name}{stop.stays[0].nights ? " · " + stop.stays[0].nights + " " + T.nights : ""}{stop.stays.length > 1 ? " · +" + (stop.stays.length - 1) + " " + T.placesCountSuffix : ""}
+                        </button>
                       )}
                       {!eatOpen && (stop.meals || []).length > 0 && (
-                        <div className="wp-trip-chips-row" style={{ marginTop: "0.55rem" }}>
-                          {stop.meals.map((m) => (
-                            <span key={m.id} className="wp-trip-chip">🍽 {m.name}</span>
-                          ))}
-                        </div>
+                        <button className="wp-trip-summary-line" onClick={() => togglePanel(stop.id + ":eat")}>
+                          🍽 {stop.meals[0].name}{stop.meals.length > 1 ? " · +" + (stop.meals.length - 1) + " " + T.placesCountSuffix : ""}
+                        </button>
                       )}
 
                       {sleepOpen && (
