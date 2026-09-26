@@ -1214,7 +1214,7 @@ function Waypoint() {
     const status = countryStatuses[id];
     const hasPage = !!ISO2_TO_ID[iso2];
     const fillColor = status === "visited" ? "#3F8F6F" : status === "want" ? "#3E7CB1" : (hasPage ? "#FFFFFF" : "#EDE6D4");
-    return { fillColor, fillOpacity: 0.92, color: "#E1D6BC", weight: 0.8 };
+    return { fillColor, fillOpacity: 0.92, color: "#E3E8EF", weight: 0.8 };
   };
   const mapClickHandlerRef = useRef(null);
   mapClickHandlerRef.current = (cty) => goToDetailFromMap(cty);
@@ -1895,6 +1895,7 @@ function Waypoint() {
           min-height: 100vh; width: 100%; box-sizing: border-box;
           padding: calc(env(safe-area-inset-top, 0px) + 1.75rem) 1.25rem 4rem;
         }
+        html, body { overflow-x: hidden; max-width: 100%; }
         .wp-root * { box-sizing: border-box; }
         @media (prefers-reduced-motion: reduce) {
           .wp-root *, .wp-root *::before, .wp-root *::after {
@@ -2105,7 +2106,7 @@ function Waypoint() {
         .wp-lang-btn-active { color: var(--ink); font-weight: 700; }
         .wp-lang-sep { color: var(--hairline); font-size: 0.8rem; }
 
-        .wp-signin-btn { background: var(--navy); color: #F6F2E8; border: none; border-radius: 11px; padding: 0.45rem 1rem; font-family: 'Work Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .wp-signin-btn { background: var(--navy); color: #fff; border: none; border-radius: 11px; padding: 0.45rem 1rem; font-family: 'Work Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
         .wp-user-menu-wrap { position: relative; }
         .wp-user-chip { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.4rem 0.85rem; font-family: 'Work Sans', sans-serif; font-size: 0.82rem; color: var(--ink); cursor: pointer; }
         .wp-user-dropdown { position: absolute; right: 0; top: calc(100% + 0.4rem); background: #fff; border: 1px solid var(--hairline); border-radius: 8px; box-shadow: 0 8px 20px rgba(31,27,20,0.12); padding: 0.4rem; min-width: 140px; z-index: 30; }
@@ -2144,10 +2145,10 @@ function Waypoint() {
         .wp-map-status-visited { fill: #3F8F6F; }
         .wp-map-status-want { fill: #3E7CB1; }
         .wp-map-marker { stroke: var(--hairline); stroke-width: 1.5; }
-        .wp-map-status-none:hover { fill: #F6F2E8; }
+        .wp-map-status-none:hover { fill: #E9EEF5; }
         .wp-map-bg-country { fill: #FFFFFF; stroke: var(--hairline); stroke-width: 1; pointer-events: none; }
         .wp-map-bg-country.wp-map-clickable { pointer-events: auto; cursor: pointer; }
-        .wp-map-bg-country.wp-map-clickable:hover { fill: #F6F2E8; }
+        .wp-map-bg-country.wp-map-clickable:hover { fill: #E9EEF5; }
         .wp-map-marker.wp-map-clickable { cursor: pointer; }
 
         .wp-map-progress-row { display: flex; align-items: center; gap: 1.2rem; background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.2rem; }
@@ -2743,7 +2744,7 @@ function Waypoint() {
               <div className="wp-quiz-section">
                 {!quizStarted && (
                   <div className="wp-quiz-card wp-quiz-intro">
-                    <Award size={26} style={{ color: "#B8863E" }} />
+                    <Award size={26} style={{ color: "#FF8A3D" }} />
                     <h2 className="wp-section-title" style={{ margin: "0.6rem 0 0.2rem" }}>{T.quizTitle}</h2>
                     <p className="wp-now-subtitle" style={{ marginBottom: "1rem" }}>{T.quizSubtitle}</p>
                     <button className="wp-quiz-btn wp-quiz-btn-primary" onClick={startQuiz}>{T.quizStart}</button>
@@ -2789,7 +2790,7 @@ function Waypoint() {
 
                 {quizFinished && (
                   <div className="wp-quiz-card wp-quiz-intro">
-                    <Award size={30} style={{ color: "#B8863E" }} />
+                    <Award size={30} style={{ color: "#FF8A3D" }} />
                     <div className="wp-quiz-score">{quizScore}/{quizQuestions.length}</div>
                     <div className="wp-quiz-rank">{quizRank(quizScore)}</div>
                     <div className="wp-quiz-actions">
@@ -4122,7 +4123,7 @@ function Waypoint() {
               <p style={{ fontSize: "0.95rem", color: "#4a4436", lineHeight: 1.6, marginBottom: "1.1rem" }}>The route at a glance, what to book months ahead, offline driving apps that actually work, and a gear checklist — everything from the Namibia trip report, organized into a printable planner.</p>
               <button
                 onClick={() => goToStatic("newsletter")}
-                style={{ display: "inline-block", background: "var(--navy)", color: "#F6F2E8", border: "none", cursor: "pointer", padding: "0.7rem 1.4rem", borderRadius: "999px", fontSize: "0.9rem", fontWeight: 600, fontFamily: "'Work Sans', sans-serif" }}
+                style={{ display: "inline-block", background: "var(--navy)", color: "#fff", border: "none", cursor: "pointer", padding: "0.7rem 1.4rem", borderRadius: "11px", fontSize: "0.9rem", fontWeight: 600, fontFamily: "'Work Sans', sans-serif" }}
               >
                 Get it free via the newsletter
               </button>
