@@ -114,7 +114,8 @@ const UI_STRINGS = {
     highlightsChipLabel: "highlights", doneEditingLabel: "done",
     dayListEmpty: "Nothing planned for this day yet.", dayMapEmpty: "Add a place to this day to see it on the map.",
     openMenu: "Open menu", closeMenu: "Close menu", menuLabel: "MENU", languageLabel: "Language",
-    daySuggestionsLabel: "From your highlights — tap to add to this day",
+    signedInAs: "Signed in as", notSignedIn: "Not signed in — tap to sign in",
+    daySuggestionsLabel: "From your highlights — tap to add to this day", suggestionsIn: "Suggestions in",
     pdfCoverTagline: "A slow, ad-free way to explore the world.",
     pdfEssentialsTitle: "Trip essentials", pdfAboutTitle: "About",
     pdfRouteTitle: "Your route", pdfFarewellTitle: "Have a wonderful trip!",
@@ -222,7 +223,8 @@ const UI_STRINGS = {
     highlightsChipLabel: "destaques", doneEditingLabel: "concluído",
     dayListEmpty: "Ainda nada planeado para este dia.", dayMapEmpty: "Adiciona um sítio a este dia para o veres no mapa.",
     openMenu: "Abrir menu", closeMenu: "Fechar menu", menuLabel: "MENU", languageLabel: "Idioma",
-    daySuggestionsLabel: "Dos teus destaques — toca para adicionar a este dia",
+    signedInAs: "Sessão iniciada como", notSignedIn: "Sem sessão iniciada — toca para entrar",
+    daySuggestionsLabel: "Dos teus destaques — toca para adicionar a este dia", suggestionsIn: "Sugestões em",
     pdfCoverTagline: "Uma forma tranquila e sem publicidade de explorar o mundo.",
     pdfEssentialsTitle: "Essencial de viagem", pdfAboutTitle: "Sobre",
     pdfRouteTitle: "O teu percurso", pdfFarewellTitle: "Boa viagem!",
@@ -1968,7 +1970,7 @@ function Waypoint() {
         .wp-quiz-option:disabled { cursor: default; }
         .wp-quiz-option-correct { background: #E4EFE2; border-color: #6B9E68; font-weight: 600; }
         .wp-quiz-option-wrong { background: #F5E2E0; border-color: #C1665F; }
-        .wp-quiz-btn { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.65rem 1.4rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--ink); display: inline-flex; align-items: center; gap: 0.4rem; }
+        .wp-quiz-btn { background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.65rem 1.4rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--ink); display: inline-flex; align-items: center; gap: 0.4rem; }
         .wp-quiz-btn-primary { background: var(--navy); color: #F3EDE0; border-color: var(--navy); }
         .wp-quiz-score { font-size: 2.6rem; font-weight: 600; margin: 0.5rem 0 0.15rem; color: #fff; }
         .wp-quiz-rank { font-size: 1rem; color: #B7BECC; margin-bottom: 1.2rem; }
@@ -1989,7 +1991,7 @@ function Waypoint() {
         .wp-now-reason { font-size: 0.85rem; color: #4a4436; line-height: 1.5; }
 
         .wp-search-wrap { margin-bottom: 1.3rem; }
-        .wp-search-box { display: flex; align-items: center; gap: 0.65rem; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.85rem 1.3rem; box-shadow: 0 1px 2px rgba(31,27,20,0.04); }
+        .wp-search-box { display: flex; align-items: center; gap: 0.65rem; background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.85rem 1.3rem; box-shadow: 0 1px 2px rgba(31,27,20,0.04); }
         .wp-search-icon { color: var(--ink-soft); flex-shrink: 0; }
         .wp-search-input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: 'Work Sans', sans-serif; font-size: 0.95rem; color: var(--ink); }
         .wp-search-input::placeholder { color: var(--ink-soft); }
@@ -2040,6 +2042,10 @@ function Waypoint() {
         .wp-nav-links { display: none; }
         .wp-hamburger-btn { display: flex; background: none; border: none; cursor: pointer; color: var(--ink); padding: 0.4rem; margin: -0.4rem; border-radius: 8px; }
         .wp-hamburger-btn:hover { background: var(--parchment-deep); }
+        .wp-nav-account-badge { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+        .wp-nav-account-badge-in { background: var(--navy); color: #fff; }
+        .wp-nav-account-badge-out { background: var(--parchment-deep); color: var(--ink-soft); border: 1px solid var(--hairline); }
+        .wp-nav-account-badge-out:hover { background: var(--navy-subtle); color: var(--navy); }
         .wp-mobile-menu-overlay { position: fixed; inset: 0; background: rgba(20,33,61,0.4); z-index: 1000; display: flex; justify-content: flex-end; }
         .wp-mobile-menu-panel { width: 100%; max-width: 360px; height: 100%; background: #fff; display: flex; flex-direction: column; box-shadow: -8px 0 24px rgba(20,33,61,0.15); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
         .wp-mobile-menu-head { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--hairline); flex-shrink: 0; }
@@ -2077,15 +2083,15 @@ function Waypoint() {
         .wp-lang-btn-active { color: var(--ink); font-weight: 700; }
         .wp-lang-sep { color: var(--hairline); font-size: 0.8rem; }
 
-        .wp-signin-btn { background: var(--navy); color: #F6F2E8; border: none; border-radius: 999px; padding: 0.45rem 1rem; font-family: 'Work Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .wp-signin-btn { background: var(--navy); color: #F6F2E8; border: none; border-radius: 11px; padding: 0.45rem 1rem; font-family: 'Work Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
         .wp-user-menu-wrap { position: relative; }
-        .wp-user-chip { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.4rem 0.85rem; font-family: 'Work Sans', sans-serif; font-size: 0.82rem; color: var(--ink); cursor: pointer; }
+        .wp-user-chip { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.4rem 0.85rem; font-family: 'Work Sans', sans-serif; font-size: 0.82rem; color: var(--ink); cursor: pointer; }
         .wp-user-dropdown { position: absolute; right: 0; top: calc(100% + 0.4rem); background: #fff; border: 1px solid var(--hairline); border-radius: 8px; box-shadow: 0 8px 20px rgba(31,27,20,0.12); padding: 0.4rem; min-width: 140px; z-index: 30; }
         .wp-user-dropdown-item { display: flex; align-items: center; gap: 0.5rem; width: 100%; background: none; border: none; text-align: left; padding: 0.5rem 0.6rem; border-radius: 5px; font-family: 'Work Sans', sans-serif; font-size: 0.85rem; color: var(--ink); cursor: pointer; }
         .wp-user-dropdown-item:hover { background: var(--parchment); }
 
         .wp-status-row { display: flex; gap: 0.6rem; margin-top: 0.9rem; }
-        .wp-status-btn { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.4rem 0.9rem; font-family: 'Work Sans', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
+        .wp-status-btn { display: inline-flex; align-items: center; gap: 0.4rem; background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.4rem 0.9rem; font-family: 'Work Sans', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
         .wp-status-btn:hover { border-color: var(--ink-soft); }
         .wp-status-visited.wp-status-active { background: #E4EFE9; border-color: #3F8F6F; color: #2E6B52; }
         .wp-status-want.wp-status-active { background: #E3EEF5; border-color: #3E7CB1; color: #2A5A80; }
@@ -2236,7 +2242,7 @@ function Waypoint() {
 
         .wp-trip-days-tab { margin-bottom: 1.6rem; }
         .wp-trip-day-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.3rem; }
-        .wp-trip-day-pill { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 1.05rem; font-size: 0.82rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
+        .wp-trip-day-pill { background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.5rem 1.05rem; font-size: 0.82rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
         .wp-trip-day-pill-active { background: var(--navy); border-color: var(--navy); color: var(--parchment); font-weight: 600; }
         .wp-trip-day-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.6rem; }
         .wp-trip-day-suggestions { margin-bottom: 1.1rem; }
@@ -2259,7 +2265,7 @@ function Waypoint() {
         .wp-trip-booking-card:last-child { margin-bottom: 0; }
         .wp-trip-booking-card-head { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
         .wp-trip-booking-route { font-size: 0.88rem; font-weight: 500; }
-        .wp-trip-confirm-toggle { font-size: 0.7rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 999px; border: 1px solid var(--hairline); background: var(--parchment); color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
+        .wp-trip-confirm-toggle { font-size: 0.7rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 11px; border: 1px solid var(--hairline); background: var(--parchment); color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
         .wp-trip-confirm-toggle-on { background: #E4EFE9; border-color: #3F8F6F; color: #2E6B52; }
         .wp-trip-view-in-route-link { background: none; border: none; color: var(--ink-soft); font-size: 0.85rem; text-decoration: underline; cursor: pointer; padding: 0; }
         .wp-trip-card:hover { border-color: var(--gold); }
@@ -2300,6 +2306,7 @@ function Waypoint() {
         }
         .wp-trip-add-btn { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; }
         .wp-trip-suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+        .wp-trip-suggestions-label { margin: 0.9rem 0 0.4rem; font-size: 0.72rem; color: var(--ink-soft); }
         .wp-trip-suggestion-chip { display: flex; align-items: center; gap: 0.25rem; font-size: 0.76rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.25rem 0.6rem; cursor: pointer; color: var(--ink-soft); }
         .wp-trip-suggestion-chip:hover { border-color: var(--gold); color: var(--ink); }
         .wp-trip-transit-row { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.5rem 0.2rem; margin-left: 1rem; border-left: 2px dashed var(--hairline); }
@@ -2309,11 +2316,11 @@ function Waypoint() {
         .wp-trip-add-stop-btn { display: flex; align-items: center; justify-content: center; gap: 0.4rem; width: 100%; background: none; border: 1px dashed var(--hairline); border-radius: 10px; padding: 0.6rem; font-size: 0.85rem; color: var(--ink-soft); cursor: pointer; margin: 0.6rem 0 1.2rem; }
         .wp-trip-add-stop-btn:hover { border-color: var(--gold); color: var(--ink); }
         .wp-trip-footer-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
-        .wp-trip-delete-btn { background: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.55rem 1.1rem; font-size: 0.85rem; color: #B5453D; cursor: pointer; }
+        .wp-trip-delete-btn { background: none; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.55rem 1.1rem; font-size: 0.85rem; color: #B5453D; cursor: pointer; }
         .wp-trip-subsection { margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid var(--hairline); }
         .wp-trip-subsection-label { font-size: 0.72rem; color: var(--ink-soft); margin: 0 0 0.35rem; text-transform: uppercase; letter-spacing: 0.03em; }
         .wp-trip-typical-hint { font-size: 0.72rem; color: var(--ink-soft); margin: 0.2rem 0 0.6rem 1.2rem; }
-        .wp-trip-export-btn { display: flex; align-items: center; gap: 0.4rem; background: none; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 1rem; font-size: 0.82rem; color: var(--ink); cursor: pointer; margin-bottom: 1.2rem; }
+        .wp-trip-export-btn { display: flex; align-items: center; gap: 0.4rem; background: none; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.5rem 1rem; font-size: 0.82rem; color: var(--ink); cursor: pointer; margin-bottom: 1.2rem; }
         .wp-trip-export-btn:hover { border-color: var(--gold); }
         .wp-trip-action-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.2rem; }
         .wp-trip-action-row .wp-trip-export-btn { margin-bottom: 0; }
@@ -2360,7 +2367,7 @@ function Waypoint() {
         .wp-modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; cursor: pointer; color: var(--ink-soft); padding: 0.2rem; }
         .wp-auth-title { font-size: 1.4rem; font-weight: 600; margin: 0 0 0.4rem; }
         .wp-auth-subtitle { font-size: 0.86rem; color: var(--ink-soft); line-height: 1.45; margin: 0 0 1.3rem; }
-        .wp-google-btn { display: flex; align-items: center; justify-content: center; gap: 0.6rem; width: 100%; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.65rem 1rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; font-weight: 600; color: var(--ink); cursor: pointer; }
+        .wp-google-btn { display: flex; align-items: center; justify-content: center; gap: 0.6rem; width: 100%; background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.65rem 1rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; font-weight: 600; color: var(--ink); cursor: pointer; }
         .wp-google-btn:hover { background: var(--parchment); }
         .wp-auth-divider { display: flex; align-items: center; text-align: center; color: var(--ink-soft); font-size: 0.78rem; margin: 1rem 0; }
         .wp-auth-divider::before, .wp-auth-divider::after { content: ""; flex: 1; border-top: 1px solid var(--hairline); }
@@ -2433,7 +2440,7 @@ function Waypoint() {
 
         .wp-pairs-wrap { margin-top: 2rem; }
         .wp-pairs-row { display: flex; flex-wrap: wrap; gap: 0.7rem; }
-        .wp-pairs-card { display: flex; align-items: center; gap: 0.5rem; background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.5rem 0.9rem 0.5rem 0.7rem; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink); }
+        .wp-pairs-card { display: flex; align-items: center; gap: 0.5rem; background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.5rem 0.9rem 0.5rem 0.7rem; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink); }
         .wp-pairs-card:hover { background: #FBF8F1; }
 
         .wp-footer { margin-top: 3.5rem; padding-top: 2rem; border-top: 1px solid var(--hairline); }
@@ -2491,6 +2498,18 @@ function Waypoint() {
               )
             )}
           </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+          {firebaseReady && !authLoading && (
+            user ? (
+              <button className="wp-nav-account-badge wp-nav-account-badge-in" onClick={() => setMobileMenuOpen(true)} aria-label={T.signedInAs + " " + (user.email || "")} title={user.email || ""}>
+                {(user.email || "?").charAt(0).toUpperCase()}
+              </button>
+            ) : (
+              <button className="wp-nav-account-badge wp-nav-account-badge-out" onClick={() => openAuthModal("signin")} aria-label={T.signIn} title={T.notSignedIn}>
+                <UserIcon size={15} />
+              </button>
+            )
+          )}
           <button
             className="wp-hamburger-btn"
             ref={menuTriggerRef}
@@ -2501,6 +2520,7 @@ function Waypoint() {
           >
             <MenuIcon size={22} />
           </button>
+          </div>
         </nav>
 
         {mobileMenuOpen && (
@@ -3499,13 +3519,16 @@ function Waypoint() {
                               ><PlusIcon size={14} /></button>
                             </div>
                             {suggestions.length > 0 && (
-                              <div className="wp-trip-suggestions">
-                                {suggestions.filter((s) => !aStop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => (
-                                  <button key={s} className="wp-trip-suggestion-chip" onClick={() => addHighlight(trip.id, aStop.id, s, "attraction")}>
-                                    <PlusIcon size={11} /> {s}
-                                  </button>
-                                ))}
-                              </div>
+                              <>
+                                <p className="wp-trip-suggestions-label">{T.suggestionsIn} {countryData ? countryData.name : (trip.countryName || "")}</p>
+                                <div className="wp-trip-suggestions">
+                                  {suggestions.filter((s) => !aStop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => (
+                                    <button key={s} className="wp-trip-suggestion-chip" onClick={() => addHighlight(trip.id, aStop.id, s, "attraction")}>
+                                      <PlusIcon size={11} /> {s}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
                             )}
                           </>
                         )}
@@ -3564,13 +3587,16 @@ function Waypoint() {
                               }}><PlusIcon size={14} /></button>
                             </div>
                             {countryData && countryData.food && countryData.food.length > 0 && (
-                              <div className="wp-trip-suggestions">
-                                {countryData.food.filter((f) => !aStop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => (
-                                  <button key={f.name} className="wp-trip-suggestion-chip" onClick={() => addMeal(trip.id, aStop.id, f.name)}>
-                                    <PlusIcon size={11} /> {f.name}
-                                  </button>
-                                ))}
-                              </div>
+                              <>
+                                <p className="wp-trip-suggestions-label">{T.suggestionsIn} {countryData.name}</p>
+                                <div className="wp-trip-suggestions">
+                                  {countryData.food.filter((f) => !aStop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => (
+                                    <button key={f.name} className="wp-trip-suggestion-chip" onClick={() => addMeal(trip.id, aStop.id, f.name)}>
+                                      <PlusIcon size={11} /> {f.name}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
                             )}
                           </>
                         )}
