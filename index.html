@@ -290,6 +290,7 @@ const UI_STRINGS = {
     whereToEatBtn: "Where to eat",
     placesBtn: "Places",
     placesCountSuffix: "places",
+    transportTitle: "Transport",
     mapIllustrativeLabel: "Illustrative map",
     mapIllustrativeNote: "Overland route shown, not to scale.",
     transitAddBtn: "Add travel time",
@@ -521,6 +522,7 @@ const UI_STRINGS = {
     whereToEatBtn: "Onde comer",
     placesBtn: "Locais",
     placesCountSuffix: "locais",
+    transportTitle: "Transporte",
     mapIllustrativeLabel: "Mapa ilustrativo",
     mapIllustrativeNote: "Percurso terrestre, n\xE3o est\xE1 \xE0 escala.",
     transitAddBtn: "Adicionar tempo de viagem",
@@ -1081,8 +1083,47 @@ function Waypoint() {
   const [stayDrafts, setStayDrafts] = useState({});
   const [mealDrafts, setMealDrafts] = useState({});
   const [tripSaveStatus, setTripSaveStatus] = useState("");
-  const [openPanels, setOpenPanels] = useState({});
-  const togglePanel = (key) => setOpenPanels((p) => ({ ...p, [key]: !p[key] }));
+  const [activeEditPanel, setActiveEditPanel] = useState(null);
+  const editPanelRef = useRef(null);
+  const editPanelTriggerRef = useRef(null);
+  const openEditPanel = (stopId, type, triggerEl) => {
+    setActiveEditPanel((cur) => cur && cur.stopId === stopId && cur.type === type ? null : { stopId, type });
+    if (triggerEl) editPanelTriggerRef.current = triggerEl;
+  };
+  const closeEditPanel = () => setActiveEditPanel(null);
+  useEffect(() => {
+    if (!activeEditPanel) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        closeEditPanel();
+        return;
+      }
+      if (e.key === "Tab" && editPanelRef.current) {
+        const focusable = editPanelRef.current.querySelectorAll('button, a, input, select, [tabindex]:not([tabindex="-1"])');
+        if (focusable.length === 0) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    if (editPanelRef.current) {
+      const first = editPanelRef.current.querySelector("input, button");
+      if (first) first.focus();
+    }
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      if (editPanelTriggerRef.current) editPanelTriggerRef.current.focus();
+    };
+  }, [activeEditPanel]);
   const [activeTripTab, setActiveTripTab] = useState("route");
   const [bookingsSubTab, setBookingsSubTab] = useState("all");
   const [documentDraft, setDocumentDraft] = useState("");
@@ -1095,43 +1136,6 @@ function Waypoint() {
       setSelectedDay(1);
     }
   }, [view, activeTripId]);
-  useEffect(() => {
-    if (view !== "trip-detail" || !activeTripId || !trips[activeTripId]) return;
-    const trip = trips[activeTripId];
-    const initial = {};
-    trip.stops.forEach((stop) => {
-      if ((stop.stays || []).length > 0) initial[stop.id + ":sleep"] = true;
-      if ((stop.meals || []).length > 0) initial[stop.id + ":eat"] = true;
-    });
-    setOpenPanels(initial);
-  }, [view, activeTripId]);
-  useEffect(() => {
-    const handler = (e) => {
-      if (view !== "trip-detail" || !activeTripId || !trips[activeTripId]) return;
-      const trip = trips[activeTripId];
-      setOpenPanels((panels) => {
-        let changed = false;
-        const next = { ...panels };
-        Object.keys(panels).forEach((key) => {
-          if (!panels[key]) return;
-          const idx = key.lastIndexOf(":");
-          if (idx === -1) return;
-          const type = key.slice(idx + 1);
-          if (type !== "sleep" && type !== "eat" && type !== "highlights") return;
-          if (e.target.closest && e.target.closest('[data-panel-key="' + key + '"]')) return;
-          next[key] = false;
-          changed = true;
-        });
-        return changed ? next : panels;
-      });
-    };
-    document.addEventListener("click", handler, true);
-    document.addEventListener("touchend", handler, true);
-    return () => {
-      document.removeEventListener("click", handler, true);
-      document.removeEventListener("touchend", handler, true);
-    };
-  }, [view, activeTripId, trips]);
   const [geocodeCache, setGeocodeCache] = useState({});
   const geocodeCity = (query, countryName) => {
     const key = (query + "|" + (countryName || "")).toLowerCase();
@@ -2428,6 +2432,20 @@ function Waypoint() {
         .wp-mobile-menu-sep { height: 1px; background: var(--hairline); margin: 0.7rem 0.75rem; }
         .wp-mobile-menu-lang-row { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; }
         .wp-mobile-menu-lang-label { font-size: 0.85rem; color: var(--ink-soft); }
+
+        .wp-task-sheet-overlay { position: fixed; inset: 0; background: rgba(20,33,61,0.4); z-index: 1100; display: flex; align-items: flex-end; justify-content: center; }
+        .wp-task-sheet-panel { width: 100%; max-height: 88vh; background: #fff; border-radius: 16px 16px 0 0; display: flex; flex-direction: column; box-shadow: 0 -8px 24px rgba(20,33,61,0.15); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        @media (min-width: 640px) {
+          .wp-task-sheet-overlay { align-items: center; }
+          .wp-task-sheet-panel { width: 100%; max-width: 460px; max-height: 80vh; border-radius: 16px; }
+        }
+        .wp-task-sheet-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 1.2rem 1.3rem 0.9rem; border-bottom: 1px solid var(--hairline); flex-shrink: 0; }
+        .wp-task-sheet-title { margin: 0; font-size: 1.05rem; font-weight: 600; color: var(--ink); }
+        .wp-task-sheet-context { margin: 0.15rem 0 0; font-size: 0.82rem; color: var(--ink-soft); }
+        .wp-task-sheet-scroll { flex: 1; overflow-y: auto; padding: 1.2rem 1.3rem; }
+        .wp-task-sheet-footer { padding: 0.9rem 1.3rem; border-top: 1px solid var(--hairline); flex-shrink: 0; }
+        .wp-trip-transit-edit-form { display: flex; flex-direction: column; gap: 0.8rem; }
+        .wp-trip-transit-duration-row { display: flex; gap: 0.6rem; }
         .wp-nav-link { background: none; border: none; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink-soft); padding: 0.3rem 0; border-bottom: 2px solid transparent; }
         .wp-nav-link:hover { color: var(--ink); }
         .wp-nav-link-active { color: var(--ink); border-bottom-color: var(--navy); font-weight: 600; }
@@ -3033,10 +3051,11 @@ function Waypoint() {
       goToStatic("trips");
     } }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 13, style: { transform: "rotate(180deg)" } }), " ", T.myTrips), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero-row" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero-title" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-hero-flag" }, trip.flag), /* @__PURE__ */ React.createElement("h1", { className: "wp-trip-hero-name" }, trip.name)), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-hero-meta" }, trip.startDate || "?", " \u2013 ", trip.endDate || "?", " \xB7 ", total, " ", T.days, " \xB7 ", trip.stops.length, " ", T.stops)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-hero-cost" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-hero-cost-label" }, T.estimatedCost), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-hero-cost-value" }, "\u20AC", cost.toFixed(0))))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-tabs" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-tab-row" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-tab" + (activeTripTab === "route" ? " wp-trip-tab-active" : ""), onClick: () => setActiveTripTab("route") }, T.routeTab), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-tab" + (activeTripTab === "days" ? " wp-trip-tab-active" : ""), onClick: () => setActiveTripTab("days") }, T.daysTab), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-tab" + (activeTripTab === "bookings" ? " wp-trip-tab-active" : ""), onClick: () => setActiveTripTab("bookings") }, T.bookingsTab)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-header-actions" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-header-btn", onClick: () => saveTripNow(trip.id) }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 14 }), " ", tripSaveStatus === "saved" ? T.tripSaved : T.saveTrip), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-header-btn", onClick: () => exportTripPDF(trip, countryData) }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", T.exportPdf))), activeTripTab === "route" && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-route-layout" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-timeline-col" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-route-line" }), trip.stops.map((stop, i) => {
       const transit = trip.transits.find((tr) => tr.afterStopId === stop.id);
-      const transitEditing = openPanels["transit:" + stop.id];
-      const sleepOpen = openPanels[stop.id + ":sleep"];
-      const eatOpen = openPanels[stop.id + ":eat"];
-      const highlightsOpen = openPanels[stop.id + ":highlights"];
+      const isActive = (type) => !!(activeEditPanel && activeEditPanel.stopId === stop.id && activeEditPanel.type === type);
+      const transitEditing = isActive("transit");
+      const sleepOpen = isActive("sleep");
+      const eatOpen = isActive("eat");
+      const highlightsOpen = isActive("highlights");
       return /* @__PURE__ */ React.createElement("div", { key: stop.id }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-insert-link", onClick: () => insertStopBefore(trip.id, stop.id) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", T.insertStopHere), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-entry" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-entry-dot" + (stop.highlights.length || (stop.stays || []).length || (stop.meals || []).length ? " wp-trip-entry-dot-active" : "") }), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-entry-photo", style: { background: "linear-gradient(160deg, " + (countryData && countryData.continentColor || "#2F5D62") + ", #142035)" } }), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-entry-body" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-entry-head" }, /* @__PURE__ */ React.createElement(
         "input",
         {
@@ -3072,39 +3091,11 @@ function Waypoint() {
             updateStopField(trip.id, stop.id, "dayEnd", n > 0 ? n : 1);
           }
         }
-      )), trip.stops.length > 1 && /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeStop(trip.id, stop.id), "aria-label": "Remove stop" }, /* @__PURE__ */ React.createElement(X, { size: 14 }))), formatDayRange(trip, stop.dayStart, stop.dayEnd) && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-date-range-hint" }, formatDayRange(trip, stop.dayStart, stop.dayEnd)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row" }, stop.highlights.map((h) => /* @__PURE__ */ React.createElement("span", { key: h.id, className: "wp-trip-chip" }, h.text, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-chip-remove", onClick: () => removeHighlight(trip.id, stop.id, h.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 11 }))))), highlightsOpen && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-box", "data-panel-key": stop.id + ":highlights", style: { marginBottom: "0.9rem" } }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-close", onClick: () => togglePanel(stop.id + ":highlights"), "aria-label": "Close" }, /* @__PURE__ */ React.createElement(X, { size: 13 })), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "text",
-          className: "wp-trip-highlight-input",
-          placeholder: T.addHighlightPlaceholder,
-          value: highlightDrafts[stop.id] || "",
-          onChange: (e) => setHighlightDrafts({ ...highlightDrafts, [stop.id]: e.target.value }),
-          onKeyDown: (e) => {
-            if (e.key === "Enter" && (highlightDrafts[stop.id] || "").trim()) {
-              addHighlight(trip.id, stop.id, highlightDrafts[stop.id], "custom");
-              setHighlightDrafts({ ...highlightDrafts, [stop.id]: "" });
-            }
-          }
-        }
-      ), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          className: "wp-trip-add-btn",
-          onClick: () => {
-            if ((highlightDrafts[stop.id] || "").trim()) {
-              addHighlight(trip.id, stop.id, highlightDrafts[stop.id], "custom");
-              setHighlightDrafts({ ...highlightDrafts, [stop.id]: "" });
-            }
-          }
-        },
-        /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })
-      )), suggestions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-suggestions" }, suggestions.filter((s) => !stop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => /* @__PURE__ */ React.createElement("button", { key: s, className: "wp-trip-suggestion-chip", onClick: () => addHighlight(trip.id, stop.id, s, "attraction") }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", s)))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-row" }, /* @__PURE__ */ React.createElement(
+      )), trip.stops.length > 1 && /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeStop(trip.id, stop.id), "aria-label": "Remove stop" }, /* @__PURE__ */ React.createElement(X, { size: 14 }))), formatDayRange(trip, stop.dayStart, stop.dayEnd) && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-date-range-hint" }, formatDayRange(trip, stop.dayStart, stop.dayEnd)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row" }, stop.highlights.map((h) => /* @__PURE__ */ React.createElement("span", { key: h.id, className: "wp-trip-chip" }, h.text, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-chip-remove", onClick: () => removeHighlight(trip.id, stop.id, h.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 11 }))))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-row" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           className: "wp-trip-panel-btn" + (highlightsOpen ? " wp-trip-panel-btn-active" : "") + (stop.highlights.length === 0 ? " wp-trip-panel-btn-empty" : ""),
-          "data-panel-key": stop.id + ":highlights",
-          onClick: () => togglePanel(stop.id + ":highlights")
+          onClick: (e) => openEditPanel(stop.id, "highlights", e.currentTarget)
         },
         /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: highlightsOpen ? "#2457E6" : "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "10", r: "3" })),
         T.placesBtn
@@ -3112,8 +3103,7 @@ function Waypoint() {
         "button",
         {
           className: "wp-trip-panel-btn" + (sleepOpen ? " wp-trip-panel-btn-active" : "") + ((stop.stays || []).length === 0 ? " wp-trip-panel-btn-empty" : ""),
-          "data-panel-key": stop.id + ":sleep",
-          onClick: () => togglePanel(stop.id + ":sleep")
+          onClick: (e) => openEditPanel(stop.id, "sleep", e.currentTarget)
         },
         /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: sleepOpen ? "#2457E6" : "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2M21 18v2M5 10V7a2 2 0 0 1 2-2h3v5" })),
         T.whereToSleepBtn
@@ -3121,114 +3111,159 @@ function Waypoint() {
         "button",
         {
           className: "wp-trip-panel-btn" + (eatOpen ? " wp-trip-panel-btn-active" : "") + ((stop.meals || []).length === 0 ? " wp-trip-panel-btn-empty" : ""),
-          "data-panel-key": stop.id + ":eat",
-          onClick: () => togglePanel(stop.id + ":eat")
+          onClick: (e) => openEditPanel(stop.id, "eat", e.currentTarget)
         },
         /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: eatOpen ? "#2457E6" : "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11" })),
         T.whereToEatBtn
-      )), !sleepOpen && (stop.stays || []).length > 0 && /* @__PURE__ */ React.createElement("button", { className: "wp-trip-summary-line", onClick: () => togglePanel(stop.id + ":sleep") }, "\u{1F6CF} ", stop.stays[0].name, stop.stays[0].nights ? " \xB7 " + stop.stays[0].nights + " " + T.nights : "", stop.stays.length > 1 ? " \xB7 +" + (stop.stays.length - 1) + " " + T.placesCountSuffix : ""), !eatOpen && (stop.meals || []).length > 0 && /* @__PURE__ */ React.createElement("button", { className: "wp-trip-summary-line", onClick: () => togglePanel(stop.id + ":eat") }, "\u{1F37D} ", stop.meals[0].name, stop.meals.length > 1 ? " \xB7 +" + (stop.meals.length - 1) + " " + T.placesCountSuffix : ""), sleepOpen && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-box", "data-panel-key": stop.id + ":sleep" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-close", onClick: () => togglePanel(stop.id + ":sleep"), "aria-label": "Close" }, /* @__PURE__ */ React.createElement(X, { size: 13 })), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-panel-box-label" }, T.whereToSleep, " \xB7 ", stop.city || T.cityPlaceholder), (stop.stays || []).map((st) => /* @__PURE__ */ React.createElement("div", { key: st.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F3E8}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, st.name, st.nights ? " \xB7 " + st.nights + " " + T.nights : "", st.price ? " \xB7 " + st.price : ""), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeStay(trip.id, stop.id, st.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "text",
-          className: "wp-trip-highlight-input",
-          style: { flex: 2 },
-          placeholder: T.stayNamePlaceholder,
-          value: (stayDrafts[stop.id] || {}).name || "",
-          onChange: (e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...stayDrafts[stop.id] || {}, name: e.target.value } })
-        }
-      ), /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "text",
-          className: "wp-trip-highlight-input",
-          style: { flex: 1 },
-          placeholder: T.nightsPlaceholder,
-          value: (stayDrafts[stop.id] || {}).nights || "",
-          onChange: (e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...stayDrafts[stop.id] || {}, nights: e.target.value } })
-        }
-      ), /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "text",
-          className: "wp-trip-highlight-input",
-          style: { flex: 1 },
-          placeholder: T.transitPrice,
-          value: (stayDrafts[stop.id] || {}).price || "",
-          onChange: (e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...stayDrafts[stop.id] || {}, price: e.target.value } })
-        }
-      ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-btn", onClick: () => {
-        const d = stayDrafts[stop.id] || {};
-        addStay(trip.id, stop.id, d.name || "", d.nights || "", d.price || "");
-        setStayDrafts({ ...stayDrafts, [stop.id]: {} });
-      } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })))), eatOpen && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-box", "data-panel-key": stop.id + ":eat" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-close", onClick: () => togglePanel(stop.id + ":eat"), "aria-label": "Close" }, /* @__PURE__ */ React.createElement(X, { size: 13 })), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-panel-box-label" }, T.whereToEat, " \xB7 ", stop.city || T.cityPlaceholder), (stop.meals || []).map((m) => /* @__PURE__ */ React.createElement("div", { key: m.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F37D}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, m.name), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeMeal(trip.id, stop.id, m.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "text",
-          className: "wp-trip-highlight-input",
-          placeholder: T.addMealPlaceholder,
-          value: (mealDrafts[stop.id] || {}).name || "",
-          onChange: (e) => setMealDrafts({ ...mealDrafts, [stop.id]: { ...mealDrafts[stop.id] || {}, name: e.target.value } }),
-          onKeyDown: (e) => {
-            if (e.key === "Enter" && ((mealDrafts[stop.id] || {}).name || "").trim()) {
-              addMeal(trip.id, stop.id, mealDrafts[stop.id].name);
-              setMealDrafts({ ...mealDrafts, [stop.id]: {} });
-            }
-          }
-        }
-      ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-btn", onClick: () => {
-        const d = mealDrafts[stop.id] || {};
-        addMeal(trip.id, stop.id, d.name || "");
-        setMealDrafts({ ...mealDrafts, [stop.id]: {} });
-      } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 }))), countryData && countryData.food && countryData.food.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-suggestions" }, countryData.food.filter((f) => !stop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => /* @__PURE__ */ React.createElement("button", { key: f.name, className: "wp-trip-suggestion-chip", onClick: () => addMeal(trip.id, stop.id, f.name) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", f.name)))))), i < trip.stops.length - 1 && transit && !transitEditing && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-transit-summary-row", onClick: () => togglePanel("transit:" + stop.id), onKeyDown: (e) => {
+      )), (stop.stays || []).length > 0 && /* @__PURE__ */ React.createElement("button", { className: "wp-trip-summary-line", onClick: (e) => openEditPanel(stop.id, "sleep", e.currentTarget) }, "\u{1F6CF} ", stop.stays[0].name, stop.stays[0].nights ? " \xB7 " + stop.stays[0].nights + " " + T.nights : "", stop.stays.length > 1 ? " \xB7 +" + (stop.stays.length - 1) + " " + T.placesCountSuffix : ""), (stop.meals || []).length > 0 && /* @__PURE__ */ React.createElement("button", { className: "wp-trip-summary-line", onClick: (e) => openEditPanel(stop.id, "eat", e.currentTarget) }, "\u{1F37D} ", stop.meals[0].name, stop.meals.length > 1 ? " \xB7 +" + (stop.meals.length - 1) + " " + T.placesCountSuffix : ""))), i < trip.stops.length - 1 && transit && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-transit-summary-row", onClick: (e) => openEditPanel(stop.id, "transit", e.currentTarget), onKeyDown: (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          togglePanel("transit:" + stop.id);
+          openEditPanel(stop.id, "transit", e.currentTarget);
         }
-      }, role: "button", tabIndex: 0 }, /* @__PURE__ */ React.createElement("svg", { width: "15", height: "15", viewBox: "0 0 24 24", fill: "none", stroke: "#B8863E", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M4 16h16M4 16l3-3M4 16l3 3M20 16a2 2 0 1 0-4 0" })), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-summary-text" }, transit.mode ? (transit.durationHours || transit.durationMinutes ? (transit.durationHours || "0") + "h" + (transit.durationMinutes ? transit.durationMinutes + "min" : "") + " \xB7 " : "") + (T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode) : T.transitAddBtn), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-summary-edit" }, transit.mode ? T.transitEditBtn : T.transitAddBtn)), i < trip.stops.length - 1 && transit && transitEditing && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-transit-row" }, /* @__PURE__ */ React.createElement(
-        "select",
+      }, role: "button", tabIndex: 0 }, /* @__PURE__ */ React.createElement("svg", { width: "15", height: "15", viewBox: "0 0 24 24", fill: "none", stroke: "#FF8A3D", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M4 16h16M4 16l3-3M4 16l3 3M20 16a2 2 0 1 0-4 0" })), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-summary-text" }, transit.mode ? (transit.durationHours || transit.durationMinutes ? (transit.durationHours || "0") + "h" + (transit.durationMinutes ? transit.durationMinutes + "min" : "") + " \xB7 " : "") + (T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode) : T.transitAddBtn), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-summary-edit" }, transit.mode ? T.transitEditBtn : T.transitAddBtn)), i < trip.stops.length - 1 && transit && transit.mode && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-typical-hint" }, T.typicalRange, ": ", TRANSIT_TYPICAL[transit.mode]));
+    }), activeEditPanel && (() => {
+      const aStop = trip.stops.find((s) => s.id === activeEditPanel.stopId);
+      if (!aStop) return null;
+      const aTransit = trip.transits.find((tr) => tr.afterStopId === activeEditPanel.stopId);
+      const titleMap = { highlights: T.placesBtn, sleep: T.whereToSleep, eat: T.whereToEat, transit: T.transportTitle };
+      return /* @__PURE__ */ React.createElement("div", { className: "wp-task-sheet-overlay", onClick: closeEditPanel }, /* @__PURE__ */ React.createElement(
+        "div",
         {
-          className: "wp-trip-transit-select",
-          value: transit.mode,
-          onChange: (e) => updateTransit(trip.id, stop.id, "mode", e.target.value)
+          className: "wp-task-sheet-panel",
+          ref: editPanelRef,
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": titleMap[activeEditPanel.type],
+          onClick: (e) => e.stopPropagation()
         },
-        /* @__PURE__ */ React.createElement("option", { value: "" }, T.chooseTransit),
-        /* @__PURE__ */ React.createElement("option", { value: "flight" }, T.transitFlight),
-        /* @__PURE__ */ React.createElement("option", { value: "train" }, T.transitTrain),
-        /* @__PURE__ */ React.createElement("option", { value: "bus" }, T.transitBus),
-        /* @__PURE__ */ React.createElement("option", { value: "car" }, T.transitCar),
-        /* @__PURE__ */ React.createElement("option", { value: "boat" }, T.transitBoat)
-      ), /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "number",
-          min: "0",
-          className: "wp-trip-transit-input wp-trip-transit-num",
-          placeholder: T.hoursLabel,
-          value: transit.durationHours,
-          onChange: (e) => updateTransit(trip.id, stop.id, "durationHours", e.target.value)
-        }
-      ), /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "number",
-          min: "0",
-          max: "59",
-          className: "wp-trip-transit-input wp-trip-transit-num",
-          placeholder: T.minutesLabel,
-          value: transit.durationMinutes,
-          onChange: (e) => updateTransit(trip.id, stop.id, "durationMinutes", e.target.value)
-        }
-      ), /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          type: "text",
-          className: "wp-trip-transit-input",
-          placeholder: T.transitPrice,
-          value: transit.price,
-          onChange: (e) => updateTransit(trip.id, stop.id, "price", e.target.value)
-        }
-      ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-transit-summary-edit", onClick: () => togglePanel("transit:" + stop.id) }, T.doneEditingLabel)), i < trip.stops.length - 1 && transit && transit.mode && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-typical-hint" }, T.typicalRange, ": ", TRANSIT_TYPICAL[transit.mode]));
-    }), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-stop-btn", onClick: () => addStop(trip.id) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 15 }), " ", T.addStop)), /* @__PURE__ */ React.createElement(TripMap, { trip, countryName: countryData ? countryData.name : trip.countryName || "", geocodeCache, geocodeCity, accentColor: countryData && countryData.continentColor || "#2F5D62", T })), activeTripTab === "days" && (() => {
+        /* @__PURE__ */ React.createElement("div", { className: "wp-task-sheet-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "wp-task-sheet-title" }, titleMap[activeEditPanel.type]), /* @__PURE__ */ React.createElement("p", { className: "wp-task-sheet-context" }, aStop.city || T.cityPlaceholder)), /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-close", onClick: closeEditPanel, "aria-label": T.closeMenu }, /* @__PURE__ */ React.createElement(X, { size: 18 }))),
+        /* @__PURE__ */ React.createElement("div", { className: "wp-task-sheet-scroll" }, activeEditPanel.type === "highlights" && /* @__PURE__ */ React.createElement(React.Fragment, null, aStop.highlights.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row", style: { marginBottom: "1rem" } }, aStop.highlights.map((h) => /* @__PURE__ */ React.createElement("span", { key: h.id, className: "wp-trip-chip" }, h.text, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-chip-remove", onClick: () => removeHighlight(trip.id, aStop.id, h.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 11 }))))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "text",
+            className: "wp-trip-highlight-input",
+            placeholder: T.addHighlightPlaceholder,
+            value: highlightDrafts[aStop.id] || "",
+            onChange: (e) => setHighlightDrafts({ ...highlightDrafts, [aStop.id]: e.target.value }),
+            onKeyDown: (e) => {
+              if (e.key === "Enter" && (highlightDrafts[aStop.id] || "").trim()) {
+                addHighlight(trip.id, aStop.id, highlightDrafts[aStop.id], "custom");
+                setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+              }
+            }
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            className: "wp-trip-add-btn",
+            onClick: () => {
+              if ((highlightDrafts[aStop.id] || "").trim()) {
+                addHighlight(trip.id, aStop.id, highlightDrafts[aStop.id], "custom");
+                setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+              }
+            }
+          },
+          /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })
+        )), suggestions.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-suggestions" }, suggestions.filter((s) => !aStop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => /* @__PURE__ */ React.createElement("button", { key: s, className: "wp-trip-suggestion-chip", onClick: () => addHighlight(trip.id, aStop.id, s, "attraction") }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", s)))), activeEditPanel.type === "sleep" && /* @__PURE__ */ React.createElement(React.Fragment, null, (aStop.stays || []).map((st) => /* @__PURE__ */ React.createElement("div", { key: st.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F3E8}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, st.name, st.nights ? " \xB7 " + st.nights + " " + T.nights : "", st.price ? " \xB7 " + st.price : ""), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeStay(trip.id, aStop.id, st.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "text",
+            className: "wp-trip-highlight-input",
+            style: { flex: 2 },
+            placeholder: T.stayNamePlaceholder,
+            value: (stayDrafts[aStop.id] || {}).name || "",
+            onChange: (e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...stayDrafts[aStop.id] || {}, name: e.target.value } })
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "text",
+            className: "wp-trip-highlight-input",
+            style: { flex: 1 },
+            placeholder: T.nightsPlaceholder,
+            value: (stayDrafts[aStop.id] || {}).nights || "",
+            onChange: (e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...stayDrafts[aStop.id] || {}, nights: e.target.value } })
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "text",
+            className: "wp-trip-highlight-input",
+            style: { flex: 1 },
+            placeholder: T.transitPrice,
+            value: (stayDrafts[aStop.id] || {}).price || "",
+            onChange: (e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...stayDrafts[aStop.id] || {}, price: e.target.value } })
+          }
+        ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-btn", onClick: () => {
+          const d = stayDrafts[aStop.id] || {};
+          addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "");
+          setStayDrafts({ ...stayDrafts, [aStop.id]: {} });
+        } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })))), activeEditPanel.type === "eat" && /* @__PURE__ */ React.createElement(React.Fragment, null, (aStop.meals || []).map((m) => /* @__PURE__ */ React.createElement("div", { key: m.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F37D}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, m.name), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeMeal(trip.id, aStop.id, m.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "text",
+            className: "wp-trip-highlight-input",
+            placeholder: T.addMealPlaceholder,
+            value: (mealDrafts[aStop.id] || {}).name || "",
+            onChange: (e) => setMealDrafts({ ...mealDrafts, [aStop.id]: { ...mealDrafts[aStop.id] || {}, name: e.target.value } }),
+            onKeyDown: (e) => {
+              if (e.key === "Enter" && ((mealDrafts[aStop.id] || {}).name || "").trim()) {
+                addMeal(trip.id, aStop.id, mealDrafts[aStop.id].name);
+                setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
+              }
+            }
+          }
+        ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-btn", onClick: () => {
+          const d = mealDrafts[aStop.id] || {};
+          addMeal(trip.id, aStop.id, d.name || "");
+          setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
+        } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 }))), countryData && countryData.food && countryData.food.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-suggestions" }, countryData.food.filter((f) => !aStop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => /* @__PURE__ */ React.createElement("button", { key: f.name, className: "wp-trip-suggestion-chip", onClick: () => addMeal(trip.id, aStop.id, f.name) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", f.name)))), activeEditPanel.type === "transit" && aTransit && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-transit-edit-form" }, /* @__PURE__ */ React.createElement(
+          "select",
+          {
+            className: "wp-trip-transit-select",
+            value: aTransit.mode,
+            onChange: (e) => updateTransit(trip.id, aStop.id, "mode", e.target.value)
+          },
+          /* @__PURE__ */ React.createElement("option", { value: "" }, T.chooseTransit),
+          /* @__PURE__ */ React.createElement("option", { value: "flight" }, T.transitFlight),
+          /* @__PURE__ */ React.createElement("option", { value: "train" }, T.transitTrain),
+          /* @__PURE__ */ React.createElement("option", { value: "bus" }, T.transitBus),
+          /* @__PURE__ */ React.createElement("option", { value: "car" }, T.transitCar),
+          /* @__PURE__ */ React.createElement("option", { value: "boat" }, T.transitBoat)
+        ), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-transit-duration-row" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "number",
+            min: "0",
+            className: "wp-trip-transit-input wp-trip-transit-num",
+            placeholder: T.hoursLabel,
+            value: aTransit.durationHours,
+            onChange: (e) => updateTransit(trip.id, aStop.id, "durationHours", e.target.value)
+          }
+        ), /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "number",
+            min: "0",
+            max: "59",
+            className: "wp-trip-transit-input wp-trip-transit-num",
+            placeholder: T.minutesLabel,
+            value: aTransit.durationMinutes,
+            onChange: (e) => updateTransit(trip.id, aStop.id, "durationMinutes", e.target.value)
+          }
+        )), /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "text",
+            className: "wp-trip-transit-input",
+            placeholder: T.transitPrice,
+            value: aTransit.price,
+            onChange: (e) => updateTransit(trip.id, aStop.id, "price", e.target.value)
+          }
+        ), aTransit.mode && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-typical-hint" }, T.typicalRange, ": ", TRANSIT_TYPICAL[aTransit.mode]))),
+        /* @__PURE__ */ React.createElement("div", { className: "wp-task-sheet-footer" }, /* @__PURE__ */ React.createElement("button", { className: "wp-quiz-btn wp-quiz-btn-primary", style: { width: "100%", justifyContent: "center" }, onClick: closeEditPanel }, T.doneEditingLabel))
+      ));
+    })(), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-stop-btn", onClick: () => addStop(trip.id) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 15 }), " ", T.addStop)), /* @__PURE__ */ React.createElement(TripMap, { trip, countryName: countryData ? countryData.name : trip.countryName || "", geocodeCache, geocodeCity, accentColor: countryData && countryData.continentColor || "#2F5D62", T })), activeTripTab === "days" && (() => {
       const dayStop = stopForDay(trip, selectedDay);
       const dayActivities = trip.days && trip.days[selectedDay] || [];
       const dayDate = trip.startDate ? new Date(new Date(trip.startDate).getTime() + (selectedDay - 1) * 864e5) : null;

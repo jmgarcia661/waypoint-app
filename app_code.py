@@ -104,7 +104,7 @@ const UI_STRINGS = {
     tripsStatTrips: "TRIPS", tripsStatContinents: "CONTINENTS", tripsStatNights: "NIGHTS PLANNED", tripsStatDone: "COMPLETED",
     routeTab: "Route", daysTab: "Days", bookingsTab: "Bookings", comingSoonBadge: "coming soon",
     whereToSleepBtn: "Where to sleep", whereToEatBtn: "Where to eat",
-    placesBtn: "Places", placesCountSuffix: "places",
+    placesBtn: "Places", placesCountSuffix: "places", transportTitle: "Transport",
     mapIllustrativeLabel: "Illustrative map", mapIllustrativeNote: "Overland route shown, not to scale.",
     transitAddBtn: "Add travel time", transitEditBtn: "Edit",
     highlightsChipLabel: "highlights", doneEditingLabel: "done",
@@ -211,7 +211,7 @@ const UI_STRINGS = {
     tripsStatTrips: "VIAGENS", tripsStatContinents: "CONTINENTES", tripsStatNights: "NOITES PLANEADAS", tripsStatDone: "CONCLUÍDAS",
     routeTab: "Percurso", daysTab: "Dias", bookingsTab: "Reservas", comingSoonBadge: "em breve",
     whereToSleepBtn: "Onde dormir", whereToEatBtn: "Onde comer",
-    placesBtn: "Locais", placesCountSuffix: "locais",
+    placesBtn: "Locais", placesCountSuffix: "locais", transportTitle: "Transporte",
     mapIllustrativeLabel: "Mapa ilustrativo", mapIllustrativeNote: "Percurso terrestre, não está à escala.",
     transitAddBtn: "Adicionar tempo de viagem", transitEditBtn: "Editar",
     highlightsChipLabel: "destaques", doneEditingLabel: "concluído",
@@ -797,8 +797,36 @@ function Waypoint() {
   const [stayDrafts, setStayDrafts] = useState({});
   const [mealDrafts, setMealDrafts] = useState({});
   const [tripSaveStatus, setTripSaveStatus] = useState("");
-  const [openPanels, setOpenPanels] = useState({});
-  const togglePanel = (key) => setOpenPanels((p) => ({ ...p, [key]: !p[key] }));
+  const [activeEditPanel, setActiveEditPanel] = useState(null);
+  const editPanelRef = useRef(null);
+  const editPanelTriggerRef = useRef(null);
+  const openEditPanel = (stopId, type, triggerEl) => {
+    setActiveEditPanel((cur) => (cur && cur.stopId === stopId && cur.type === type) ? null : { stopId, type });
+    if (triggerEl) editPanelTriggerRef.current = triggerEl;
+  };
+  const closeEditPanel = () => setActiveEditPanel(null);
+  useEffect(() => {
+    if (!activeEditPanel) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") { closeEditPanel(); return; }
+      if (e.key === "Tab" && editPanelRef.current) {
+        const focusable = editPanelRef.current.querySelectorAll('button, a, input, select, [tabindex]:not([tabindex="-1"])');
+        if (focusable.length === 0) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    if (editPanelRef.current) { const first = editPanelRef.current.querySelector('input, button'); if (first) first.focus(); }
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      if (editPanelTriggerRef.current) editPanelTriggerRef.current.focus();
+    };
+  }, [activeEditPanel]);
 
   const [activeTripTab, setActiveTripTab] = useState("route");
   const [bookingsSubTab, setBookingsSubTab] = useState("all");
@@ -808,44 +836,6 @@ function Waypoint() {
   const [activityDrafts, setActivityDrafts] = useState({});
   useEffect(() => { if (view === "trip-detail") { setActiveTripTab("route"); setSelectedDay(1); } }, [view, activeTripId]);
 
-  useEffect(() => {
-    if (view !== "trip-detail" || !activeTripId || !trips[activeTripId]) return;
-    const trip = trips[activeTripId];
-    const initial = {};
-    trip.stops.forEach((stop) => {
-      if ((stop.stays || []).length > 0) initial[stop.id + ":sleep"] = true;
-      if ((stop.meals || []).length > 0) initial[stop.id + ":eat"] = true;
-    });
-    setOpenPanels(initial);
-    // eslint-disable-next-line
-  }, [view, activeTripId]);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (view !== "trip-detail" || !activeTripId || !trips[activeTripId]) return;
-      const trip = trips[activeTripId];
-      setOpenPanels((panels) => {
-        let changed = false;
-        const next = { ...panels };
-        Object.keys(panels).forEach((key) => {
-          if (!panels[key]) return;
-          const idx = key.lastIndexOf(":");
-          if (idx === -1) return;
-          const type = key.slice(idx + 1);
-          if (type !== "sleep" && type !== "eat" && type !== "highlights") return;
-          if (e.target.closest && e.target.closest('[data-panel-key="' + key + '"]')) return;
-          next[key] = false; changed = true;
-        });
-        return changed ? next : panels;
-      });
-    };
-    document.addEventListener("click", handler, true);
-    document.addEventListener("touchend", handler, true);
-    return () => {
-      document.removeEventListener("click", handler, true);
-      document.removeEventListener("touchend", handler, true);
-    };
-  }, [view, activeTripId, trips]);
   const [geocodeCache, setGeocodeCache] = useState({});
   const geocodeCity = (query, countryName) => {
     const key = (query + "|" + (countryName || "")).toLowerCase();
@@ -2032,6 +2022,20 @@ function Waypoint() {
         .wp-mobile-menu-sep { height: 1px; background: var(--hairline); margin: 0.7rem 0.75rem; }
         .wp-mobile-menu-lang-row { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; }
         .wp-mobile-menu-lang-label { font-size: 0.85rem; color: var(--ink-soft); }
+
+        .wp-task-sheet-overlay { position: fixed; inset: 0; background: rgba(20,33,61,0.4); z-index: 1100; display: flex; align-items: flex-end; justify-content: center; }
+        .wp-task-sheet-panel { width: 100%; max-height: 88vh; background: #fff; border-radius: 16px 16px 0 0; display: flex; flex-direction: column; box-shadow: 0 -8px 24px rgba(20,33,61,0.15); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        @media (min-width: 640px) {
+          .wp-task-sheet-overlay { align-items: center; }
+          .wp-task-sheet-panel { width: 100%; max-width: 460px; max-height: 80vh; border-radius: 16px; }
+        }
+        .wp-task-sheet-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 1.2rem 1.3rem 0.9rem; border-bottom: 1px solid var(--hairline); flex-shrink: 0; }
+        .wp-task-sheet-title { margin: 0; font-size: 1.05rem; font-weight: 600; color: var(--ink); }
+        .wp-task-sheet-context { margin: 0.15rem 0 0; font-size: 0.82rem; color: var(--ink-soft); }
+        .wp-task-sheet-scroll { flex: 1; overflow-y: auto; padding: 1.2rem 1.3rem; }
+        .wp-task-sheet-footer { padding: 0.9rem 1.3rem; border-top: 1px solid var(--hairline); flex-shrink: 0; }
+        .wp-trip-transit-edit-form { display: flex; flex-direction: column; gap: 0.8rem; }
+        .wp-trip-transit-duration-row { display: flex; gap: 0.6rem; }
         .wp-nav-link { background: none; border: none; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink-soft); padding: 0.3rem 0; border-bottom: 2px solid transparent; }
         .wp-nav-link:hover { color: var(--ink); }
         .wp-nav-link-active { color: var(--ink); border-bottom-color: var(--navy); font-weight: 600; }
@@ -3238,10 +3242,11 @@ function Waypoint() {
 
               {trip.stops.map((stop, i) => {
                 const transit = trip.transits.find((tr) => tr.afterStopId === stop.id);
-                const transitEditing = openPanels["transit:" + stop.id];
-                const sleepOpen = openPanels[stop.id + ":sleep"];
-                const eatOpen = openPanels[stop.id + ":eat"];
-                const highlightsOpen = openPanels[stop.id + ":highlights"];
+                const isActive = (type) => !!(activeEditPanel && activeEditPanel.stopId === stop.id && activeEditPanel.type === type);
+                const transitEditing = isActive("transit");
+                const sleepOpen = isActive("sleep");
+                const eatOpen = isActive("eat");
+                const highlightsOpen = isActive("highlights");
                 return (
                 <div key={stop.id}>
                   <button className="wp-trip-insert-link" onClick={() => insertStopBefore(trip.id, stop.id)}>
@@ -3293,157 +3298,46 @@ function Waypoint() {
                         ))}
                       </div>
 
-                      {highlightsOpen && (
-                        <div className="wp-trip-panel-box" data-panel-key={stop.id + ":highlights"} style={{ marginBottom: "0.9rem" }}>
-                          <button className="wp-trip-panel-close" onClick={() => togglePanel(stop.id + ":highlights")} aria-label="Close"><X size={13} /></button>
-                          <div className="wp-trip-add-highlight-row">
-                            <input
-                              type="text"
-                              className="wp-trip-highlight-input"
-                              placeholder={T.addHighlightPlaceholder}
-                              value={highlightDrafts[stop.id] || ""}
-                              onChange={(e) => setHighlightDrafts({ ...highlightDrafts, [stop.id]: e.target.value })}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && (highlightDrafts[stop.id] || "").trim()) {
-                                  addHighlight(trip.id, stop.id, highlightDrafts[stop.id], "custom");
-                                  setHighlightDrafts({ ...highlightDrafts, [stop.id]: "" });
-                                }
-                              }}
-                            />
-                            <button
-                              className="wp-trip-add-btn"
-                              onClick={() => {
-                                if ((highlightDrafts[stop.id] || "").trim()) {
-                                  addHighlight(trip.id, stop.id, highlightDrafts[stop.id], "custom");
-                                  setHighlightDrafts({ ...highlightDrafts, [stop.id]: "" });
-                                }
-                              }}
-                            ><PlusIcon size={14} /></button>
-                          </div>
-                          {suggestions.length > 0 && (
-                            <div className="wp-trip-suggestions">
-                              {suggestions.filter((s) => !stop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => (
-                                <button key={s} className="wp-trip-suggestion-chip" onClick={() => addHighlight(trip.id, stop.id, s, "attraction")}>
-                                  <PlusIcon size={11} /> {s}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
                       <div className="wp-trip-panel-row">
                         <button
                           className={"wp-trip-panel-btn" + (highlightsOpen ? " wp-trip-panel-btn-active" : "") + (stop.highlights.length === 0 ? " wp-trip-panel-btn-empty" : "")}
-                          data-panel-key={stop.id + ":highlights"}
-                          onClick={() => togglePanel(stop.id + ":highlights")}
+                          onClick={(e) => openEditPanel(stop.id, "highlights", e.currentTarget)}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={highlightsOpen ? "#2457E6" : "#586579"} strokeWidth="1.8"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                           {T.placesBtn}
                         </button>
                         <button
                           className={"wp-trip-panel-btn" + (sleepOpen ? " wp-trip-panel-btn-active" : "") + ((stop.stays||[]).length === 0 ? " wp-trip-panel-btn-empty" : "")}
-                          data-panel-key={stop.id + ":sleep"}
-                          onClick={() => togglePanel(stop.id + ":sleep")}
+                          onClick={(e) => openEditPanel(stop.id, "sleep", e.currentTarget)}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={sleepOpen ? "#2457E6" : "#586579"} strokeWidth="1.8"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2M21 18v2M5 10V7a2 2 0 0 1 2-2h3v5"/></svg>
                           {T.whereToSleepBtn}
                         </button>
                         <button
                           className={"wp-trip-panel-btn" + (eatOpen ? " wp-trip-panel-btn-active" : "") + ((stop.meals||[]).length === 0 ? " wp-trip-panel-btn-empty" : "")}
-                          data-panel-key={stop.id + ":eat"}
-                          onClick={() => togglePanel(stop.id + ":eat")}
+                          onClick={(e) => openEditPanel(stop.id, "eat", e.currentTarget)}
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eatOpen ? "#2457E6" : "#586579"} strokeWidth="1.8"><path d="M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11"/></svg>
                           {T.whereToEatBtn}
                         </button>
                       </div>
 
-                      {!sleepOpen && (stop.stays || []).length > 0 && (
-                        <button className="wp-trip-summary-line" onClick={() => togglePanel(stop.id + ":sleep")}>
+                      {(stop.stays || []).length > 0 && (
+                        <button className="wp-trip-summary-line" onClick={(e) => openEditPanel(stop.id, "sleep", e.currentTarget)}>
                           🛏 {stop.stays[0].name}{stop.stays[0].nights ? " · " + stop.stays[0].nights + " " + T.nights : ""}{stop.stays.length > 1 ? " · +" + (stop.stays.length - 1) + " " + T.placesCountSuffix : ""}
                         </button>
                       )}
-                      {!eatOpen && (stop.meals || []).length > 0 && (
-                        <button className="wp-trip-summary-line" onClick={() => togglePanel(stop.id + ":eat")}>
+                      {(stop.meals || []).length > 0 && (
+                        <button className="wp-trip-summary-line" onClick={(e) => openEditPanel(stop.id, "eat", e.currentTarget)}>
                           🍽 {stop.meals[0].name}{stop.meals.length > 1 ? " · +" + (stop.meals.length - 1) + " " + T.placesCountSuffix : ""}
                         </button>
-                      )}
-
-                      {sleepOpen && (
-                        <div className="wp-trip-panel-box" data-panel-key={stop.id + ":sleep"}>
-                          <button className="wp-trip-panel-close" onClick={() => togglePanel(stop.id + ":sleep")} aria-label="Close"><X size={13} /></button>
-                          <p className="wp-trip-panel-box-label">{T.whereToSleep} · {stop.city || T.cityPlaceholder}</p>
-                          {(stop.stays || []).map((st) => (
-                            <div key={st.id} className="wp-trip-highlight-row">
-                              <span style={{ fontSize: "0.85rem" }}>🏨</span>
-                              <span className="wp-trip-highlight-text">{st.name}{st.nights ? " · " + st.nights + " " + T.nights : ""}{st.price ? " · " + st.price : ""}</span>
-                              <button className="wp-trip-remove-btn" onClick={() => removeStay(trip.id, stop.id, st.id)} aria-label="Remove"><X size={12} /></button>
-                            </div>
-                          ))}
-                          <div className="wp-trip-add-highlight-row">
-                            <input type="text" className="wp-trip-highlight-input" style={{ flex: 2 }} placeholder={T.stayNamePlaceholder}
-                              value={(stayDrafts[stop.id] || {}).name || ""}
-                              onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), name: e.target.value } })} />
-                            <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.nightsPlaceholder}
-                              value={(stayDrafts[stop.id] || {}).nights || ""}
-                              onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), nights: e.target.value } })} />
-                            <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.transitPrice}
-                              value={(stayDrafts[stop.id] || {}).price || ""}
-                              onChange={(e) => setStayDrafts({ ...stayDrafts, [stop.id]: { ...(stayDrafts[stop.id] || {}), price: e.target.value } })} />
-                            <button className="wp-trip-add-btn" onClick={() => {
-                              const d = stayDrafts[stop.id] || {};
-                              addStay(trip.id, stop.id, d.name || "", d.nights || "", d.price || "");
-                              setStayDrafts({ ...stayDrafts, [stop.id]: {} });
-                            }}><PlusIcon size={14} /></button>
-                          </div>
-                        </div>
-                      )}
-
-                      {eatOpen && (
-                        <div className="wp-trip-panel-box" data-panel-key={stop.id + ":eat"}>
-                          <button className="wp-trip-panel-close" onClick={() => togglePanel(stop.id + ":eat")} aria-label="Close"><X size={13} /></button>
-                          <p className="wp-trip-panel-box-label">{T.whereToEat} · {stop.city || T.cityPlaceholder}</p>
-                          {(stop.meals || []).map((m) => (
-                            <div key={m.id} className="wp-trip-highlight-row">
-                              <span style={{ fontSize: "0.85rem" }}>🍽</span>
-                              <span className="wp-trip-highlight-text">{m.name}</span>
-                              <button className="wp-trip-remove-btn" onClick={() => removeMeal(trip.id, stop.id, m.id)} aria-label="Remove"><X size={12} /></button>
-                            </div>
-                          ))}
-                          <div className="wp-trip-add-highlight-row">
-                            <input type="text" className="wp-trip-highlight-input" placeholder={T.addMealPlaceholder}
-                              value={(mealDrafts[stop.id] || {}).name || ""}
-                              onChange={(e) => setMealDrafts({ ...mealDrafts, [stop.id]: { ...(mealDrafts[stop.id] || {}), name: e.target.value } })}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && ((mealDrafts[stop.id] || {}).name || "").trim()) {
-                                  addMeal(trip.id, stop.id, mealDrafts[stop.id].name);
-                                  setMealDrafts({ ...mealDrafts, [stop.id]: {} });
-                                }
-                              }} />
-                            <button className="wp-trip-add-btn" onClick={() => {
-                              const d = mealDrafts[stop.id] || {};
-                              addMeal(trip.id, stop.id, d.name || "");
-                              setMealDrafts({ ...mealDrafts, [stop.id]: {} });
-                            }}><PlusIcon size={14} /></button>
-                          </div>
-                          {countryData && countryData.food && countryData.food.length > 0 && (
-                            <div className="wp-trip-suggestions">
-                              {countryData.food.filter((f) => !stop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => (
-                                <button key={f.name} className="wp-trip-suggestion-chip" onClick={() => addMeal(trip.id, stop.id, f.name)}>
-                                  <PlusIcon size={11} /> {f.name}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
                       )}
                     </div>
                   </div>
 
-                  {i < trip.stops.length - 1 && transit && !transitEditing && (
-                    <div className="wp-trip-transit-summary-row" onClick={() => togglePanel("transit:" + stop.id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); togglePanel("transit:" + stop.id); } }} role="button" tabIndex={0}>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B8863E" strokeWidth="1.8"><path d="M4 16h16M4 16l3-3M4 16l3 3M20 16a2 2 0 1 0-4 0"/></svg>
+                  {i < trip.stops.length - 1 && transit && (
+                    <div className="wp-trip-transit-summary-row" onClick={(e) => openEditPanel(stop.id, "transit", e.currentTarget)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEditPanel(stop.id, "transit", e.currentTarget); } }} role="button" tabIndex={0}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF8A3D" strokeWidth="1.8"><path d="M4 16h16M4 16l3-3M4 16l3 3M20 16a2 2 0 1 0-4 0"/></svg>
                       <span className="wp-trip-transit-summary-text">
                         {transit.mode
                           ? (transit.durationHours || transit.durationMinutes ? (transit.durationHours || "0") + "h" + (transit.durationMinutes ? transit.durationMinutes + "min" : "") + " · " : "") + (T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode)
@@ -3452,52 +3346,197 @@ function Waypoint() {
                       <span className="wp-trip-transit-summary-edit">{transit.mode ? T.transitEditBtn : T.transitAddBtn}</span>
                     </div>
                   )}
-                  {i < trip.stops.length - 1 && transit && transitEditing && (
-                    <div className="wp-trip-transit-row">
-                      <select
-                        className="wp-trip-transit-select"
-                        value={transit.mode}
-                        onChange={(e) => updateTransit(trip.id, stop.id, "mode", e.target.value)}
-                      >
-                        <option value="">{T.chooseTransit}</option>
-                        <option value="flight">{T.transitFlight}</option>
-                        <option value="train">{T.transitTrain}</option>
-                        <option value="bus">{T.transitBus}</option>
-                        <option value="car">{T.transitCar}</option>
-                        <option value="boat">{T.transitBoat}</option>
-                      </select>
-                      <input
-                        type="number"
-                        min="0"
-                        className="wp-trip-transit-input wp-trip-transit-num"
-                        placeholder={T.hoursLabel}
-                        value={transit.durationHours}
-                        onChange={(e) => updateTransit(trip.id, stop.id, "durationHours", e.target.value)}
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="59"
-                        className="wp-trip-transit-input wp-trip-transit-num"
-                        placeholder={T.minutesLabel}
-                        value={transit.durationMinutes}
-                        onChange={(e) => updateTransit(trip.id, stop.id, "durationMinutes", e.target.value)}
-                      />
-                      <input
-                        type="text"
-                        className="wp-trip-transit-input"
-                        placeholder={T.transitPrice}
-                        value={transit.price}
-                        onChange={(e) => updateTransit(trip.id, stop.id, "price", e.target.value)}
-                      />
-                      <button className="wp-trip-transit-summary-edit" onClick={() => togglePanel("transit:" + stop.id)}>{T.doneEditingLabel}</button>
-                    </div>
-                  )}
                   {i < trip.stops.length - 1 && transit && transit.mode && (
                     <p className="wp-trip-typical-hint">{T.typicalRange}: {TRANSIT_TYPICAL[transit.mode]}</p>
                   )}
                 </div>
               );})}
+
+              {activeEditPanel && (() => {
+                const aStop = trip.stops.find((s) => s.id === activeEditPanel.stopId);
+                if (!aStop) return null;
+                const aTransit = trip.transits.find((tr) => tr.afterStopId === activeEditPanel.stopId);
+                const titleMap = { highlights: T.placesBtn, sleep: T.whereToSleep, eat: T.whereToEat, transit: T.transportTitle };
+                return (
+                  <div className="wp-task-sheet-overlay" onClick={closeEditPanel}>
+                    <div
+                      className="wp-task-sheet-panel"
+                      ref={editPanelRef}
+                      role="dialog"
+                      aria-modal="true"
+                      aria-label={titleMap[activeEditPanel.type]}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="wp-task-sheet-head">
+                        <div>
+                          <p className="wp-task-sheet-title">{titleMap[activeEditPanel.type]}</p>
+                          <p className="wp-task-sheet-context">{aStop.city || T.cityPlaceholder}</p>
+                        </div>
+                        <button className="wp-mobile-menu-close" onClick={closeEditPanel} aria-label={T.closeMenu}><X size={18} /></button>
+                      </div>
+
+                      <div className="wp-task-sheet-scroll">
+                        {activeEditPanel.type === "highlights" && (
+                          <>
+                            {aStop.highlights.length > 0 && (
+                              <div className="wp-trip-chips-row" style={{ marginBottom: "1rem" }}>
+                                {aStop.highlights.map((h) => (
+                                  <span key={h.id} className="wp-trip-chip">
+                                    {h.text}
+                                    <button className="wp-trip-chip-remove" onClick={() => removeHighlight(trip.id, aStop.id, h.id)} aria-label="Remove"><X size={11} /></button>
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            <div className="wp-trip-add-highlight-row">
+                              <input
+                                type="text"
+                                className="wp-trip-highlight-input"
+                                placeholder={T.addHighlightPlaceholder}
+                                value={highlightDrafts[aStop.id] || ""}
+                                onChange={(e) => setHighlightDrafts({ ...highlightDrafts, [aStop.id]: e.target.value })}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && (highlightDrafts[aStop.id] || "").trim()) {
+                                    addHighlight(trip.id, aStop.id, highlightDrafts[aStop.id], "custom");
+                                    setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+                                  }
+                                }}
+                              />
+                              <button
+                                className="wp-trip-add-btn"
+                                onClick={() => {
+                                  if ((highlightDrafts[aStop.id] || "").trim()) {
+                                    addHighlight(trip.id, aStop.id, highlightDrafts[aStop.id], "custom");
+                                    setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+                                  }
+                                }}
+                              ><PlusIcon size={14} /></button>
+                            </div>
+                            {suggestions.length > 0 && (
+                              <div className="wp-trip-suggestions">
+                                {suggestions.filter((s) => !aStop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => (
+                                  <button key={s} className="wp-trip-suggestion-chip" onClick={() => addHighlight(trip.id, aStop.id, s, "attraction")}>
+                                    <PlusIcon size={11} /> {s}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {activeEditPanel.type === "sleep" && (
+                          <>
+                            {(aStop.stays || []).map((st) => (
+                              <div key={st.id} className="wp-trip-highlight-row">
+                                <span style={{ fontSize: "0.85rem" }}>🏨</span>
+                                <span className="wp-trip-highlight-text">{st.name}{st.nights ? " · " + st.nights + " " + T.nights : ""}{st.price ? " · " + st.price : ""}</span>
+                                <button className="wp-trip-remove-btn" onClick={() => removeStay(trip.id, aStop.id, st.id)} aria-label="Remove"><X size={12} /></button>
+                              </div>
+                            ))}
+                            <div className="wp-trip-add-highlight-row">
+                              <input type="text" className="wp-trip-highlight-input" style={{ flex: 2 }} placeholder={T.stayNamePlaceholder}
+                                value={(stayDrafts[aStop.id] || {}).name || ""}
+                                onChange={(e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...(stayDrafts[aStop.id] || {}), name: e.target.value } })} />
+                              <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.nightsPlaceholder}
+                                value={(stayDrafts[aStop.id] || {}).nights || ""}
+                                onChange={(e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...(stayDrafts[aStop.id] || {}), nights: e.target.value } })} />
+                              <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.transitPrice}
+                                value={(stayDrafts[aStop.id] || {}).price || ""}
+                                onChange={(e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...(stayDrafts[aStop.id] || {}), price: e.target.value } })} />
+                              <button className="wp-trip-add-btn" onClick={() => {
+                                const d = stayDrafts[aStop.id] || {};
+                                addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "");
+                                setStayDrafts({ ...stayDrafts, [aStop.id]: {} });
+                              }}><PlusIcon size={14} /></button>
+                            </div>
+                          </>
+                        )}
+
+                        {activeEditPanel.type === "eat" && (
+                          <>
+                            {(aStop.meals || []).map((m) => (
+                              <div key={m.id} className="wp-trip-highlight-row">
+                                <span style={{ fontSize: "0.85rem" }}>🍽</span>
+                                <span className="wp-trip-highlight-text">{m.name}</span>
+                                <button className="wp-trip-remove-btn" onClick={() => removeMeal(trip.id, aStop.id, m.id)} aria-label="Remove"><X size={12} /></button>
+                              </div>
+                            ))}
+                            <div className="wp-trip-add-highlight-row">
+                              <input type="text" className="wp-trip-highlight-input" placeholder={T.addMealPlaceholder}
+                                value={(mealDrafts[aStop.id] || {}).name || ""}
+                                onChange={(e) => setMealDrafts({ ...mealDrafts, [aStop.id]: { ...(mealDrafts[aStop.id] || {}), name: e.target.value } })}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && ((mealDrafts[aStop.id] || {}).name || "").trim()) {
+                                    addMeal(trip.id, aStop.id, mealDrafts[aStop.id].name);
+                                    setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
+                                  }
+                                }} />
+                              <button className="wp-trip-add-btn" onClick={() => {
+                                const d = mealDrafts[aStop.id] || {};
+                                addMeal(trip.id, aStop.id, d.name || "");
+                                setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
+                              }}><PlusIcon size={14} /></button>
+                            </div>
+                            {countryData && countryData.food && countryData.food.length > 0 && (
+                              <div className="wp-trip-suggestions">
+                                {countryData.food.filter((f) => !aStop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => (
+                                  <button key={f.name} className="wp-trip-suggestion-chip" onClick={() => addMeal(trip.id, aStop.id, f.name)}>
+                                    <PlusIcon size={11} /> {f.name}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {activeEditPanel.type === "transit" && aTransit && (
+                          <div className="wp-trip-transit-edit-form">
+                            <select
+                              className="wp-trip-transit-select"
+                              value={aTransit.mode}
+                              onChange={(e) => updateTransit(trip.id, aStop.id, "mode", e.target.value)}
+                            >
+                              <option value="">{T.chooseTransit}</option>
+                              <option value="flight">{T.transitFlight}</option>
+                              <option value="train">{T.transitTrain}</option>
+                              <option value="bus">{T.transitBus}</option>
+                              <option value="car">{T.transitCar}</option>
+                              <option value="boat">{T.transitBoat}</option>
+                            </select>
+                            <div className="wp-trip-transit-duration-row">
+                              <input
+                                type="number" min="0" className="wp-trip-transit-input wp-trip-transit-num"
+                                placeholder={T.hoursLabel}
+                                value={aTransit.durationHours}
+                                onChange={(e) => updateTransit(trip.id, aStop.id, "durationHours", e.target.value)}
+                              />
+                              <input
+                                type="number" min="0" max="59" className="wp-trip-transit-input wp-trip-transit-num"
+                                placeholder={T.minutesLabel}
+                                value={aTransit.durationMinutes}
+                                onChange={(e) => updateTransit(trip.id, aStop.id, "durationMinutes", e.target.value)}
+                              />
+                            </div>
+                            <input
+                              type="text" className="wp-trip-transit-input"
+                              placeholder={T.transitPrice}
+                              value={aTransit.price}
+                              onChange={(e) => updateTransit(trip.id, aStop.id, "price", e.target.value)}
+                            />
+                            {aTransit.mode && (
+                              <p className="wp-trip-typical-hint">{T.typicalRange}: {TRANSIT_TYPICAL[aTransit.mode]}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="wp-task-sheet-footer">
+                        <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ width: "100%", justifyContent: "center" }} onClick={closeEditPanel}>{T.doneEditingLabel}</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <button className="wp-trip-add-stop-btn" onClick={() => addStop(trip.id)}>
                 <PlusIcon size={15} /> {T.addStop}
