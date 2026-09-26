@@ -2,6 +2,20 @@
 APP_CODE = r"""
 const { useState, useEffect, useRef } = React;
 
+// Leaflet's bindTooltip/divIcon render string content as raw HTML (no auto-escaping,
+// unlike React). Any user-entered text (city names, activity names) reaching those
+// APIs must be escaped here first to prevent stored XSS via a saved trip or a
+// shared read-only trip link.
+function escapeHtml(str) {
+  if (str == null) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 /* ---------- minimal inline icons ---------- */
 function IconBase({ size = 16, style, children }) {
   return (
@@ -468,7 +482,7 @@ function CountryMap({ country, accentColor }) {
         iconSize: [26, 26],
         iconAnchor: [13, 13],
       });
-      window.L.marker([s.lat, s.lng], { icon }).addTo(map).bindTooltip(s.title || s.label, { direction: "top", offset: [0, -12] });
+      window.L.marker([s.lat, s.lng], { icon }).addTo(map).bindTooltip(escapeHtml(s.title || s.label), { direction: "top", offset: [0, -12] });
     });
 
     if (latlngs.length > 1) {
@@ -522,7 +536,7 @@ function TripMap({ trip, countryName, geocodeCache, geocodeCity, accentColor, T 
         iconSize: [26, 26],
         iconAnchor: [13, 13],
       });
-      window.L.marker([p.hit.lat, p.hit.lng], { icon }).addTo(map).bindTooltip(p.stop.city, { direction: "top", offset: [0, -12] });
+      window.L.marker([p.hit.lat, p.hit.lng], { icon }).addTo(map).bindTooltip(escapeHtml(p.stop.city), { direction: "top", offset: [0, -12] });
     });
     if (latlngs.length > 1) {
       window.L.polyline(latlngs, { color: accentColor, weight: 2, dashArray: "5 7", opacity: 0.85 }).addTo(map);
@@ -585,7 +599,7 @@ function DayMap({ activities, cityName, countryName, geocodeCache, geocodeCity, 
         iconSize: [26, 26],
         iconAnchor: [13, 13],
       });
-      window.L.marker([p.hit.lat, p.hit.lng], { icon }).addTo(map).bindTooltip(p.activity.name, { direction: "top", offset: [0, -12] });
+      window.L.marker([p.hit.lat, p.hit.lng], { icon }).addTo(map).bindTooltip(escapeHtml(p.activity.name), { direction: "top", offset: [0, -12] });
     });
     if (latlngs.length > 1) {
       window.L.polyline(latlngs, { color: accentColor, weight: 2, dashArray: "5 7", opacity: 0.85 }).addTo(map);
@@ -745,6 +759,12 @@ function Waypoint() {
   const [continentId, setContinentId] = useState(null);
   const [countryId, setCountryId] = useState(null);
   const [countryDataCache, setCountryDataCache] = useState({});
+  // Heavy per-country content (attractions, itinerary, food, FAQ...) is split into
+  // its own JSON file per country and fetched lazily on demand — see split_data.py.
+  // This is why index.html only ships ~450KB instead of >1MB for 100 countries.
+  // Retries twice with backoff before surfacing a real error state (see
+  // countryDetailError / __error_<id> below), instead of failing silently on a
+  // flaky connection.
   const ensureCountryData = (id, attempt) => {
     attempt = attempt || 0;
     if (!id || countryDataCache[id] || countryDataCache["__loading_" + id]) return;
@@ -820,6 +840,11 @@ function Waypoint() {
   const [stayDrafts, setStayDrafts] = useState({});
   const [mealDrafts, setMealDrafts] = useState({});
   const [tripSaveStatus, setTripSaveStatus] = useState("");
+  // Only one "Places / Where to sleep / Where to eat / Transport" panel can be open
+  // across the whole trip at a time (bottom sheet on mobile, modal on desktop — see
+  // .wp-task-sheet-*). Storing a single {stopId, type} instead of a per-button
+  // open/closed flag is what guarantees that opening a new panel always closes
+  // whichever one was open before, per the approved design decision.
   const [activeEditPanel, setActiveEditPanel] = useState(null);
   const editPanelRef = useRef(null);
   const editPanelTriggerRef = useRef(null);
@@ -1424,6 +1449,10 @@ function Waypoint() {
     setView("trips");
   };
 
+  // Single choke point for every trip mutation (stops, transits, stays, meals,
+  // highlights, day activities, documents...). `updater` receives the current trip
+  // and returns the next one; this keeps every edit path consistent and means a
+  // Firestore write shape only needs to be correct in one place (saveTrips).
   const updateTrip = (tripId, updater) => {
     const current = trips[tripId];
     if (!current) return;
@@ -1579,6 +1608,12 @@ function Waypoint() {
     boat: "1-6h · €10-40",
   };
 
+  // Builds the trip PDF page by page with jsPDF's low-level drawing API (no HTML
+  // rendering available): 1) cover, 2) country summary (only if the heavy country
+  // data has finished loading), 3) route timeline with day-by-day stops, 4) day
+  // notes if any exist, 5) a closing page. Colors are plain RGB arrays because
+  // jsPDF doesn't understand CSS custom properties — keep in sync with the
+  // .wp-root palette by hand if the design tokens change.
   const exportTripPDF = (trip, countryData) => {
     if (!window.jspdf) return;
     const { jsPDF } = window.jspdf;
