@@ -103,6 +103,7 @@ const UI_STRINGS = {
     countryDetailLoading: "Loading country details…",
     countryDetailError: "Couldn't load this country's details. Check your connection and try again.", tryAgain: "Try again",
     essentialAnchor: "Essential", placesAnchor: "Places", foodAnchor: "Flavors", routeAnchor: "Itinerary", faqAnchor: "FAQs",
+    readMore: "Read more", readLess: "Read less", showMap: "Show map", hideMap: "Hide map",
     pctOfWorldVisited: "of the world visited",
     myTrips: "Trips", tripsSubtitle: "Plan your next trip, day by day.",
     tripsStatTrips: "TRIPS", tripsStatContinents: "CONTINENTS", tripsStatNights: "NIGHTS PLANNED", tripsStatDone: "COMPLETED",
@@ -212,6 +213,7 @@ const UI_STRINGS = {
     countryDetailLoading: "A carregar detalhes do país…",
     countryDetailError: "Não foi possível carregar os detalhes deste país. Verifica a ligação e tenta outra vez.", tryAgain: "Tentar outra vez",
     essentialAnchor: "Essencial", placesAnchor: "Lugares", foodAnchor: "Sabores", routeAnchor: "Roteiro", faqAnchor: "Dúvidas",
+    readMore: "Ler mais", readLess: "Ler menos", showMap: "Ver mapa", hideMap: "Ocultar mapa",
     pctOfWorldVisited: "do mundo visitado",
     myTrips: "Viagens", tripsSubtitle: "Planeia a tua próxima viagem, dia a dia.",
     tripsStatTrips: "VIAGENS", tripsStatContinents: "CONTINENTES", tripsStatNights: "NOITES PLANEADAS", tripsStatDone: "CONCLUÍDAS",
@@ -802,7 +804,8 @@ function Waypoint() {
     const el = detailSectionRefs.current[id];
     if (el) {
       const y = el.getBoundingClientRect().top + window.pageYOffset - 96;
-      window.scrollTo({ top: y, behavior: "smooth" });
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: y, behavior: reduceMotion ? "auto" : "smooth" });
     }
   };
   const [showNewTripForm, setShowNewTripForm] = useState(false);
@@ -1360,6 +1363,13 @@ function Waypoint() {
   };
 
   const toISODate = (d) => d.toISOString().slice(0, 10);
+  const truncateSummary = (text, maxLen) => {
+    if (!text || text.length <= maxLen) return text;
+    const firstSentence = text.split(/(?<=[.!?])\s/)[0];
+    if (firstSentence && firstSentence.length <= maxLen) return firstSentence;
+    const cut = text.slice(0, maxLen);
+    return cut.slice(0, cut.lastIndexOf(" ")) + "…";
+  };
   const formatDayRange = (trip, dayStart, dayEnd) => {
     if (!trip.startDate || !dayStart || !dayEnd) return "";
     const start = new Date(new Date(trip.startDate).getTime() + (dayStart - 1) * 86400000);
@@ -1886,6 +1896,14 @@ function Waypoint() {
           padding: calc(env(safe-area-inset-top, 0px) + 1.75rem) 1.25rem 4rem;
         }
         .wp-root * { box-sizing: border-box; }
+        @media (prefers-reduced-motion: reduce) {
+          .wp-root *, .wp-root *::before, .wp-root *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
         .wp-shell { max-width: 780px; margin: 0 auto; }
 
         .wp-hero { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
@@ -2022,6 +2040,10 @@ function Waypoint() {
         .wp-attraction-img-empty { display: flex; align-items: center; justify-content: center; }
         .wp-attraction-name { font-weight: 600; font-size: 1.05rem; margin-bottom: 0.35rem; }
         .wp-attraction-desc { font-size: 0.88rem; color: #4a4436; line-height: 1.55; }
+        .wp-read-more-btn { background: none; border: none; padding: 0.3rem 0; margin-top: 0.2rem; font-size: 0.82rem; font-weight: 600; color: var(--navy); cursor: pointer; }
+        .wp-read-more-btn:hover { text-decoration: underline; }
+        .wp-map-toggle-btn { display: inline-flex; align-items: center; gap: 0.5rem; background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.6rem 1.1rem; font-size: 0.85rem; font-weight: 600; color: var(--navy); cursor: pointer; margin-bottom: 1rem; }
+        .wp-map-toggle-btn:hover { background: var(--navy-subtle); }
 
         .wp-itinerary-wrap { margin-top: 1.9rem; margin-bottom: 0.5rem; }
         .wp-itinerary-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
@@ -2626,7 +2648,7 @@ function Waypoint() {
               </div>
 
               <div className="wp-hero-features">
-                <button className="wp-hero-feature-card" onClick={() => document.querySelector(".wp-continent-grid") && document.querySelector(".wp-continent-grid").scrollIntoView({ behavior: "smooth" })}>
+                <button className="wp-hero-feature-card" onClick={() => { const el = document.querySelector(".wp-continent-grid"); if (el) el.scrollIntoView({ behavior: (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" }); }}>
                   <Compass size={18} />
                   <div><b>{T.featExploreTitle}</b><span>{T.featExploreDesc}</span></div>
                 </button>
@@ -2903,13 +2925,20 @@ function Waypoint() {
             {country.food && (
               <div style={{ marginBottom: "1.9rem" }}>
                 <h3 className="wp-section-title" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><Utensils size={18} style={{ color: continent.color }} /> {T.tastesOf} {country.name}</h3>
-                <div className="wp-food-grid">
-                  {country.food.map((f, i) => (
-                    <div className="wp-food-item" key={i}>
-                      <div className="wp-food-name">{f.name}</div>
-                      <div className="wp-food-desc">{f.desc}</div>
-                    </div>
-                  ))}
+                <div className="wp-accordion">
+                  {country.food.map((f, i) => {
+                    const akey = "food:" + country.id + ":" + i;
+                    const isOpen = !!openAccordion[akey];
+                    return (
+                      <div className="wp-accordion-row" key={i}>
+                        <button className="wp-accordion-trigger" onClick={() => toggleAccordion(akey)} aria-expanded={isOpen}>
+                          <span className="wp-accordion-trigger-label wp-faq-q-label">{f.name}</span>
+                          <ChevronRight size={15} className={"wp-accordion-chevron" + (isOpen ? " wp-accordion-chevron-open" : "")} />
+                        </button>
+                        {isOpen && <div className="wp-accordion-content">{f.desc}</div>}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -2919,13 +2948,24 @@ function Waypoint() {
               <>
                 <h3 className="wp-section-title">{T.topAttractions}</h3>
                 <div className="wp-attractions-grid">
-                  {country.attractions.map((a, i) => (
-                    <div key={i}>
-                      <AttractionImage title={a.wiki} alt={a.name} />
-                      <div className="wp-attraction-name">{a.name}</div>
-                      <div className="wp-attraction-desc">{a.desc}</div>
-                    </div>
-                  ))}
+                  {country.attractions.map((a, i) => {
+                    const akey = "attraction:" + country.id + ":" + i;
+                    const isExpanded = !!openAccordion[akey];
+                    const summary = truncateSummary(a.desc, 110);
+                    const needsToggle = summary !== a.desc;
+                    return (
+                      <div key={i}>
+                        <AttractionImage title={a.wiki} alt={a.name} />
+                        <div className="wp-attraction-name">{a.name}</div>
+                        <div className="wp-attraction-desc">{isExpanded ? a.desc : summary}</div>
+                        {needsToggle && (
+                          <button className="wp-read-more-btn" onClick={() => toggleAccordion(akey)} aria-expanded={isExpanded}>
+                            {isExpanded ? T.readLess : T.readMore}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div ref={(el) => { detailSectionRefs.current.route = el; }} id="section-route"></div>
@@ -2936,7 +2976,17 @@ function Waypoint() {
                   </div>
                   {country.daysReason && <p className="wp-days-reason">{country.daysReason}</p>}
 
-                  <CountryMap country={country} accentColor={continent.color} />
+                  <button
+                    className="wp-map-toggle-btn"
+                    onClick={() => toggleAccordion("mapVisible:" + country.id)}
+                    aria-expanded={!!openAccordion["mapVisible:" + country.id]}
+                  >
+                    <MapPinIcon size={15} />
+                    {openAccordion["mapVisible:" + country.id] ? T.hideMap : T.showMap}
+                  </button>
+                  {openAccordion["mapVisible:" + country.id] && (
+                    <CountryMap country={country} accentColor={continent.color} />
+                  )}
 
                   <div className="wp-route">
                     {country.itinerary.map((step, i) => (
