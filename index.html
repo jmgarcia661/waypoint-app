@@ -2058,12 +2058,12 @@ function Waypoint() {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 18;
-    const navy = [20, 32, 53];
-    const gold = [184, 134, 62];
-    const inkSoft = [131, 121, 95];
-    const ink = [31, 27, 20];
-    const hairline = [225, 214, 188];
-    const parchment = [246, 242, 232];
+    const navy = [36, 87, 230];
+    const gold = [255, 138, 61];
+    const inkSoft = [88, 101, 121];
+    const ink = [20, 33, 61];
+    const hairline = [227, 232, 239];
+    const parchment = [246, 248, 252];
     const accentRgb = (() => {
       const hex = countryData && countryData.continentColor || "#2F5D62";
       const n = parseInt(hex.slice(1), 16);
@@ -2092,46 +2092,47 @@ function Waypoint() {
       doc.setTextColor(pageColor[0], pageColor[1], pageColor[2]);
       doc.text("hellowaypoint.com", pageWidth / 2, pageHeight - 9, { align: "center" });
     };
-    doc.setFillColor(navy[0], navy[1], navy[2]);
+    doc.setFillColor(parchment[0], parchment[1], parchment[2]);
     doc.rect(0, 0, pageWidth, pageHeight, "F");
-    doc.setFillColor(255, 255, 255);
+    doc.setFillColor(navy[0], navy[1], navy[2]);
     if (doc.GState && doc.setGState) {
-      doc.setGState(new doc.GState({ opacity: 0.05 }));
+      doc.setGState(new doc.GState({ opacity: 0.06 }));
       doc.circle(pageWidth - 25, 40, 55, "F");
       doc.setGState(new doc.GState({ opacity: 1 }));
     }
-    brandStamp([246, 242, 232]);
-    doc.setTextColor(246, 242, 232);
-    doc.setFont("times", "bold");
+    brandStamp(navy);
+    doc.setTextColor(navy[0], navy[1], navy[2]);
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
     doc.text((countryData ? countryData.name : trip.countryName || "").toUpperCase(), margin, pageHeight / 2 - 28);
     doc.setFontSize(34);
+    doc.setTextColor(ink[0], ink[1], ink[2]);
     const titleLines = doc.splitTextToSize(trip.name, pageWidth - margin * 2);
     let cy = pageHeight / 2 - 14;
     titleLines.forEach((line) => {
       doc.text(line, margin, cy);
       cy += 13;
     });
-    doc.setDrawColor(184, 134, 62);
-    doc.setLineWidth(0.6);
+    doc.setDrawColor(gold[0], gold[1], gold[2]);
+    doc.setLineWidth(0.8);
     doc.line(margin, cy + 2, margin + 30, cy + 2);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
-    doc.setTextColor(220, 214, 196);
+    doc.setTextColor(ink[0], ink[1], ink[2]);
     doc.text((trip.startDate || "?") + "  \u2013  " + (trip.endDate || "?"), margin, cy + 14);
     doc.setFontSize(9.5);
-    doc.setTextColor(180, 190, 195);
+    doc.setTextColor(inkSoft[0], inkSoft[1], inkSoft[2]);
     doc.text(dayCount(trip.startDate, trip.endDate) + " " + T.days + "  \xB7  " + trip.stops.length + " " + T.stops, margin, cy + 21);
-    doc.setFont("times", "italic");
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.setTextColor(190, 198, 200);
+    doc.setTextColor(inkSoft[0], inkSoft[1], inkSoft[2]);
     doc.text(T.pdfCoverTagline, margin, pageHeight - 16);
     if (countryData && countryData.blurb) {
       doc.addPage();
       paintBg();
       brandStamp(navy);
       let y2 = margin + 22;
-      doc.setFont("times", "bold");
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(20);
       doc.setTextColor(ink[0], ink[1], ink[2]);
       doc.text(countryData.name, margin, y2);
@@ -2141,9 +2142,9 @@ function Waypoint() {
       doc.line(margin, y2, margin + 22, y2);
       y2 += 10;
       if (countryData.blurb) {
-        doc.setFont("times", "italic");
+        doc.setFont("helvetica", "normal");
         doc.setFontSize(11.5);
-        doc.setTextColor(60, 55, 45);
+        doc.setTextColor(ink[0], ink[1], ink[2]);
         const blurbLines = doc.splitTextToSize(countryData.blurb, pageWidth - margin * 2);
         blurbLines.forEach((line) => {
           doc.text(line, margin, y2);
@@ -2171,7 +2172,7 @@ function Waypoint() {
           doc.setFontSize(8);
           doc.setTextColor(inkSoft[0], inkSoft[1], inkSoft[2]);
           doc.text(String(s[0]).toUpperCase(), cx, cyy);
-          doc.setFont("times", "normal");
+          doc.setFont("helvetica", "normal");
           doc.setFontSize(11);
           doc.setTextColor(ink[0], ink[1], ink[2]);
           doc.text(String(s[1]), cx, cyy + 6);
@@ -2186,7 +2187,7 @@ function Waypoint() {
         y2 += 6;
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9.5);
-        doc.setTextColor(60, 55, 45);
+        doc.setTextColor(ink[0], ink[1], ink[2]);
         const budgetLines = doc.splitTextToSize(countryData.budget, pageWidth - margin * 2);
         budgetLines.forEach((line) => {
           doc.text(line, margin, y2);
@@ -2202,7 +2203,7 @@ function Waypoint() {
         y2 += 6;
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9.5);
-        doc.setTextColor(60, 55, 45);
+        doc.setTextColor(ink[0], ink[1], ink[2]);
         const visaLines = doc.splitTextToSize(countryData.visa, pageWidth - margin * 2);
         visaLines.forEach((line) => {
           doc.text(line, margin, y2);
@@ -2214,7 +2215,7 @@ function Waypoint() {
     doc.addPage();
     paintBg();
     brandStamp(navy);
-    doc.setFont("times", "bold");
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.setTextColor(ink[0], ink[1], ink[2]);
     doc.text(T.pdfRouteTitle, margin, margin + 20);
@@ -2242,7 +2243,7 @@ function Waypoint() {
       doc.setDrawColor(gold[0], gold[1], gold[2]);
       doc.setLineWidth(0.5);
       doc.circle(dotX, dotTop, 2, i === 0 ? "F" : "FD");
-      doc.setFont("times", "bold");
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.setTextColor(ink[0], ink[1], ink[2]);
       doc.text(stop.city || T.cityPlaceholder, textX, y + 1.5);
@@ -2261,7 +2262,7 @@ function Waypoint() {
       }
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9.5);
-      doc.setTextColor(60, 55, 45);
+      doc.setTextColor(ink[0], ink[1], ink[2]);
       allLines.forEach((line) => {
         doc.text(line, textX, y);
         y += 5.4;
@@ -2307,7 +2308,7 @@ function Waypoint() {
       paintBg();
       brandStamp(navy);
       let ny = margin + 20;
-      doc.setFont("times", "bold");
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.setTextColor(ink[0], ink[1], ink[2]);
       doc.text(T.dayNotes, margin, ny);
@@ -2329,9 +2330,9 @@ function Waypoint() {
         doc.setTextColor(gold[0], gold[1], gold[2]);
         doc.text(T.day + " " + day + (covering ? " \xB7 " + covering.city : ""), margin, ny);
         ny += 6;
-        doc.setFont("times", "italic");
+        doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-        doc.setTextColor(60, 55, 45);
+        doc.setTextColor(ink[0], ink[1], ink[2]);
         wrapped.forEach((line) => {
           doc.text(line, margin, ny);
           ny += 5.4;
@@ -2341,16 +2342,16 @@ function Waypoint() {
       footer(inkSoft);
     }
     doc.addPage();
-    doc.setFillColor(navy[0], navy[1], navy[2]);
+    doc.setFillColor(parchment[0], parchment[1], parchment[2]);
     doc.rect(0, 0, pageWidth, pageHeight, "F");
-    compassMark(pageWidth / 2, pageHeight / 2 - 26, 9, [246, 242, 232], gold);
-    doc.setFont("times", "bold");
+    compassMark(pageWidth / 2, pageHeight / 2 - 26, 9, navy, gold);
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
-    doc.setTextColor(246, 242, 232);
+    doc.setTextColor(ink[0], ink[1], ink[2]);
     doc.text(T.pdfFarewellTitle, pageWidth / 2, pageHeight / 2 - 2, { align: "center" });
-    doc.setFont("times", "italic");
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(11.5);
-    doc.setTextColor(210, 216, 210);
+    doc.setTextColor(inkSoft[0], inkSoft[1], inkSoft[2]);
     const farewellLines = doc.splitTextToSize(T.pdfFarewellLine, pageWidth - margin * 4);
     let fy = pageHeight / 2 + 10;
     farewellLines.forEach((line) => {
