@@ -819,6 +819,8 @@ function Waypoint() {
   const leafletMapRef = useRef(null);
   const mapLayersRef = useRef({});
   const [trips, setTrips] = useState({});
+  const tripsRef = useRef(trips);
+  useEffect(() => { tripsRef.current = trips; }, [trips]);
   const [activeTripId, setActiveTripId] = useState(null);
   const [openAccordion, setOpenAccordion] = useState({});
   const toggleAccordion = (key) => setOpenAccordion((p) => ({ ...p, [key]: !p[key] }));
@@ -884,7 +886,10 @@ function Waypoint() {
   const [selectedDay, setSelectedDay] = useState(1);
   const [dayView, setDayView] = useState("list");
   const [activityDrafts, setActivityDrafts] = useState({});
-  useEffect(() => { if (view === "trip-detail") { setActiveTripTab("route"); setSelectedDay(1); } }, [view, activeTripId]);
+  useEffect(() => {
+    if (view === "trip-detail") { setActiveTripTab("route"); setSelectedDay(1); }
+    return () => { if (saveWriteTimer.current) flushTripsSave(tripsRef.current); };
+  }, [view, activeTripId]);
 
   const [geocodeCache, setGeocodeCache] = useState({});
   const geocodeCity = (query, countryName) => {
@@ -1312,14 +1317,41 @@ function Waypoint() {
     return { d: "M" + pts.join(" L"), w, h };
   })();
 
-
+  // Firestore writes are debounced: typing in a city name or highlight field would
+  // otherwise trigger a full-document write on every keystroke, burning through the
+  // write quota fast with several active users. Local state (setTrips) still updates
+  // instantly so the UI never feels laggy — only the network write is delayed.
+  const saveWriteTimer = useRef(null);
   const saveTrips = (next) => {
     setTrips(next);
+    if (!user) return;
+    if (saveWriteTimer.current) clearTimeout(saveWriteTimer.current);
+    saveWriteTimer.current = setTimeout(() => {
+      saveWriteTimer.current = null;
+      firebase.firestore().collection("users").doc(user.uid).set({ trips: next }, { merge: true }).catch(() => {});
+    }, 500);
+  };
+  // Bypasses the debounce above for the explicit "Save" button: cancels any pending
+  // delayed write and persists the current state to Firestore right away.
+  const flushTripsSave = (next) => {
+    if (saveWriteTimer.current) { clearTimeout(saveWriteTimer.current); saveWriteTimer.current = null; }
     if (user) firebase.firestore().collection("users").doc(user.uid).set({ trips: next }, { merge: true }).catch(() => {});
   };
+  // Safety net: if the tab closes (or the person navigates away) while a debounced
+  // write is still pending, flush it immediately instead of silently losing the
+  // last few seconds of edits.
+  useEffect(() => {
+    const onUnload = () => { if (saveWriteTimer.current) flushTripsSave(tripsRef.current); };
+    window.addEventListener("beforeunload", onUnload);
+    window.addEventListener("pagehide", onUnload);
+    return () => {
+      window.removeEventListener("beforeunload", onUnload);
+      window.removeEventListener("pagehide", onUnload);
+    };
+  }, [user]);
 
   const saveTripNow = (tripId) => {
-    saveTrips({ ...trips });
+    flushTripsSave(trips);
     const savedTrip = trips[tripId];
     if (savedTrip) syncSharedSnapshot(savedTrip);
     setTripSaveStatus("saved");
