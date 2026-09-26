@@ -1871,7 +1871,7 @@ function Waypoint() {
         .wp-hero-stat { display: flex; flex-direction: column; min-width: 5.4rem; }
         .wp-hero-stat b { font-size: 1.4rem; font-weight: 600; display: block; line-height: 1.2; }
         .wp-hero-stat span { font-size: 0.76rem; color: var(--ink-soft); }
-        .wp-hero-features { display: flex; flex-direction: column; gap: 0.6rem; max-width: 30rem; }
+        .wp-hero-features { display: flex; flex-direction: column; gap: 0.6rem; max-width: 30rem; margin-bottom: 1.8rem; }
         .wp-hero-feature-card { display: flex; align-items: flex-start; gap: 0.7rem; text-align: left; background: #fff; border: 1px solid var(--hairline); border-radius: 12px; padding: 0.7rem 0.9rem; cursor: pointer; color: var(--ink); }
         .wp-hero-feature-card:hover { border-color: var(--gold); }
         .wp-hero-feature-card svg { flex-shrink: 0; margin-top: 0.15rem; color: var(--gold); }
