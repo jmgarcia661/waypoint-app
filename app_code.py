@@ -1878,6 +1878,7 @@ function Waypoint() {
         @media (min-width: 600px) { .wp-hero-headline { font-size: 3.1rem; } }
         .wp-tagline { font-size: 0.96rem; color: var(--ink-soft); margin: 0 0 1.1rem; max-width: 54ch; line-height: 1.5; }
         .wp-hero-stats { display: flex; gap: 1.7rem; margin-bottom: 1.4rem; }
+        .wp-hero-stat { display: flex; flex-direction: column; min-width: 5.4rem; }
         .wp-hero-stat b { font-size: 1.4rem; font-weight: 600; display: block; line-height: 1.2; }
         .wp-hero-stat span { font-size: 0.76rem; color: var(--ink-soft); }
         .wp-hero-features { display: flex; flex-direction: column; gap: 0.6rem; max-width: 30rem; }
@@ -2014,13 +2015,9 @@ function Waypoint() {
 
         .wp-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 0 1.3rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; }
         .wp-nav-brand { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; font-size: 1.05rem; font-weight: 600; color: var(--ink); padding: 0; }
-        .wp-nav-links { display: flex; gap: 1.4rem; flex-wrap: wrap; row-gap: 0.7rem; align-items: center; }
-        .wp-hamburger-btn { display: none; background: none; border: none; cursor: pointer; color: var(--ink); padding: 0.4rem; margin: -0.4rem; border-radius: 8px; }
+        .wp-nav-links { display: none; }
+        .wp-hamburger-btn { display: flex; background: none; border: none; cursor: pointer; color: var(--ink); padding: 0.4rem; margin: -0.4rem; border-radius: 8px; }
         .wp-hamburger-btn:hover { background: var(--parchment-deep); }
-        @media (max-width: 680px) {
-          .wp-nav-links { display: none; }
-          .wp-hamburger-btn { display: flex; }
-        }
         .wp-mobile-menu-overlay { position: fixed; inset: 0; background: rgba(20,33,61,0.4); z-index: 1000; display: flex; justify-content: flex-end; }
         .wp-mobile-menu-panel { width: 100%; max-width: 360px; height: 100%; background: #fff; display: flex; flex-direction: column; box-shadow: -8px 0 24px rgba(20,33,61,0.15); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
         .wp-mobile-menu-head { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--hairline); flex-shrink: 0; }
