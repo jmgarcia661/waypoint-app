@@ -3480,7 +3480,35 @@ function Waypoint() {
             onChange: (e) => updateTransit(trip.id, aStop.id, "price", e.target.value)
           }
         )), aTransit.mode && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-typical-hint" }, T.typicalRange, ": ", TRANSIT_TYPICAL[aTransit.mode]))),
-        /* @__PURE__ */ React.createElement("div", { className: "wp-task-sheet-footer" }, /* @__PURE__ */ React.createElement("button", { className: "wp-quiz-btn wp-quiz-btn-primary", style: { width: "100%", justifyContent: "center" }, onClick: closeEditPanel }, T.doneEditingLabel))
+        /* @__PURE__ */ React.createElement("div", { className: "wp-task-sheet-footer" }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            className: "wp-quiz-btn wp-quiz-btn-primary",
+            style: { width: "100%", justifyContent: "center" },
+            onClick: () => {
+              if (activeEditPanel.type === "sleep") {
+                const d = stayDrafts[aStop.id] || {};
+                if ((d.name || "").trim()) {
+                  addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "");
+                  setStayDrafts({ ...stayDrafts, [aStop.id]: {} });
+                }
+              } else if (activeEditPanel.type === "eat") {
+                const d = mealDrafts[aStop.id] || {};
+                if ((d.name || "").trim()) {
+                  addMeal(trip.id, aStop.id, d.name || "");
+                  setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
+                }
+              } else if (activeEditPanel.type === "highlights") {
+                if ((highlightDrafts[aStop.id] || "").trim()) {
+                  addHighlight(trip.id, aStop.id, highlightDrafts[aStop.id], "custom");
+                  setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+                }
+              }
+              closeEditPanel();
+            }
+          },
+          T.doneEditingLabel
+        ))
       ));
     })(), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-stop-btn", onClick: () => addStop(trip.id) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 15 }), " ", T.addStop)), /* @__PURE__ */ React.createElement(TripMap, { trip, countryName: countryData ? countryData.name : trip.countryName || "", geocodeCache, geocodeCity, accentColor: countryData && countryData.continentColor || "#2F5D62", T })), activeTripTab === "days" && (() => {
       const dayStop = stopForDay(trip, selectedDay);

@@ -3806,7 +3806,31 @@ function Waypoint() {
                       </div>
 
                       <div className="wp-task-sheet-footer">
-                        <button className="wp-quiz-btn wp-quiz-btn-primary" style={{ width: "100%", justifyContent: "center" }} onClick={closeEditPanel}>{T.doneEditingLabel}</button>
+                        <button
+                          className="wp-quiz-btn wp-quiz-btn-primary"
+                          style={{ width: "100%", justifyContent: "center" }}
+                          onClick={() => {
+                            if (activeEditPanel.type === "sleep") {
+                              const d = stayDrafts[aStop.id] || {};
+                              if ((d.name || "").trim()) {
+                                addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "");
+                                setStayDrafts({ ...stayDrafts, [aStop.id]: {} });
+                              }
+                            } else if (activeEditPanel.type === "eat") {
+                              const d = mealDrafts[aStop.id] || {};
+                              if ((d.name || "").trim()) {
+                                addMeal(trip.id, aStop.id, d.name || "");
+                                setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
+                              }
+                            } else if (activeEditPanel.type === "highlights") {
+                              if ((highlightDrafts[aStop.id] || "").trim()) {
+                                addHighlight(trip.id, aStop.id, highlightDrafts[aStop.id], "custom");
+                                setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+                              }
+                            }
+                            closeEditPanel();
+                          }}
+                        >{T.doneEditingLabel}</button>
                       </div>
                     </div>
                   </div>
