@@ -310,6 +310,9 @@ const UI_STRINGS = {
     transportModeLabel: "Mode of transport",
     transportDurationLabel: "Duration",
     transportCostLabel: "Cost",
+    daysUnitLabel: "days",
+    hoursUnitLabel: "hours",
+    minutesUnitLabel: "min",
     mapIllustrativeLabel: "Illustrative map",
     mapIllustrativeNote: "Overland route shown, not to scale.",
     transitAddBtn: "Add travel time",
@@ -381,7 +384,7 @@ const UI_STRINGS = {
     transitCar: "car",
     transitBoat: "boat",
     transitDuration: "duration, e.g. 12h",
-    transitPrice: "price, e.g. \u20AC25",
+    transitPrice: "price (\u20AC)",
     markTripDone: "Mark trip as done",
     deleteTrip: "Delete trip",
     confirmDeleteTrip: "Delete this trip? This can't be undone.",
@@ -557,6 +560,9 @@ const UI_STRINGS = {
     transportModeLabel: "Meio de transporte",
     transportDurationLabel: "Dura\xE7\xE3o",
     transportCostLabel: "Custo",
+    daysUnitLabel: "dias",
+    hoursUnitLabel: "horas",
+    minutesUnitLabel: "min",
     mapIllustrativeLabel: "Mapa ilustrativo",
     mapIllustrativeNote: "Percurso terrestre, n\xE3o est\xE1 \xE0 escala.",
     transitAddBtn: "Adicionar tempo de viagem",
@@ -628,7 +634,7 @@ const UI_STRINGS = {
     transitCar: "carro",
     transitBoat: "barco",
     transitDuration: "dura\xE7\xE3o, ex: 12h",
-    transitPrice: "pre\xE7o, ex: \u20AC25",
+    transitPrice: "pre\xE7o (\u20AC)",
     markTripDone: "Marcar viagem como feita",
     deleteTrip: "Eliminar viagem",
     confirmDeleteTrip: "Eliminar esta viagem? N\xE3o \xE9 poss\xEDvel desfazer.",
@@ -1806,6 +1812,14 @@ function Waypoint() {
     const cut = text.slice(0, maxLen);
     return cut.slice(0, cut.lastIndexOf(" ")) + "\u2026";
   };
+  const formatTransitDuration = (transit) => {
+    if (!transit.durationDays && !transit.durationHours && !transit.durationMinutes) return "";
+    const parts = [];
+    if (transit.durationDays) parts.push(transit.durationDays + "d");
+    if (transit.durationHours) parts.push(transit.durationHours + "h");
+    if (transit.durationMinutes) parts.push(transit.durationMinutes + "min");
+    return parts.join(" ");
+  };
   const formatDayRange = (trip, dayStart, dayEnd) => {
     if (!trip.startDate || !dayStart || !dayEnd) return "";
     const start = new Date(new Date(trip.startDate).getTime() + (dayStart - 1) * 864e5);
@@ -1875,7 +1889,7 @@ function Waypoint() {
     const next = [];
     for (let i = 0; i < stops.length - 1; i++) {
       const key = stops[i].id;
-      next.push(byAfter[key] || { afterStopId: key, mode: "", durationHours: "", durationMinutes: "", price: "" });
+      next.push(byAfter[key] || { afterStopId: key, mode: "", durationDays: "", durationHours: "", durationMinutes: "", price: "" });
     }
     return next;
   };
@@ -2229,7 +2243,7 @@ function Waypoint() {
         doc.setLineWidth(0.4);
         doc.line(dotX, dotTop + 2, dotX, lineBottom);
         if (transit && transit.mode) {
-          const durTxt = transit.durationHours || transit.durationMinutes ? " \xB7 " + (transit.durationHours || 0) + "h" + (transit.durationMinutes ? transit.durationMinutes + "m" : "") : "";
+          const durTxt = formatTransitDuration(transit) ? " \xB7 " + formatTransitDuration(transit) : "";
           doc.setFont("helvetica", "bold");
           doc.setFontSize(8);
           doc.setTextColor(gold[0], gold[1], gold[2]);
@@ -2536,6 +2550,8 @@ function Waypoint() {
         .wp-trip-field-group { display: flex; flex-direction: column; gap: 0.35rem; }
         .wp-trip-field-label { font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.02em; }
         .wp-trip-transit-duration-row { display: flex; gap: 0.6rem; }
+        .wp-trip-transit-num-group { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+        .wp-trip-transit-unit-label { font-size: 0.7rem; color: var(--ink-soft); }
         .wp-nav-link { background: none; border: none; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink-soft); padding: 0.3rem 0; border-bottom: 2px solid transparent; }
         .wp-nav-link:hover { color: var(--ink); }
         .wp-nav-link-active { color: var(--ink); border-bottom-color: var(--navy); font-weight: 600; }
@@ -3281,7 +3297,7 @@ function Waypoint() {
           e.preventDefault();
           openEditPanel(stop.id, "transit", e.currentTarget);
         }
-      }, role: "button", tabIndex: 0 }, /* @__PURE__ */ React.createElement("svg", { width: "15", height: "15", viewBox: "0 0 24 24", fill: "none", stroke: "#FF8A3D", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M4 16h16M4 16l3-3M4 16l3 3M20 16a2 2 0 1 0-4 0" })), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-summary-text" }, transit.mode ? (transit.durationHours || transit.durationMinutes ? (transit.durationHours || "0") + "h" + (transit.durationMinutes ? transit.durationMinutes + "min" : "") + " \xB7 " : "") + (T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode) : T.transitAddBtn), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-summary-edit" }, transit.mode ? T.transitEditBtn : T.transitAddBtn)), i < trip.stops.length - 1 && transit && transit.mode && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-typical-hint" }, T.typicalRange, ": ", TRANSIT_TYPICAL[transit.mode]));
+      }, role: "button", tabIndex: 0 }, /* @__PURE__ */ React.createElement("svg", { width: "15", height: "15", viewBox: "0 0 24 24", fill: "none", stroke: "#FF8A3D", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M4 16h16M4 16l3-3M4 16l3 3M20 16a2 2 0 1 0-4 0" })), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-summary-text" }, transit.mode ? (formatTransitDuration(transit) ? formatTransitDuration(transit) + " \xB7 " : "") + (T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode) : T.transitAddBtn), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-summary-edit" }, transit.mode ? T.transitEditBtn : T.transitAddBtn)), i < trip.stops.length - 1 && transit && transit.mode && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-typical-hint" }, T.typicalRange, ": ", TRANSIT_TYPICAL[transit.mode]));
     }), activeEditPanel && (() => {
       const aStop = trip.stops.find((s) => s.id === activeEditPanel.stopId);
       if (!aStop) return null;
@@ -3391,28 +3407,38 @@ function Waypoint() {
           /* @__PURE__ */ React.createElement("option", { value: "bus" }, T.transitBus),
           /* @__PURE__ */ React.createElement("option", { value: "car" }, T.transitCar),
           /* @__PURE__ */ React.createElement("option", { value: "boat" }, T.transitBoat)
-        )), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-field-group" }, /* @__PURE__ */ React.createElement("label", { className: "wp-trip-field-label" }, T.transportDurationLabel), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-transit-duration-row" }, /* @__PURE__ */ React.createElement(
+        )), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-field-group" }, /* @__PURE__ */ React.createElement("label", { className: "wp-trip-field-label" }, T.transportDurationLabel), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-transit-duration-row" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-transit-num-group" }, /* @__PURE__ */ React.createElement(
           "input",
           {
             type: "number",
             min: "0",
             className: "wp-trip-transit-input wp-trip-transit-num",
-            placeholder: T.hoursLabel,
+            placeholder: "0",
+            value: aTransit.durationDays,
+            onChange: (e) => updateTransit(trip.id, aStop.id, "durationDays", e.target.value)
+          }
+        ), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-unit-label" }, T.daysUnitLabel)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-transit-num-group" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "number",
+            min: "0",
+            className: "wp-trip-transit-input wp-trip-transit-num",
+            placeholder: "0",
             value: aTransit.durationHours,
             onChange: (e) => updateTransit(trip.id, aStop.id, "durationHours", e.target.value)
           }
-        ), /* @__PURE__ */ React.createElement(
+        ), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-unit-label" }, T.hoursUnitLabel)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-transit-num-group" }, /* @__PURE__ */ React.createElement(
           "input",
           {
             type: "number",
             min: "0",
             max: "59",
             className: "wp-trip-transit-input wp-trip-transit-num",
-            placeholder: T.minutesLabel,
+            placeholder: "0",
             value: aTransit.durationMinutes,
             onChange: (e) => updateTransit(trip.id, aStop.id, "durationMinutes", e.target.value)
           }
-        ))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-field-group" }, /* @__PURE__ */ React.createElement("label", { className: "wp-trip-field-label" }, T.transportCostLabel), /* @__PURE__ */ React.createElement(
+        ), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-unit-label" }, T.minutesUnitLabel)))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-field-group" }, /* @__PURE__ */ React.createElement("label", { className: "wp-trip-field-label" }, T.transportCostLabel), /* @__PURE__ */ React.createElement(
           "input",
           {
             type: "text",
@@ -3606,7 +3632,7 @@ function Waypoint() {
     const notes = sharedTrip.dailyNotes || {};
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-detail-header" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-card-top" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-card-name" }, /* @__PURE__ */ React.createElement("span", null, sharedTrip.flag), sharedTrip.name)), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-card-meta" }, sharedTrip.startDate || "?", " \u2013 ", sharedTrip.endDate || "?", " \xB7 ", total, " ", T.days, " \xB7 ", stops.length, " ", T.stops)), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-cost-row" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-cost-box" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-cost-label" }, T.estimatedCost), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-cost-value" }, "\u20AC", cost.toFixed(0))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-cost-box" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-cost-label" }, T.perDay), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-cost-value" }, "\u20AC", (cost / total).toFixed(0)))), stops.map((stop, i) => {
       const transit = transits.find((tr) => tr.afterStopId === stop.id);
-      return /* @__PURE__ */ React.createElement("div", { key: stop.id || i }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-stop-card" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-stop-top" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-city-readonly" }, stop.city || "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-range-edit" }, T.day, " ", stop.dayStart, "\u2013", stop.dayEnd)), (stop.highlights || []).map((h) => /* @__PURE__ */ React.createElement("div", { key: h.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 14, style: { color: "#6B9E68", flexShrink: 0 } }), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, h.text))), (stop.stays || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-subsection" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-subsection-label" }, T.whereToSleep), stop.stays.map((st) => /* @__PURE__ */ React.createElement("div", { key: st.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F3E8}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, st.name, st.nights ? " \xB7 " + st.nights + " " + T.nights : "", st.price ? " \xB7 " + st.price : "")))), (stop.meals || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-subsection" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-subsection-label" }, T.whereToEat), stop.meals.map((m) => /* @__PURE__ */ React.createElement("div", { key: m.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F37D}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, m.name))))), i < stops.length - 1 && transit && transit.mode && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-typical-hint", style: { marginLeft: "1.2rem" } }, T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)], transit.durationHours ? " \xB7 " + transit.durationHours + "h" : "", transit.durationMinutes ? transit.durationMinutes + "min" : "", transit.price ? " \xB7 " + transit.price : ""));
+      return /* @__PURE__ */ React.createElement("div", { key: stop.id || i }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-stop-card" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-stop-top" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-city-readonly" }, stop.city || "\u2014"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-range-edit" }, T.day, " ", stop.dayStart, "\u2013", stop.dayEnd)), (stop.highlights || []).map((h) => /* @__PURE__ */ React.createElement("div", { key: h.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 14, style: { color: "#6B9E68", flexShrink: 0 } }), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, h.text))), (stop.stays || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-subsection" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-subsection-label" }, T.whereToSleep), stop.stays.map((st) => /* @__PURE__ */ React.createElement("div", { key: st.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F3E8}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, st.name, st.nights ? " \xB7 " + st.nights + " " + T.nights : "", st.price ? " \xB7 " + st.price : "")))), (stop.meals || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-subsection" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-subsection-label" }, T.whereToEat), stop.meals.map((m) => /* @__PURE__ */ React.createElement("div", { key: m.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F37D}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, m.name))))), i < stops.length - 1 && transit && transit.mode && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-typical-hint", style: { marginLeft: "1.2rem" } }, T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)], formatTransitDuration(transit) ? " \xB7 " + formatTransitDuration(transit) : "", transit.price ? " \xB7 " + transit.price : ""));
     }), Object.keys(notes).some((d) => (notes[d] || "").trim()) && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-notes-box" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-notes-title" }, T.dayNotes), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-notes-subtitle" }, T.dayNotesSubtitle), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-timeline" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-timeline-line" }), Array.from({ length: total }, (_, i) => i + 1).map((day) => {
       const covering = stops.find((s) => day >= s.dayStart && day <= s.dayEnd);
       const noteText = notes[day] || "";
