@@ -125,6 +125,7 @@ const UI_STRINGS = {
     whereToSleepBtn: "Where to sleep", whereToEatBtn: "Where to eat",
     placesBtn: "Places", placesCountSuffix: "places", transportTitle: "Transport",
     transportModeLabel: "Mode of transport", transportDurationLabel: "Duration", transportCostLabel: "Cost",
+    daysUnitLabel: "days", hoursUnitLabel: "hours", minutesUnitLabel: "min",
     mapIllustrativeLabel: "Illustrative map", mapIllustrativeNote: "Overland route shown, not to scale.",
     transitAddBtn: "Add travel time", transitEditBtn: "Edit",
     highlightsChipLabel: "highlights", doneEditingLabel: "done",
@@ -154,7 +155,7 @@ const UI_STRINGS = {
     cityPlaceholder: "city or region", day: "day", addHighlightPlaceholder: "add a highlight",
     addStop: "Add stop", chooseTransit: "choose transit", transitFlight: "flight", transitTrain: "train",
     transitBus: "bus", transitCar: "car", transitBoat: "boat", transitDuration: "duration, e.g. 12h",
-    transitPrice: "price, e.g. €25", markTripDone: "Mark trip as done", deleteTrip: "Delete trip",
+    transitPrice: "price (€)", markTripDone: "Mark trip as done", deleteTrip: "Delete trip",
     confirmDeleteTrip: "Delete this trip? This can't be undone.",
     whereToSleep: "Where to sleep", whereToEat: "Where to eat", nights: "nights",
     stayNamePlaceholder: "hotel or place name", nightsPlaceholder: "nights", addMealPlaceholder: "restaurant or dish",
@@ -236,6 +237,7 @@ const UI_STRINGS = {
     whereToSleepBtn: "Onde dormir", whereToEatBtn: "Onde comer",
     placesBtn: "Locais", placesCountSuffix: "locais", transportTitle: "Transporte",
     transportModeLabel: "Meio de transporte", transportDurationLabel: "Duração", transportCostLabel: "Custo",
+    daysUnitLabel: "dias", hoursUnitLabel: "horas", minutesUnitLabel: "min",
     mapIllustrativeLabel: "Mapa ilustrativo", mapIllustrativeNote: "Percurso terrestre, não está à escala.",
     transitAddBtn: "Adicionar tempo de viagem", transitEditBtn: "Editar",
     highlightsChipLabel: "destaques", doneEditingLabel: "concluído",
@@ -265,7 +267,7 @@ const UI_STRINGS = {
     cityPlaceholder: "cidade ou região", day: "dia", addHighlightPlaceholder: "adicionar highlight",
     addStop: "Adicionar paragem", chooseTransit: "escolher ligação", transitFlight: "avião", transitTrain: "comboio",
     transitBus: "autocarro", transitCar: "carro", transitBoat: "barco", transitDuration: "duração, ex: 12h",
-    transitPrice: "preço, ex: €25", markTripDone: "Marcar viagem como feita", deleteTrip: "Eliminar viagem",
+    transitPrice: "preço (€)", markTripDone: "Marcar viagem como feita", deleteTrip: "Eliminar viagem",
     confirmDeleteTrip: "Eliminar esta viagem? Não é possível desfazer.",
     whereToSleep: "Onde dormir", whereToEat: "Onde comer", nights: "noites",
     stayNamePlaceholder: "nome do hotel ou lugar", nightsPlaceholder: "noites", addMealPlaceholder: "restaurante ou prato",
@@ -1397,6 +1399,14 @@ function Waypoint() {
     const cut = text.slice(0, maxLen);
     return cut.slice(0, cut.lastIndexOf(" ")) + "…";
   };
+  const formatTransitDuration = (transit) => {
+    if (!transit.durationDays && !transit.durationHours && !transit.durationMinutes) return "";
+    const parts = [];
+    if (transit.durationDays) parts.push(transit.durationDays + "d");
+    if (transit.durationHours) parts.push(transit.durationHours + "h");
+    if (transit.durationMinutes) parts.push(transit.durationMinutes + "min");
+    return parts.join(" ");
+  };
   const formatDayRange = (trip, dayStart, dayEnd) => {
     if (!trip.startDate || !dayStart || !dayEnd) return "";
     const start = new Date(new Date(trip.startDate).getTime() + (dayStart - 1) * 86400000);
@@ -1465,7 +1475,7 @@ function Waypoint() {
     const next = [];
     for (let i = 0; i < stops.length - 1; i++) {
       const key = stops[i].id;
-      next.push(byAfter[key] || { afterStopId: key, mode: "", durationHours: "", durationMinutes: "", price: "" });
+      next.push(byAfter[key] || { afterStopId: key, mode: "", durationDays: "", durationHours: "", durationMinutes: "", price: "" });
     }
     return next;
   };
@@ -1834,7 +1844,7 @@ function Waypoint() {
         doc.setLineWidth(0.4);
         doc.line(dotX, dotTop + 2, dotX, lineBottom);
         if (transit && transit.mode) {
-          const durTxt = (transit.durationHours || transit.durationMinutes) ? " · " + (transit.durationHours || 0) + "h" + (transit.durationMinutes ? transit.durationMinutes + "m" : "") : "";
+          const durTxt = formatTransitDuration(transit) ? " · " + formatTransitDuration(transit) : "";
           doc.setFont("helvetica", "bold");
           doc.setFontSize(8);
           doc.setTextColor(gold[0], gold[1], gold[2]);
@@ -2136,6 +2146,8 @@ function Waypoint() {
         .wp-trip-field-group { display: flex; flex-direction: column; gap: 0.35rem; }
         .wp-trip-field-label { font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.02em; }
         .wp-trip-transit-duration-row { display: flex; gap: 0.6rem; }
+        .wp-trip-transit-num-group { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+        .wp-trip-transit-unit-label { font-size: 0.7rem; color: var(--ink-soft); }
         .wp-nav-link { background: none; border: none; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink-soft); padding: 0.3rem 0; border-bottom: 2px solid transparent; }
         .wp-nav-link:hover { color: var(--ink); }
         .wp-nav-link-active { color: var(--ink); border-bottom-color: var(--navy); font-weight: 600; }
@@ -3541,7 +3553,7 @@ function Waypoint() {
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FF8A3D" strokeWidth="1.8"><path d="M4 16h16M4 16l3-3M4 16l3 3M20 16a2 2 0 1 0-4 0"/></svg>
                       <span className="wp-trip-transit-summary-text">
                         {transit.mode
-                          ? (transit.durationHours || transit.durationMinutes ? (transit.durationHours || "0") + "h" + (transit.durationMinutes ? transit.durationMinutes + "min" : "") + " · " : "") + (T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode)
+                          ? (formatTransitDuration(transit) ? formatTransitDuration(transit) + " · " : "") + (T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode)
                           : T.transitAddBtn}
                       </span>
                       <span className="wp-trip-transit-summary-edit">{transit.mode ? T.transitEditBtn : T.transitAddBtn}</span>
@@ -3716,18 +3728,33 @@ function Waypoint() {
                             <div className="wp-trip-field-group">
                               <label className="wp-trip-field-label">{T.transportDurationLabel}</label>
                               <div className="wp-trip-transit-duration-row">
-                                <input
-                                  type="number" min="0" className="wp-trip-transit-input wp-trip-transit-num"
-                                  placeholder={T.hoursLabel}
-                                  value={aTransit.durationHours}
-                                  onChange={(e) => updateTransit(trip.id, aStop.id, "durationHours", e.target.value)}
-                                />
-                                <input
-                                  type="number" min="0" max="59" className="wp-trip-transit-input wp-trip-transit-num"
-                                  placeholder={T.minutesLabel}
-                                  value={aTransit.durationMinutes}
-                                  onChange={(e) => updateTransit(trip.id, aStop.id, "durationMinutes", e.target.value)}
-                                />
+                                <div className="wp-trip-transit-num-group">
+                                  <input
+                                    type="number" min="0" className="wp-trip-transit-input wp-trip-transit-num"
+                                    placeholder="0"
+                                    value={aTransit.durationDays}
+                                    onChange={(e) => updateTransit(trip.id, aStop.id, "durationDays", e.target.value)}
+                                  />
+                                  <span className="wp-trip-transit-unit-label">{T.daysUnitLabel}</span>
+                                </div>
+                                <div className="wp-trip-transit-num-group">
+                                  <input
+                                    type="number" min="0" className="wp-trip-transit-input wp-trip-transit-num"
+                                    placeholder="0"
+                                    value={aTransit.durationHours}
+                                    onChange={(e) => updateTransit(trip.id, aStop.id, "durationHours", e.target.value)}
+                                  />
+                                  <span className="wp-trip-transit-unit-label">{T.hoursUnitLabel}</span>
+                                </div>
+                                <div className="wp-trip-transit-num-group">
+                                  <input
+                                    type="number" min="0" max="59" className="wp-trip-transit-input wp-trip-transit-num"
+                                    placeholder="0"
+                                    value={aTransit.durationMinutes}
+                                    onChange={(e) => updateTransit(trip.id, aStop.id, "durationMinutes", e.target.value)}
+                                  />
+                                  <span className="wp-trip-transit-unit-label">{T.minutesUnitLabel}</span>
+                                </div>
                               </div>
                             </div>
                             <div className="wp-trip-field-group">
@@ -4117,7 +4144,7 @@ function Waypoint() {
                         {i < stops.length - 1 && transit && transit.mode && (
                           <p className="wp-trip-typical-hint" style={{ marginLeft: "1.2rem" }}>
                             {T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)]}
-                            {transit.durationHours ? " · " + transit.durationHours + "h" : ""}{transit.durationMinutes ? transit.durationMinutes + "min" : ""}
+                            {formatTransitDuration(transit) ? " · " + formatTransitDuration(transit) : ""}
                             {transit.price ? " · " + transit.price : ""}
                           </p>
                         )}
