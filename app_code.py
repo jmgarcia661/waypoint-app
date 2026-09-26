@@ -38,6 +38,9 @@ const FileIcon = (p) => <IconBase {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0
 const BagIcon = (p) => <IconBase {...p}><path d="M6 2h12l1 5H5l1-5Z" /><path d="M4 7h16v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z" /></IconBase>;
 const MailIcon = (p) => <IconBase {...p}><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 6l-10 7L2 6" /></IconBase>;
 const MenuIcon = (p) => <IconBase {...p}><path d="M4 6h16M4 12h16M4 18h16" /></IconBase>;
+const DollarIcon = (p) => <IconBase {...p}><path d="M12 1v22" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></IconBase>;
+const PlugIcon = (p) => <IconBase {...p}><path d="M9 2v6M15 2v6" /><path d="M6 8h12v4a6 6 0 0 1-12 0V8Z" /><path d="M9 18v3M15 18v3" /></IconBase>;
+const PlaneIcon = (p) => <IconBase {...p}><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-3 2v1.5l4.5-1.5 4.5 1.5V21l-3-2v-5.5l8 2.5Z" /></IconBase>;
 const RefreshIcon = (p) => <IconBase {...p}><path d="M21 12a9 9 0 0 1-15.5 6.3L3 15" /><path d="M3 12a9 9 0 0 1 15.5-6.3L21 9" /><path d="M3 21v-6h6" /><path d="M21 3v6h-6" /></IconBase>;
 const GoogleG = (p) => (
   <svg width={p.size || 16} height={p.size || 16} viewBox="0 0 18 18">
@@ -99,6 +102,7 @@ const UI_STRINGS = {
     mapLoading: "Loading map…", mapLoadError: "Couldn't load the map. Check your connection and try again.",
     countryDetailLoading: "Loading country details…",
     countryDetailError: "Couldn't load this country's details. Check your connection and try again.", tryAgain: "Try again",
+    essentialAnchor: "Essential", placesAnchor: "Places", foodAnchor: "Flavors", routeAnchor: "Itinerary", faqAnchor: "FAQs",
     pctOfWorldVisited: "of the world visited",
     myTrips: "Trips", tripsSubtitle: "Plan your next trip, day by day.",
     tripsStatTrips: "TRIPS", tripsStatContinents: "CONTINENTS", tripsStatNights: "NIGHTS PLANNED", tripsStatDone: "COMPLETED",
@@ -206,6 +210,7 @@ const UI_STRINGS = {
     mapLoading: "A carregar o mapa…", mapLoadError: "Não foi possível carregar o mapa. Verifica a ligação e tenta outra vez.",
     countryDetailLoading: "A carregar detalhes do país…",
     countryDetailError: "Não foi possível carregar os detalhes deste país. Verifica a ligação e tenta outra vez.", tryAgain: "Tentar outra vez",
+    essentialAnchor: "Essencial", placesAnchor: "Lugares", foodAnchor: "Sabores", routeAnchor: "Roteiro", faqAnchor: "Dúvidas",
     pctOfWorldVisited: "do mundo visitado",
     myTrips: "Viagens", tripsSubtitle: "Planeia a tua próxima viagem, dia a dia.",
     tripsStatTrips: "VIAGENS", tripsStatContinents: "CONTINENTES", tripsStatNights: "NOITES PLANEADAS", tripsStatDone: "CONCLUÍDAS",
@@ -787,6 +792,17 @@ function Waypoint() {
   const mapLayersRef = useRef({});
   const [trips, setTrips] = useState({});
   const [activeTripId, setActiveTripId] = useState(null);
+  const [openAccordion, setOpenAccordion] = useState({});
+  const toggleAccordion = (key) => setOpenAccordion((p) => ({ ...p, [key]: !p[key] }));
+  const [activeDetailSection, setActiveDetailSection] = useState("essential");
+  const detailSectionRefs = useRef({});
+  const scrollToDetailSection = (id) => {
+    const el = detailSectionRefs.current[id];
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.pageYOffset - 96;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
   const [showNewTripForm, setShowNewTripForm] = useState(false);
   const [newTripName, setNewTripName] = useState("");
   const [newTripCountryQuery, setNewTripCountryQuery] = useState("");
@@ -887,6 +903,22 @@ function Waypoint() {
   const continents = CONTINENTS.map((c) => localizeContinent(c, lang));
   const continent = continents.find((c) => c.id === continentId) || null;
   const country = withFullData(continent ? continent.countries.find((c) => c.id === countryId) : null);
+
+  useEffect(() => {
+    if (view !== "detail") return;
+    const onScroll = () => {
+      const ids = ["essential", "places", "food", "route", "faq"];
+      let current = ids[0];
+      for (const id of ids) {
+        const el = detailSectionRefs.current[id];
+        if (el && el.getBoundingClientRect().top - 110 <= 0) current = id;
+      }
+      setActiveDetailSection(current);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [view, country && country.id]);
 
   useEffect(() => {
     if (view === "detail" && countryId) ensureCountryData(countryId);
@@ -2357,6 +2389,23 @@ function Waypoint() {
         .wp-gtk-grid { display: grid; grid-template-columns: 1fr; gap: 1rem 1.4rem; margin-top: 0.7rem; }
         @media (min-width: 520px) { .wp-gtk-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 760px) { .wp-gtk-grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .wp-detail-anchor-nav { display: flex; gap: 0.3rem; overflow-x: auto; -webkit-overflow-scrolling: touch; position: sticky; top: 0; z-index: 50; background: var(--parchment); padding: 0.7rem 0; margin-bottom: 1.4rem; border-bottom: 1px solid var(--hairline); scrollbar-width: none; }
+        .wp-detail-anchor-nav::-webkit-scrollbar { display: none; }
+        .wp-detail-anchor { flex-shrink: 0; background: none; border: none; padding: 0.5rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
+        .wp-detail-anchor:hover { background: var(--parchment-deep); color: var(--ink); }
+        .wp-detail-anchor-active { background: var(--navy-subtle); color: var(--navy); font-weight: 600; }
+
+        .wp-accordion { margin-top: 0.7rem; border-top: 1px solid var(--hairline); }
+        .wp-accordion-row { border-bottom: 1px solid var(--hairline); }
+        .wp-accordion-trigger { display: flex; align-items: center; gap: 0.7rem; width: 100%; background: none; border: none; text-align: left; padding: 0.9rem 0.2rem; cursor: pointer; font-family: 'Work Sans', sans-serif; min-height: 44px; }
+        .wp-accordion-trigger-label { flex: 1; font-size: 0.92rem; color: var(--ink); font-weight: 500; }
+        .wp-faq-q-label { font-weight: 600; }
+        .wp-accordion-chevron { color: var(--ink-soft); transform: rotate(90deg); transition: transform 0.15s ease; flex-shrink: 0; }
+        .wp-accordion-chevron-open { transform: rotate(-90deg); }
+        .wp-accordion-content { padding: 0 0.2rem 1.1rem 2.6rem; font-size: 0.9rem; color: #3a352b; line-height: 1.55; }
+        .wp-faq-q-label ~ .wp-accordion-chevron { }
+        .wp-accordion-row:has(.wp-faq-q-label) .wp-accordion-content { padding-left: 0.2rem; }
         .wp-gtk-label { font-size: 0.78rem; color: var(--ink-soft); margin-bottom: 0.2rem; }
         .wp-gtk-value { font-size: 0.9rem; line-height: 1.45; }
 
@@ -2782,6 +2831,14 @@ function Waypoint() {
               )}
             </div>
 
+            <div className="wp-detail-anchor-nav">
+              <button className={"wp-detail-anchor" + (activeDetailSection === "essential" ? " wp-detail-anchor-active" : "")} onClick={() => scrollToDetailSection("essential")}>{T.essentialAnchor}</button>
+              <button className={"wp-detail-anchor" + (activeDetailSection === "places" ? " wp-detail-anchor-active" : "")} onClick={() => scrollToDetailSection("places")}>{T.placesAnchor}</button>
+              <button className={"wp-detail-anchor" + (activeDetailSection === "food" ? " wp-detail-anchor-active" : "")} onClick={() => scrollToDetailSection("food")}>{T.foodAnchor}</button>
+              <button className={"wp-detail-anchor" + (activeDetailSection === "route" ? " wp-detail-anchor-active" : "")} onClick={() => scrollToDetailSection("route")}>{T.routeAnchor}</button>
+              <button className={"wp-detail-anchor" + (activeDetailSection === "faq" ? " wp-detail-anchor-active" : "")} onClick={() => scrollToDetailSection("faq")}>{T.faqAnchor}</button>
+            </div>
+
             <div className="wp-stat-grid">
               <StatBlock icon={Users} label={T.population} value={country.population} accent={continent.color} />
               <StatBlock icon={Languages} label={T.language} value={country.language} accent={continent.color} />
@@ -2791,21 +2848,38 @@ function Waypoint() {
 
             <p className="wp-blurb">{country.blurb}</p>
 
+            <div ref={(el) => { detailSectionRefs.current.essential = el; }} id="section-essential"></div>
             {(country.goodToKnow || country.budget || country.visa) && (
               <div className="wp-good-to-know">
                 <h3 className="wp-section-title" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><ShieldCheck size={18} style={{ color: continent.color }} /> {T.tripEssentials}</h3>
-                <div className="wp-gtk-grid">
-                  {country.budget && <div><div className="wp-gtk-label">{T.dailyBudget}</div><div className="wp-gtk-value">{country.budget}</div></div>}
-                  {country.visa && <div><div className="wp-gtk-label">{T.visa}</div><div className="wp-gtk-value">{country.visa}</div></div>}
-                  {country.goodToKnow && <div><div className="wp-gtk-label">{T.plugVoltage}</div><div className="wp-gtk-value">{country.goodToKnow.plug}</div></div>}
-                  {country.goodToKnow && <div><div className="wp-gtk-label">{T.tipping}</div><div className="wp-gtk-value">{country.goodToKnow.tipping}</div></div>}
-                  {country.goodToKnow && <div><div className="wp-gtk-label">{T.safety}</div><div className="wp-gtk-value">{country.goodToKnow.safety}</div></div>}
-                  {country.goodToKnow && <div><div className="wp-gtk-label">{T.gettingAround}</div><div className="wp-gtk-value">{country.goodToKnow.gettingAround}</div></div>}
-                  {country.goodToKnow && country.goodToKnow.gettingThere && <div><div className="wp-gtk-label">{T.gettingThere}</div><div className="wp-gtk-value">{country.goodToKnow.gettingThere}</div></div>}
+                <div className="wp-accordion">
+                  {[
+                    ["budget", DollarIcon, T.dailyBudget, country.budget],
+                    ["visa", FileIcon, T.visa, country.visa],
+                    ["plug", PlugIcon, T.plugVoltage, country.goodToKnow && country.goodToKnow.plug],
+                    ["tipping", Coins, T.tipping, country.goodToKnow && country.goodToKnow.tipping],
+                    ["safety", ShieldCheck, T.safety, country.goodToKnow && country.goodToKnow.safety],
+                    ["gettingAround", MapPinIcon, T.gettingAround, country.goodToKnow && country.goodToKnow.gettingAround],
+                    ["gettingThere", PlaneIcon, T.gettingThere, country.goodToKnow && country.goodToKnow.gettingThere],
+                  ].filter((row) => row[3]).map(([key, Icon, label, value]) => {
+                    const akey = "essential:" + country.id + ":" + key;
+                    const isOpen = !!openAccordion[akey];
+                    return (
+                      <div className="wp-accordion-row" key={key}>
+                        <button className="wp-accordion-trigger" onClick={() => toggleAccordion(akey)} aria-expanded={isOpen}>
+                          <Icon size={17} style={{ color: continent.color, flexShrink: 0 }} />
+                          <span className="wp-accordion-trigger-label">{label}</span>
+                          <ChevronRight size={15} className={"wp-accordion-chevron" + (isOpen ? " wp-accordion-chevron-open" : "")} />
+                        </button>
+                        {isOpen && <div className="wp-accordion-content">{value}</div>}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
+            <div ref={(el) => { detailSectionRefs.current.food = el; }} id="section-food"></div>
             {country.food && (
               <div style={{ marginBottom: "1.9rem" }}>
                 <h3 className="wp-section-title" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><Utensils size={18} style={{ color: continent.color }} /> {T.tastesOf} {country.name}</h3>
@@ -2820,6 +2894,7 @@ function Waypoint() {
               </div>
             )}
 
+            <div ref={(el) => { detailSectionRefs.current.places = el; }} id="section-places"></div>
             {country.attractions ? (
               <>
                 <h3 className="wp-section-title">{T.topAttractions}</h3>
@@ -2833,6 +2908,7 @@ function Waypoint() {
                   ))}
                 </div>
 
+                <div ref={(el) => { detailSectionRefs.current.route = el; }} id="section-route"></div>
                 <div className="wp-itinerary-wrap">
                   <div className="wp-itinerary-head">
                     <h3 className="wp-section-title" style={{ marginBottom: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}><MapPinIcon size={18} style={{ color: continent.color }} /> {T.suggestedItinerary}</h3>
@@ -2861,15 +2937,25 @@ function Waypoint() {
                   </div>
                 </div>
 
+                <div ref={(el) => { detailSectionRefs.current.faq = el; }} id="section-faq"></div>
                 {country.faq && country.faq.length > 0 && (
                   <div className="wp-faq-wrap">
                     <h3 className="wp-section-title" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}><ShieldCheck size={18} style={{ color: continent.color }} /> {T.faqTitle}</h3>
-                    {country.faq.map((item, i) => (
-                      <div className="wp-faq-item" key={i}>
-                        <div className="wp-faq-q">{item.q}</div>
-                        <div className="wp-faq-a">{item.a}</div>
-                      </div>
-                    ))}
+                    <div className="wp-accordion">
+                      {country.faq.map((item, i) => {
+                        const akey = "faq:" + country.id + ":" + i;
+                        const isOpen = !!openAccordion[akey];
+                        return (
+                          <div className="wp-accordion-row" key={i}>
+                            <button className="wp-accordion-trigger" onClick={() => toggleAccordion(akey)} aria-expanded={isOpen}>
+                              <span className="wp-accordion-trigger-label wp-faq-q-label">{item.q}</span>
+                              <ChevronRight size={15} className={"wp-accordion-chevron" + (isOpen ? " wp-accordion-chevron-open" : "")} />
+                            </button>
+                            {isOpen && <div className="wp-accordion-content">{item.a}</div>}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </>
