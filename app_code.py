@@ -2239,8 +2239,13 @@ function Waypoint() {
         .wp-trip-chip-remove { background: none; border: none; cursor: pointer; color: var(--ink-soft); display: flex; padding: 0; }
         .wp-trip-chip-add { background: var(--parchment); border: 1px dashed var(--hairline); color: var(--ink-soft); cursor: pointer; }
 
-        .wp-trip-panel-row { display: flex; gap: 0.6rem; position: relative; flex-wrap: wrap; }
-        .wp-trip-panel-btn { display: flex; align-items: center; gap: 0.45rem; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.5rem 1rem 0.5rem 0.85rem; font-size: 0.78rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
+        .wp-trip-panel-row { display: flex; gap: 0.5rem; position: relative; flex-wrap: nowrap; }
+        .wp-trip-panel-btn { display: flex; align-items: center; justify-content: center; gap: 0.35rem; flex: 1 1 0; min-width: 0; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.5rem 0.5rem; font-size: 0.74rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; text-align: center; white-space: normal; line-height: 1.2; }
+        .wp-trip-panel-btn svg { flex-shrink: 0; }
+        @media (max-width: 380px) {
+          .wp-trip-panel-row { gap: 0.35rem; }
+          .wp-trip-panel-btn { font-size: 0.68rem; padding: 0.45rem 0.3rem; gap: 0.25rem; }
+        }
         .wp-trip-panel-btn-active { background: var(--navy-subtle); border: 1.5px solid var(--navy); color: var(--navy); font-weight: 600; }
         .wp-trip-panel-btn-empty { border-style: dashed; }
         .wp-trip-panel-connector { position: absolute; top: 100%; width: 12px; height: 12px; background: #fff; border-left: 1.5px solid var(--navy); border-top: 1.5px solid var(--navy); transform: rotate(45deg); margin-top: -1px; }
