@@ -32,6 +32,12 @@ const StarIcon = (p) => <IconBase {...p}><polygon points="12 2 15.09 8.26 22 9.2
 const LogOutIcon = (p) => <IconBase {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></IconBase>;
 const PlusIcon = (p) => <IconBase {...p}><path d="M12 5v14" /><path d="M5 12h14" /></IconBase>;
 const Download = (p) => <IconBase {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M7 10l5 5 5-5" /><path d="M12 15V3" /></IconBase>;
+const HomeIcon = (p) => <IconBase {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" /><path d="M9 22V12h6v10" /></IconBase>;
+const SuitcaseIcon = (p) => <IconBase {...p}><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></IconBase>;
+const FileIcon = (p) => <IconBase {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" /><path d="M14 2v6h6" /></IconBase>;
+const BagIcon = (p) => <IconBase {...p}><path d="M6 2h12l1 5H5l1-5Z" /><path d="M4 7h16v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z" /></IconBase>;
+const MailIcon = (p) => <IconBase {...p}><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M22 6l-10 7L2 6" /></IconBase>;
+const MenuIcon = (p) => <IconBase {...p}><path d="M4 6h16M4 12h16M4 18h16" /></IconBase>;
 const RefreshIcon = (p) => <IconBase {...p}><path d="M21 12a9 9 0 0 1-15.5 6.3L3 15" /><path d="M3 12a9 9 0 0 1 15.5-6.3L21 9" /><path d="M3 21v-6h6" /><path d="M21 3v6h-6" /></IconBase>;
 const GoogleG = (p) => (
   <svg width={p.size || 16} height={p.size || 16} viewBox="0 0 18 18">
@@ -102,6 +108,7 @@ const UI_STRINGS = {
     transitAddBtn: "Add travel time", transitEditBtn: "Edit",
     highlightsChipLabel: "highlights", doneEditingLabel: "done",
     dayListEmpty: "Nothing planned for this day yet.", dayMapEmpty: "Add a place to this day to see it on the map.",
+    openMenu: "Open menu", closeMenu: "Close menu", menuLabel: "MENU", languageLabel: "Language",
     daySuggestionsLabel: "From your highlights — tap to add to this day",
     pdfCoverTagline: "A slow, ad-free way to explore the world.",
     pdfEssentialsTitle: "Trip essentials", pdfAboutTitle: "About",
@@ -207,6 +214,7 @@ const UI_STRINGS = {
     transitAddBtn: "Adicionar tempo de viagem", transitEditBtn: "Editar",
     highlightsChipLabel: "destaques", doneEditingLabel: "concluído",
     dayListEmpty: "Ainda nada planeado para este dia.", dayMapEmpty: "Adiciona um sítio a este dia para o veres no mapa.",
+    openMenu: "Abrir menu", closeMenu: "Fechar menu", menuLabel: "MENU", languageLabel: "Idioma",
     daySuggestionsLabel: "Dos teus destaques — toca para adicionar a este dia",
     pdfCoverTagline: "Uma forma tranquila e sem publicidade de explorar o mundo.",
     pdfEssentialsTitle: "Essencial de viagem", pdfAboutTitle: "Sobre",
@@ -851,6 +859,31 @@ function Waypoint() {
       .catch(() => setGeocodeCache((c) => ({ ...c, [key]: null })));
   };
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuTriggerRef = useRef(null);
+  const menuPanelRef = useRef(null);
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") { setMobileMenuOpen(false); return; }
+      if (e.key === "Tab" && menuPanelRef.current) {
+        const focusable = menuPanelRef.current.querySelectorAll('button, a, [tabindex]:not([tabindex="-1"])');
+        if (focusable.length === 0) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    if (menuPanelRef.current) { const first = menuPanelRef.current.querySelector('button, a'); if (first) first.focus(); }
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      if (menuTriggerRef.current) menuTriggerRef.current.focus();
+    };
+  }, [mobileMenuOpen]);
   const [shareCopied, setShareCopied] = useState(false);
   const [editingNoteDay, setEditingNoteDay] = useState(null);
   const [sharedTrip, setSharedTrip] = useState(null);
@@ -1977,12 +2010,29 @@ function Waypoint() {
         .wp-day-title { font-weight: 600; font-size: 1.12rem; margin-bottom: 0.3rem; }
         .wp-day-desc { font-size: 0.9rem; color: #4a4436; line-height: 1.5; }
 
-        .wp-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 0 1.3rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; flex-wrap: wrap; }
+        .wp-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 0 1.3rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; }
         .wp-nav-brand { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; font-size: 1.05rem; font-weight: 600; color: var(--ink); padding: 0; }
         .wp-nav-links { display: flex; gap: 1.4rem; flex-wrap: wrap; row-gap: 0.7rem; align-items: center; }
+        .wp-hamburger-btn { display: none; background: none; border: none; cursor: pointer; color: var(--ink); padding: 0.4rem; margin: -0.4rem; border-radius: 8px; }
+        .wp-hamburger-btn:hover { background: var(--parchment-deep); }
         @media (max-width: 680px) {
-          .wp-nav-links { flex-basis: 100%; justify-content: center; gap: 0.7rem 0.9rem; margin-top: 0.7rem; }
+          .wp-nav-links { display: none; }
+          .wp-hamburger-btn { display: flex; }
         }
+        .wp-mobile-menu-overlay { position: fixed; inset: 0; background: rgba(20,33,61,0.4); z-index: 1000; display: flex; justify-content: flex-end; }
+        .wp-mobile-menu-panel { width: 100%; max-width: 360px; height: 100%; background: #fff; display: flex; flex-direction: column; box-shadow: -8px 0 24px rgba(20,33,61,0.15); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        .wp-mobile-menu-head { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--hairline); flex-shrink: 0; }
+        .wp-mobile-menu-close { background: none; border: none; cursor: pointer; color: var(--ink-soft); padding: 0.4rem; border-radius: 8px; }
+        .wp-mobile-menu-close:hover { background: var(--parchment-deep); color: var(--ink); }
+        .wp-mobile-menu-scroll { flex: 1; overflow-y: auto; padding: 1rem 0.75rem 1.5rem; }
+        .wp-mobile-menu-label { margin: 0.4rem 1rem 0.5rem; font-size: 0.7rem; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 600; }
+        .wp-mobile-menu-item { display: flex; align-items: center; gap: 0.9rem; width: 100%; background: none; border: none; cursor: pointer; text-align: left; padding: 0.85rem 1rem; border-radius: 10px; font-family: 'Work Sans', sans-serif; font-size: 0.98rem; color: var(--ink); min-height: 44px; }
+        .wp-mobile-menu-item:hover { background: var(--parchment-deep); }
+        .wp-mobile-menu-item-active { background: var(--navy-subtle); color: var(--navy); font-weight: 600; }
+        .wp-mobile-menu-item-active svg { color: var(--navy); }
+        .wp-mobile-menu-sep { height: 1px; background: var(--hairline); margin: 0.7rem 0.75rem; }
+        .wp-mobile-menu-lang-row { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; }
+        .wp-mobile-menu-lang-label { font-size: 0.85rem; color: var(--ink-soft); }
         .wp-nav-link { background: none; border: none; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink-soft); padding: 0.3rem 0; border-bottom: 2px solid transparent; }
         .wp-nav-link:hover { color: var(--ink); }
         .wp-nav-link-active { color: var(--ink); border-bottom-color: var(--navy); font-weight: 600; }
@@ -2387,18 +2437,120 @@ function Waypoint() {
               )
             )}
           </div>
+          <button
+            className="wp-hamburger-btn"
+            ref={menuTriggerRef}
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label={T.openMenu}
+            aria-haspopup="true"
+            aria-expanded={mobileMenuOpen}
+          >
+            <MenuIcon size={22} />
+          </button>
         </nav>
+
+        {mobileMenuOpen && (
+          <div className="wp-mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}>
+            <div
+              className="wp-mobile-menu-panel"
+              ref={menuPanelRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={T.menuLabel}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="wp-mobile-menu-head">
+                <button className="wp-nav-brand" onClick={() => { goToContinents(); setMobileMenuOpen(false); }}>
+                  <div className="wp-brand-mark" style={{ width: 24, height: 24 }}><Compass size={13} style={{ color: "#F3EDE0" }} /></div>
+                  Waypoint
+                </button>
+                <button className="wp-mobile-menu-close" onClick={() => setMobileMenuOpen(false)} aria-label={T.closeMenu}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="wp-mobile-menu-scroll">
+                <p className="wp-mobile-menu-label">{T.menuLabel}</p>
+                <button className={"wp-mobile-menu-item" + ((view === "continents" || view === "countries" || view === "detail") ? " wp-mobile-menu-item-active" : "")} onClick={() => { goToContinents(); setMobileMenuOpen(false); }}>
+                  <HomeIcon size={19} /> {T.home}
+                </button>
+                {firebaseReady && (
+                  <button className={"wp-mobile-menu-item" + (view === "map" ? " wp-mobile-menu-item-active" : "")} onClick={() => { goToStatic("map"); setMobileMenuOpen(false); }}>
+                    <MapPinIcon size={19} /> {T.myMap}
+                  </button>
+                )}
+                {firebaseReady && (
+                  <button className={"wp-mobile-menu-item" + ((view === "trips" || view === "trip-detail") ? " wp-mobile-menu-item-active" : "")} onClick={() => { setActiveTripId(null); goToStatic("trips"); setMobileMenuOpen(false); }}>
+                    <SuitcaseIcon size={19} /> {T.myTrips}
+                  </button>
+                )}
+                <button className={"wp-mobile-menu-item" + (view === "articles" ? " wp-mobile-menu-item-active" : "")} onClick={() => { goToStatic("articles"); setMobileMenuOpen(false); }}>
+                  <FileIcon size={19} /> {T.articles}
+                </button>
+                <button className={"wp-mobile-menu-item" + (view === "products" ? " wp-mobile-menu-item-active" : "")} onClick={() => { goToStatic("products"); setMobileMenuOpen(false); }}>
+                  <BagIcon size={19} /> {T.products}
+                </button>
+
+                <div className="wp-mobile-menu-sep"></div>
+
+                <button className={"wp-mobile-menu-item" + (view === "newsletter" ? " wp-mobile-menu-item-active" : "")} onClick={() => { goToStatic("newsletter"); setMobileMenuOpen(false); }}>
+                  <MailIcon size={19} /> {T.newsletter}
+                </button>
+                <button className={"wp-mobile-menu-item" + (view === "about" ? " wp-mobile-menu-item-active" : "")} onClick={() => { goToStatic("about"); setMobileMenuOpen(false); }}>
+                  <UserIcon size={19} /> {T.aboutMe}
+                </button>
+
+                <div className="wp-mobile-menu-sep"></div>
+
+                {firebaseReady && !authLoading && (
+                  user ? (
+                    <button className="wp-mobile-menu-item" onClick={() => { signOutUser(); setMobileMenuOpen(false); }}>
+                      <LogOutIcon size={19} /> {T.signOut}
+                    </button>
+                  ) : (
+                    <button className="wp-mobile-menu-item" onClick={() => { openAuthModal("signin"); setMobileMenuOpen(false); }}>
+                      <UserIcon size={19} /> {T.signIn}
+                    </button>
+                  )
+                )}
+                <div className="wp-mobile-menu-lang-row">
+                  <span className="wp-mobile-menu-lang-label">{T.languageLabel}</span>
+                  <span className="wp-lang-toggle">
+                    <button className={"wp-lang-btn" + (lang === "en" ? " wp-lang-btn-active" : "")} onClick={() => setLang("en")}>EN</button>
+                    <span className="wp-lang-sep">/</span>
+                    <button className={"wp-lang-btn" + (lang === "pt" ? " wp-lang-btn-active" : "")} onClick={() => setLang("pt")}>PT</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {view === "continents" && (
           <div className="wp-hero">
             <div className="wp-hero-text">
               <h1 className="wp-hero-headline">{T.heroHeadline}</h1>
               <p className="wp-tagline">{T.heroTagline}</p>
-              <div className="wp-hero-stats">
-                <div className="wp-hero-stat"><b>{allCountriesFlat.length}</b><span>{T.statsCountries}</span></div>
-                <div className="wp-hero-stat"><b>{totalAttractions}+</b><span>{T.statsAttractions}</span></div>
-                <div className="wp-hero-stat"><b>2</b><span>{T.statsLanguages}</span></div>
+
+              <div className="wp-search-wrap" style={{ margin: "0 0 1.3rem" }}>
+                <div className="wp-search-box">
+                  <Search size={16} className="wp-search-icon" />
+                  <input
+                    type="text"
+                    className="wp-search-input"
+                    placeholder={T.searchHome}
+                    aria-label={T.searchHome}
+                    value={homeQuery}
+                    onChange={(e) => setHomeQuery(e.target.value)}
+                  />
+                  {homeQuery && (
+                    <button className="wp-search-clear" onClick={() => setHomeQuery("")} aria-label="Clear search">
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
               </div>
+
               <div className="wp-hero-features">
                 <button className="wp-hero-feature-card" onClick={() => document.querySelector(".wp-continent-grid") && document.querySelector(".wp-continent-grid").scrollIntoView({ behavior: "smooth" })}>
                   <Compass size={18} />
@@ -2413,6 +2565,12 @@ function Waypoint() {
                   <div><b>{T.featPlanTitle}</b><span>{T.featPlanDesc}</span></div>
                 </button>
               </div>
+
+              <div className="wp-hero-stats">
+                <div className="wp-hero-stat"><b>{allCountriesFlat.length}</b><span>{T.statsCountries}</span></div>
+                <div className="wp-hero-stat"><b>{totalAttractions}+</b><span>{T.statsAttractions}</span></div>
+                <div className="wp-hero-stat"><b>2</b><span>{T.statsLanguages}</span></div>
+              </div>
             </div>
             <div className="wp-hero-visual"><HeroIllustration /></div>
           </div>
@@ -2423,26 +2581,6 @@ function Waypoint() {
             <div className="wp-brand">
               <div className="wp-brand-mark"><Compass size={16} style={{ color: "#F3EDE0" }} /></div>
               <h1 className="wp-title" style={{ fontSize: "1.4rem" }}>Waypoint</h1>
-            </div>
-          </div>
-        )}
-
-        {view === "continents" && (
-          <div className="wp-search-wrap">
-            <div className="wp-search-box">
-              <Search size={16} className="wp-search-icon" />
-              <input
-                type="text"
-                className="wp-search-input"
-                placeholder={T.searchHome}
-                value={homeQuery}
-                onChange={(e) => setHomeQuery(e.target.value)}
-              />
-              {homeQuery && (
-                <button className="wp-search-clear" onClick={() => setHomeQuery("")} aria-label="Clear search">
-                  <X size={14} />
-                </button>
-              )}
             </div>
           </div>
         )}

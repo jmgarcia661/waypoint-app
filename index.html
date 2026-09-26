@@ -158,6 +158,12 @@ const StarIcon = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, 
 const LogOutIcon = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" }), /* @__PURE__ */ React.createElement("path", { d: "M16 17l5-5-5-5" }), /* @__PURE__ */ React.createElement("path", { d: "M21 12H9" }));
 const PlusIcon = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M12 5v14" }), /* @__PURE__ */ React.createElement("path", { d: "M5 12h14" }));
 const Download = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }), /* @__PURE__ */ React.createElement("path", { d: "M7 10l5 5 5-5" }), /* @__PURE__ */ React.createElement("path", { d: "M12 15V3" }));
+const HomeIcon = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" }), /* @__PURE__ */ React.createElement("path", { d: "M9 22V12h6v10" }));
+const SuitcaseIcon = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "7", width: "18", height: "13", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" }));
+const FileIcon = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" }), /* @__PURE__ */ React.createElement("path", { d: "M14 2v6h6" }));
+const BagIcon = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M6 2h12l1 5H5l1-5Z" }), /* @__PURE__ */ React.createElement("path", { d: "M4 7h16v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z" }));
+const MailIcon = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "2", y: "4", width: "20", height: "16", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M22 6l-10 7L2 6" }));
+const MenuIcon = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M4 6h16M4 12h16M4 18h16" }));
 const RefreshIcon = (p) => /* @__PURE__ */ React.createElement(IconBase, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M21 12a9 9 0 0 1-15.5 6.3L3 15" }), /* @__PURE__ */ React.createElement("path", { d: "M3 12a9 9 0 0 1 15.5-6.3L21 9" }), /* @__PURE__ */ React.createElement("path", { d: "M3 21v-6h6" }), /* @__PURE__ */ React.createElement("path", { d: "M21 3v6h-6" }));
 const GoogleG = (p) => /* @__PURE__ */ React.createElement("svg", { width: p.size || 16, height: p.size || 16, viewBox: "0 0 18 18" }, /* @__PURE__ */ React.createElement("path", { fill: "#4285F4", d: "M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.79 2.73v2.27h2.9c1.7-1.56 2.68-3.87 2.68-6.64z" }), /* @__PURE__ */ React.createElement("path", { fill: "#34A853", d: "M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.27c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.34C2.44 15.98 5.48 18 9 18z" }), /* @__PURE__ */ React.createElement("path", { fill: "#FBBC05", d: "M3.95 10.69A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.16.29-1.69V4.97H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.03l2.99-2.34z" }), /* @__PURE__ */ React.createElement("path", { fill: "#EA4335", d: "M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.97l2.99 2.34C4.66 5.17 6.65 3.58 9 3.58z" }));
 const UI_STRINGS = {
@@ -290,6 +296,10 @@ const UI_STRINGS = {
     doneEditingLabel: "done",
     dayListEmpty: "Nothing planned for this day yet.",
     dayMapEmpty: "Add a place to this day to see it on the map.",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
+    menuLabel: "MENU",
+    languageLabel: "Language",
     daySuggestionsLabel: "From your highlights \u2014 tap to add to this day",
     pdfCoverTagline: "A slow, ad-free way to explore the world.",
     pdfEssentialsTitle: "Trip essentials",
@@ -515,6 +525,10 @@ const UI_STRINGS = {
     doneEditingLabel: "conclu\xEDdo",
     dayListEmpty: "Ainda nada planeado para este dia.",
     dayMapEmpty: "Adiciona um s\xEDtio a este dia para o veres no mapa.",
+    openMenu: "Abrir menu",
+    closeMenu: "Fechar menu",
+    menuLabel: "MENU",
+    languageLabel: "Idioma",
     daySuggestionsLabel: "Dos teus destaques \u2014 toca para adicionar a este dia",
     pdfCoverTagline: "Uma forma tranquila e sem publicidade de explorar o mundo.",
     pdfEssentialsTitle: "Essencial de viagem",
@@ -1126,6 +1140,42 @@ function Waypoint() {
     }).catch(() => setGeocodeCache((c) => ({ ...c, [key]: null })));
   };
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuTriggerRef = useRef(null);
+  const menuPanelRef = useRef(null);
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setMobileMenuOpen(false);
+        return;
+      }
+      if (e.key === "Tab" && menuPanelRef.current) {
+        const focusable = menuPanelRef.current.querySelectorAll('button, a, [tabindex]:not([tabindex="-1"])');
+        if (focusable.length === 0) return;
+        const first = focusable[0], last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    if (menuPanelRef.current) {
+      const first = menuPanelRef.current.querySelector("button, a");
+      if (first) first.focus();
+    }
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      if (menuTriggerRef.current) menuTriggerRef.current.focus();
+    };
+  }, [mobileMenuOpen]);
   const [shareCopied, setShareCopied] = useState(false);
   const [editingNoteDay, setEditingNoteDay] = useState(null);
   const [sharedTrip, setSharedTrip] = useState(null);
@@ -2354,12 +2404,29 @@ function Waypoint() {
         .wp-day-title { font-weight: 600; font-size: 1.12rem; margin-bottom: 0.3rem; }
         .wp-day-desc { font-size: 0.9rem; color: #4a4436; line-height: 1.5; }
 
-        .wp-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 0 1.3rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; flex-wrap: wrap; }
+        .wp-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 0 1.3rem; border-bottom: 1px solid var(--hairline); margin-bottom: 1.6rem; }
         .wp-nav-brand { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; font-size: 1.05rem; font-weight: 600; color: var(--ink); padding: 0; }
         .wp-nav-links { display: flex; gap: 1.4rem; flex-wrap: wrap; row-gap: 0.7rem; align-items: center; }
+        .wp-hamburger-btn { display: none; background: none; border: none; cursor: pointer; color: var(--ink); padding: 0.4rem; margin: -0.4rem; border-radius: 8px; }
+        .wp-hamburger-btn:hover { background: var(--parchment-deep); }
         @media (max-width: 680px) {
-          .wp-nav-links { flex-basis: 100%; justify-content: center; gap: 0.7rem 0.9rem; margin-top: 0.7rem; }
+          .wp-nav-links { display: none; }
+          .wp-hamburger-btn { display: flex; }
         }
+        .wp-mobile-menu-overlay { position: fixed; inset: 0; background: rgba(20,33,61,0.4); z-index: 1000; display: flex; justify-content: flex-end; }
+        .wp-mobile-menu-panel { width: 100%; max-width: 360px; height: 100%; background: #fff; display: flex; flex-direction: column; box-shadow: -8px 0 24px rgba(20,33,61,0.15); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        .wp-mobile-menu-head { display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--hairline); flex-shrink: 0; }
+        .wp-mobile-menu-close { background: none; border: none; cursor: pointer; color: var(--ink-soft); padding: 0.4rem; border-radius: 8px; }
+        .wp-mobile-menu-close:hover { background: var(--parchment-deep); color: var(--ink); }
+        .wp-mobile-menu-scroll { flex: 1; overflow-y: auto; padding: 1rem 0.75rem 1.5rem; }
+        .wp-mobile-menu-label { margin: 0.4rem 1rem 0.5rem; font-size: 0.7rem; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 600; }
+        .wp-mobile-menu-item { display: flex; align-items: center; gap: 0.9rem; width: 100%; background: none; border: none; cursor: pointer; text-align: left; padding: 0.85rem 1rem; border-radius: 10px; font-family: 'Work Sans', sans-serif; font-size: 0.98rem; color: var(--ink); min-height: 44px; }
+        .wp-mobile-menu-item:hover { background: var(--parchment-deep); }
+        .wp-mobile-menu-item-active { background: var(--navy-subtle); color: var(--navy); font-weight: 600; }
+        .wp-mobile-menu-item-active svg { color: var(--navy); }
+        .wp-mobile-menu-sep { height: 1px; background: var(--hairline); margin: 0.7rem 0.75rem; }
+        .wp-mobile-menu-lang-row { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; }
+        .wp-mobile-menu-lang-label { font-size: 0.85rem; color: var(--ink-soft); }
         .wp-nav-link { background: none; border: none; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink-soft); padding: 0.3rem 0; border-bottom: 2px solid transparent; }
         .wp-nav-link:hover { color: var(--ink); }
         .wp-nav-link-active { color: var(--ink); border-bottom-color: var(--navy); font-weight: 600; }
@@ -2724,16 +2791,71 @@ function Waypoint() {
       `), /* @__PURE__ */ React.createElement("div", { className: "wp-shell" }, /* @__PURE__ */ React.createElement("nav", { className: "wp-nav" }, /* @__PURE__ */ React.createElement("button", { className: "wp-nav-brand", onClick: goToContinents }, /* @__PURE__ */ React.createElement("div", { className: "wp-brand-mark", style: { width: 24, height: 24 } }, /* @__PURE__ */ React.createElement(Compass, { size: 13, style: { color: "#F3EDE0" } })), "Waypoint"), /* @__PURE__ */ React.createElement("div", { className: "wp-nav-links" }, /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "continents" || view === "countries" || view === "detail" ? " wp-nav-link-active" : ""), onClick: goToContinents }, T.home), firebaseReady && /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "map" ? " wp-nav-link-active" : ""), onClick: () => goToStatic("map") }, T.myMap), firebaseReady && /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "trips" || view === "trip-detail" ? " wp-nav-link-active" : ""), onClick: () => {
     setActiveTripId(null);
     goToStatic("trips");
-  } }, T.myTrips), /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "articles" ? " wp-nav-link-active" : ""), onClick: () => goToStatic("articles") }, T.articles), /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "products" ? " wp-nav-link-active" : ""), onClick: () => goToStatic("products") }, T.products), /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "newsletter" ? " wp-nav-link-active" : ""), onClick: () => goToStatic("newsletter") }, T.newsletter), /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "about" ? " wp-nav-link-active" : ""), onClick: () => goToStatic("about") }, T.aboutMe), /* @__PURE__ */ React.createElement("span", { className: "wp-lang-toggle" }, /* @__PURE__ */ React.createElement("button", { className: "wp-lang-btn" + (lang === "en" ? " wp-lang-btn-active" : ""), onClick: () => setLang("en") }, "EN"), /* @__PURE__ */ React.createElement("span", { className: "wp-lang-sep" }, "/"), /* @__PURE__ */ React.createElement("button", { className: "wp-lang-btn" + (lang === "pt" ? " wp-lang-btn-active" : ""), onClick: () => setLang("pt") }, "PT")), firebaseReady && !authLoading && (user ? /* @__PURE__ */ React.createElement("span", { className: "wp-user-menu-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "wp-user-chip", onClick: () => setShowUserMenu((s) => !s) }, /* @__PURE__ */ React.createElement(UserIcon, { size: 14 }), /* @__PURE__ */ React.createElement("span", { className: "wp-user-email" }, user.email ? user.email.split("@")[0] : "Account")), showUserMenu && /* @__PURE__ */ React.createElement("div", { className: "wp-user-dropdown" }, /* @__PURE__ */ React.createElement("button", { className: "wp-user-dropdown-item", onClick: signOutUser }, /* @__PURE__ */ React.createElement(LogOutIcon, { size: 14 }), " ", T.signOut))) : /* @__PURE__ */ React.createElement("button", { className: "wp-signin-btn", onClick: () => openAuthModal("signin") }, T.signIn)))), view === "continents" && /* @__PURE__ */ React.createElement("div", { className: "wp-hero" }, /* @__PURE__ */ React.createElement("div", { className: "wp-hero-text" }, /* @__PURE__ */ React.createElement("h1", { className: "wp-hero-headline" }, T.heroHeadline), /* @__PURE__ */ React.createElement("p", { className: "wp-tagline" }, T.heroTagline), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stats" }, /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, allCountriesFlat.length), /* @__PURE__ */ React.createElement("span", null, T.statsCountries)), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, totalAttractions, "+"), /* @__PURE__ */ React.createElement("span", null, T.statsAttractions)), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, "2"), /* @__PURE__ */ React.createElement("span", null, T.statsLanguages))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-features" }, /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => document.querySelector(".wp-continent-grid") && document.querySelector(".wp-continent-grid").scrollIntoView({ behavior: "smooth" }) }, /* @__PURE__ */ React.createElement(Compass, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featExploreTitle), /* @__PURE__ */ React.createElement("span", null, T.featExploreDesc))), /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => goToStatic("map") }, /* @__PURE__ */ React.createElement(MapPinIcon, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featTrackTitle), /* @__PURE__ */ React.createElement("span", null, T.featTrackDesc))), /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => goToStatic("trips") }, /* @__PURE__ */ React.createElement(CalendarClock, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featPlanTitle), /* @__PURE__ */ React.createElement("span", null, T.featPlanDesc))))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-visual" }, /* @__PURE__ */ React.createElement(HeroIllustration, null))), view !== "continents" && /* @__PURE__ */ React.createElement("div", { className: "wp-header", style: { marginBottom: "1.6rem" } }, /* @__PURE__ */ React.createElement("div", { className: "wp-brand" }, /* @__PURE__ */ React.createElement("div", { className: "wp-brand-mark" }, /* @__PURE__ */ React.createElement(Compass, { size: 16, style: { color: "#F3EDE0" } })), /* @__PURE__ */ React.createElement("h1", { className: "wp-title", style: { fontSize: "1.4rem" } }, "Waypoint"))), view === "continents" && /* @__PURE__ */ React.createElement("div", { className: "wp-search-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "wp-search-box" }, /* @__PURE__ */ React.createElement(Search, { size: 16, className: "wp-search-icon" }), /* @__PURE__ */ React.createElement(
+  } }, T.myTrips), /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "articles" ? " wp-nav-link-active" : ""), onClick: () => goToStatic("articles") }, T.articles), /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "products" ? " wp-nav-link-active" : ""), onClick: () => goToStatic("products") }, T.products), /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "newsletter" ? " wp-nav-link-active" : ""), onClick: () => goToStatic("newsletter") }, T.newsletter), /* @__PURE__ */ React.createElement("button", { className: "wp-nav-link" + (view === "about" ? " wp-nav-link-active" : ""), onClick: () => goToStatic("about") }, T.aboutMe), /* @__PURE__ */ React.createElement("span", { className: "wp-lang-toggle" }, /* @__PURE__ */ React.createElement("button", { className: "wp-lang-btn" + (lang === "en" ? " wp-lang-btn-active" : ""), onClick: () => setLang("en") }, "EN"), /* @__PURE__ */ React.createElement("span", { className: "wp-lang-sep" }, "/"), /* @__PURE__ */ React.createElement("button", { className: "wp-lang-btn" + (lang === "pt" ? " wp-lang-btn-active" : ""), onClick: () => setLang("pt") }, "PT")), firebaseReady && !authLoading && (user ? /* @__PURE__ */ React.createElement("span", { className: "wp-user-menu-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "wp-user-chip", onClick: () => setShowUserMenu((s) => !s) }, /* @__PURE__ */ React.createElement(UserIcon, { size: 14 }), /* @__PURE__ */ React.createElement("span", { className: "wp-user-email" }, user.email ? user.email.split("@")[0] : "Account")), showUserMenu && /* @__PURE__ */ React.createElement("div", { className: "wp-user-dropdown" }, /* @__PURE__ */ React.createElement("button", { className: "wp-user-dropdown-item", onClick: signOutUser }, /* @__PURE__ */ React.createElement(LogOutIcon, { size: 14 }), " ", T.signOut))) : /* @__PURE__ */ React.createElement("button", { className: "wp-signin-btn", onClick: () => openAuthModal("signin") }, T.signIn))), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      className: "wp-hamburger-btn",
+      ref: menuTriggerRef,
+      onClick: () => setMobileMenuOpen(true),
+      "aria-label": T.openMenu,
+      "aria-haspopup": "true",
+      "aria-expanded": mobileMenuOpen
+    },
+    /* @__PURE__ */ React.createElement(MenuIcon, { size: 22 })
+  )), mobileMenuOpen && /* @__PURE__ */ React.createElement("div", { className: "wp-mobile-menu-overlay", onClick: () => setMobileMenuOpen(false) }, /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "wp-mobile-menu-panel",
+      ref: menuPanelRef,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-label": T.menuLabel,
+      onClick: (e) => e.stopPropagation()
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "wp-mobile-menu-head" }, /* @__PURE__ */ React.createElement("button", { className: "wp-nav-brand", onClick: () => {
+      goToContinents();
+      setMobileMenuOpen(false);
+    } }, /* @__PURE__ */ React.createElement("div", { className: "wp-brand-mark", style: { width: 24, height: 24 } }, /* @__PURE__ */ React.createElement(Compass, { size: 13, style: { color: "#F3EDE0" } })), "Waypoint"), /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-close", onClick: () => setMobileMenuOpen(false), "aria-label": T.closeMenu }, /* @__PURE__ */ React.createElement(X, { size: 18 }))),
+    /* @__PURE__ */ React.createElement("div", { className: "wp-mobile-menu-scroll" }, /* @__PURE__ */ React.createElement("p", { className: "wp-mobile-menu-label" }, T.menuLabel), /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-item" + (view === "continents" || view === "countries" || view === "detail" ? " wp-mobile-menu-item-active" : ""), onClick: () => {
+      goToContinents();
+      setMobileMenuOpen(false);
+    } }, /* @__PURE__ */ React.createElement(HomeIcon, { size: 19 }), " ", T.home), firebaseReady && /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-item" + (view === "map" ? " wp-mobile-menu-item-active" : ""), onClick: () => {
+      goToStatic("map");
+      setMobileMenuOpen(false);
+    } }, /* @__PURE__ */ React.createElement(MapPinIcon, { size: 19 }), " ", T.myMap), firebaseReady && /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-item" + (view === "trips" || view === "trip-detail" ? " wp-mobile-menu-item-active" : ""), onClick: () => {
+      setActiveTripId(null);
+      goToStatic("trips");
+      setMobileMenuOpen(false);
+    } }, /* @__PURE__ */ React.createElement(SuitcaseIcon, { size: 19 }), " ", T.myTrips), /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-item" + (view === "articles" ? " wp-mobile-menu-item-active" : ""), onClick: () => {
+      goToStatic("articles");
+      setMobileMenuOpen(false);
+    } }, /* @__PURE__ */ React.createElement(FileIcon, { size: 19 }), " ", T.articles), /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-item" + (view === "products" ? " wp-mobile-menu-item-active" : ""), onClick: () => {
+      goToStatic("products");
+      setMobileMenuOpen(false);
+    } }, /* @__PURE__ */ React.createElement(BagIcon, { size: 19 }), " ", T.products), /* @__PURE__ */ React.createElement("div", { className: "wp-mobile-menu-sep" }), /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-item" + (view === "newsletter" ? " wp-mobile-menu-item-active" : ""), onClick: () => {
+      goToStatic("newsletter");
+      setMobileMenuOpen(false);
+    } }, /* @__PURE__ */ React.createElement(MailIcon, { size: 19 }), " ", T.newsletter), /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-item" + (view === "about" ? " wp-mobile-menu-item-active" : ""), onClick: () => {
+      goToStatic("about");
+      setMobileMenuOpen(false);
+    } }, /* @__PURE__ */ React.createElement(UserIcon, { size: 19 }), " ", T.aboutMe), /* @__PURE__ */ React.createElement("div", { className: "wp-mobile-menu-sep" }), firebaseReady && !authLoading && (user ? /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-item", onClick: () => {
+      signOutUser();
+      setMobileMenuOpen(false);
+    } }, /* @__PURE__ */ React.createElement(LogOutIcon, { size: 19 }), " ", T.signOut) : /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-item", onClick: () => {
+      openAuthModal("signin");
+      setMobileMenuOpen(false);
+    } }, /* @__PURE__ */ React.createElement(UserIcon, { size: 19 }), " ", T.signIn)), /* @__PURE__ */ React.createElement("div", { className: "wp-mobile-menu-lang-row" }, /* @__PURE__ */ React.createElement("span", { className: "wp-mobile-menu-lang-label" }, T.languageLabel), /* @__PURE__ */ React.createElement("span", { className: "wp-lang-toggle" }, /* @__PURE__ */ React.createElement("button", { className: "wp-lang-btn" + (lang === "en" ? " wp-lang-btn-active" : ""), onClick: () => setLang("en") }, "EN"), /* @__PURE__ */ React.createElement("span", { className: "wp-lang-sep" }, "/"), /* @__PURE__ */ React.createElement("button", { className: "wp-lang-btn" + (lang === "pt" ? " wp-lang-btn-active" : ""), onClick: () => setLang("pt") }, "PT"))))
+  )), view === "continents" && /* @__PURE__ */ React.createElement("div", { className: "wp-hero" }, /* @__PURE__ */ React.createElement("div", { className: "wp-hero-text" }, /* @__PURE__ */ React.createElement("h1", { className: "wp-hero-headline" }, T.heroHeadline), /* @__PURE__ */ React.createElement("p", { className: "wp-tagline" }, T.heroTagline), /* @__PURE__ */ React.createElement("div", { className: "wp-search-wrap", style: { margin: "0 0 1.3rem" } }, /* @__PURE__ */ React.createElement("div", { className: "wp-search-box" }, /* @__PURE__ */ React.createElement(Search, { size: 16, className: "wp-search-icon" }), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       className: "wp-search-input",
       placeholder: T.searchHome,
+      "aria-label": T.searchHome,
       value: homeQuery,
       onChange: (e) => setHomeQuery(e.target.value)
     }
-  ), homeQuery && /* @__PURE__ */ React.createElement("button", { className: "wp-search-clear", onClick: () => setHomeQuery(""), "aria-label": "Clear search" }, /* @__PURE__ */ React.createElement(X, { size: 14 })))), view === "continents" && !homeQuery.trim() && /* @__PURE__ */ React.createElement("div", { className: "wp-continent-grid" }, continents.map((c) => /* @__PURE__ */ React.createElement(
+  ), homeQuery && /* @__PURE__ */ React.createElement("button", { className: "wp-search-clear", onClick: () => setHomeQuery(""), "aria-label": "Clear search" }, /* @__PURE__ */ React.createElement(X, { size: 14 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-features" }, /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => document.querySelector(".wp-continent-grid") && document.querySelector(".wp-continent-grid").scrollIntoView({ behavior: "smooth" }) }, /* @__PURE__ */ React.createElement(Compass, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featExploreTitle), /* @__PURE__ */ React.createElement("span", null, T.featExploreDesc))), /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => goToStatic("map") }, /* @__PURE__ */ React.createElement(MapPinIcon, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featTrackTitle), /* @__PURE__ */ React.createElement("span", null, T.featTrackDesc))), /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => goToStatic("trips") }, /* @__PURE__ */ React.createElement(CalendarClock, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featPlanTitle), /* @__PURE__ */ React.createElement("span", null, T.featPlanDesc)))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stats" }, /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, allCountriesFlat.length), /* @__PURE__ */ React.createElement("span", null, T.statsCountries)), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, totalAttractions, "+"), /* @__PURE__ */ React.createElement("span", null, T.statsAttractions)), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, "2"), /* @__PURE__ */ React.createElement("span", null, T.statsLanguages)))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-visual" }, /* @__PURE__ */ React.createElement(HeroIllustration, null))), view !== "continents" && /* @__PURE__ */ React.createElement("div", { className: "wp-header", style: { marginBottom: "1.6rem" } }, /* @__PURE__ */ React.createElement("div", { className: "wp-brand" }, /* @__PURE__ */ React.createElement("div", { className: "wp-brand-mark" }, /* @__PURE__ */ React.createElement(Compass, { size: 16, style: { color: "#F3EDE0" } })), /* @__PURE__ */ React.createElement("h1", { className: "wp-title", style: { fontSize: "1.4rem" } }, "Waypoint"))), view === "continents" && !homeQuery.trim() && /* @__PURE__ */ React.createElement("div", { className: "wp-continent-grid" }, continents.map((c) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: c.id,
