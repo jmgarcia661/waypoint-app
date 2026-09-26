@@ -1115,6 +1115,10 @@ function Waypoint() {
   const leafletMapRef = useRef(null);
   const mapLayersRef = useRef({});
   const [trips, setTrips] = useState({});
+  const tripsRef = useRef(trips);
+  useEffect(() => {
+    tripsRef.current = trips;
+  }, [trips]);
   const [activeTripId, setActiveTripId] = useState(null);
   const [openAccordion, setOpenAccordion] = useState({});
   const toggleAccordion = (key) => setOpenAccordion((p) => ({ ...p, [key]: !p[key] }));
@@ -1190,6 +1194,9 @@ function Waypoint() {
       setActiveTripTab("route");
       setSelectedDay(1);
     }
+    return () => {
+      if (saveWriteTimer.current) flushTripsSave(tripsRef.current);
+    };
   }, [view, activeTripId]);
   const [geocodeCache, setGeocodeCache] = useState({});
   const geocodeCity = (query, countryName) => {
@@ -1724,13 +1731,38 @@ function Waypoint() {
     });
     return { d: "M" + pts.join(" L"), w, h };
   })();
+  const saveWriteTimer = useRef(null);
   const saveTrips = (next) => {
     setTrips(next);
+    if (!user) return;
+    if (saveWriteTimer.current) clearTimeout(saveWriteTimer.current);
+    saveWriteTimer.current = setTimeout(() => {
+      saveWriteTimer.current = null;
+      firebase.firestore().collection("users").doc(user.uid).set({ trips: next }, { merge: true }).catch(() => {
+      });
+    }, 500);
+  };
+  const flushTripsSave = (next) => {
+    if (saveWriteTimer.current) {
+      clearTimeout(saveWriteTimer.current);
+      saveWriteTimer.current = null;
+    }
     if (user) firebase.firestore().collection("users").doc(user.uid).set({ trips: next }, { merge: true }).catch(() => {
     });
   };
+  useEffect(() => {
+    const onUnload = () => {
+      if (saveWriteTimer.current) flushTripsSave(tripsRef.current);
+    };
+    window.addEventListener("beforeunload", onUnload);
+    window.addEventListener("pagehide", onUnload);
+    return () => {
+      window.removeEventListener("beforeunload", onUnload);
+      window.removeEventListener("pagehide", onUnload);
+    };
+  }, [user]);
   const saveTripNow = (tripId) => {
-    saveTrips({ ...trips });
+    flushTripsSave(trips);
     const savedTrip = trips[tripId];
     if (savedTrip) syncSharedSnapshot(savedTrip);
     setTripSaveStatus("saved");
