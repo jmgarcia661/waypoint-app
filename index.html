@@ -283,6 +283,10 @@ const UI_STRINGS = {
     foodAnchor: "Flavors",
     routeAnchor: "Itinerary",
     faqAnchor: "FAQs",
+    readMore: "Read more",
+    readLess: "Read less",
+    showMap: "Show map",
+    hideMap: "Hide map",
     pctOfWorldVisited: "of the world visited",
     myTrips: "Trips",
     tripsSubtitle: "Plan your next trip, day by day.",
@@ -523,6 +527,10 @@ const UI_STRINGS = {
     foodAnchor: "Sabores",
     routeAnchor: "Roteiro",
     faqAnchor: "D\xFAvidas",
+    readMore: "Ler mais",
+    readLess: "Ler menos",
+    showMap: "Ver mapa",
+    hideMap: "Ocultar mapa",
     pctOfWorldVisited: "do mundo visitado",
     myTrips: "Viagens",
     tripsSubtitle: "Planeia a tua pr\xF3xima viagem, dia a dia.",
@@ -1100,7 +1108,8 @@ function Waypoint() {
     const el = detailSectionRefs.current[id];
     if (el) {
       const y = el.getBoundingClientRect().top + window.pageYOffset - 96;
-      window.scrollTo({ top: y, behavior: "smooth" });
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.scrollTo({ top: y, behavior: reduceMotion ? "auto" : "smooth" });
     }
   };
   const [showNewTripForm, setShowNewTripForm] = useState(false);
@@ -1780,6 +1789,13 @@ function Waypoint() {
     return diff > 0 ? diff : 1;
   };
   const toISODate = (d) => d.toISOString().slice(0, 10);
+  const truncateSummary = (text, maxLen) => {
+    if (!text || text.length <= maxLen) return text;
+    const firstSentence = text.split(/(?<=[.!?])\s/)[0];
+    if (firstSentence && firstSentence.length <= maxLen) return firstSentence;
+    const cut = text.slice(0, maxLen);
+    return cut.slice(0, cut.lastIndexOf(" ")) + "\u2026";
+  };
   const formatDayRange = (trip, dayStart, dayEnd) => {
     if (!trip.startDate || !dayStart || !dayEnd) return "";
     const start = new Date(new Date(trip.startDate).getTime() + (dayStart - 1) * 864e5);
@@ -2307,6 +2323,14 @@ function Waypoint() {
           padding: calc(env(safe-area-inset-top, 0px) + 1.75rem) 1.25rem 4rem;
         }
         .wp-root * { box-sizing: border-box; }
+        @media (prefers-reduced-motion: reduce) {
+          .wp-root *, .wp-root *::before, .wp-root *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+          }
+        }
         .wp-shell { max-width: 780px; margin: 0 auto; }
 
         .wp-hero { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
@@ -2443,6 +2467,10 @@ function Waypoint() {
         .wp-attraction-img-empty { display: flex; align-items: center; justify-content: center; }
         .wp-attraction-name { font-weight: 600; font-size: 1.05rem; margin-bottom: 0.35rem; }
         .wp-attraction-desc { font-size: 0.88rem; color: #4a4436; line-height: 1.55; }
+        .wp-read-more-btn { background: none; border: none; padding: 0.3rem 0; margin-top: 0.2rem; font-size: 0.82rem; font-weight: 600; color: var(--navy); cursor: pointer; }
+        .wp-read-more-btn:hover { text-decoration: underline; }
+        .wp-map-toggle-btn { display: inline-flex; align-items: center; gap: 0.5rem; background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.6rem 1.1rem; font-size: 0.85rem; font-weight: 600; color: var(--navy); cursor: pointer; margin-bottom: 1rem; }
+        .wp-map-toggle-btn:hover { background: var(--navy-subtle); }
 
         .wp-itinerary-wrap { margin-top: 1.9rem; margin-bottom: 0.5rem; }
         .wp-itinerary-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
@@ -2943,7 +2971,10 @@ function Waypoint() {
       value: homeQuery,
       onChange: (e) => setHomeQuery(e.target.value)
     }
-  ), homeQuery && /* @__PURE__ */ React.createElement("button", { className: "wp-search-clear", onClick: () => setHomeQuery(""), "aria-label": "Clear search" }, /* @__PURE__ */ React.createElement(X, { size: 14 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-features" }, /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => document.querySelector(".wp-continent-grid") && document.querySelector(".wp-continent-grid").scrollIntoView({ behavior: "smooth" }) }, /* @__PURE__ */ React.createElement(Compass, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featExploreTitle), /* @__PURE__ */ React.createElement("span", null, T.featExploreDesc))), /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => goToStatic("map") }, /* @__PURE__ */ React.createElement(MapPinIcon, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featTrackTitle), /* @__PURE__ */ React.createElement("span", null, T.featTrackDesc))), /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => goToStatic("trips") }, /* @__PURE__ */ React.createElement(CalendarClock, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featPlanTitle), /* @__PURE__ */ React.createElement("span", null, T.featPlanDesc)))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stats" }, /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, allCountriesFlat.length), /* @__PURE__ */ React.createElement("span", null, T.statsCountries)), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, totalAttractions, "+"), /* @__PURE__ */ React.createElement("span", null, T.statsAttractions)), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, "2"), /* @__PURE__ */ React.createElement("span", null, T.statsLanguages)))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-visual" }, /* @__PURE__ */ React.createElement(HeroIllustration, null))), view !== "continents" && /* @__PURE__ */ React.createElement("div", { className: "wp-header", style: { marginBottom: "1.6rem" } }, /* @__PURE__ */ React.createElement("div", { className: "wp-brand" }, /* @__PURE__ */ React.createElement("div", { className: "wp-brand-mark" }, /* @__PURE__ */ React.createElement(Compass, { size: 16, style: { color: "#F3EDE0" } })), /* @__PURE__ */ React.createElement("h1", { className: "wp-title", style: { fontSize: "1.4rem" } }, "Waypoint"))), view === "continents" && !homeQuery.trim() && /* @__PURE__ */ React.createElement("div", { className: "wp-continent-grid" }, continents.map((c) => /* @__PURE__ */ React.createElement(
+  ), homeQuery && /* @__PURE__ */ React.createElement("button", { className: "wp-search-clear", onClick: () => setHomeQuery(""), "aria-label": "Clear search" }, /* @__PURE__ */ React.createElement(X, { size: 14 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-features" }, /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => {
+    const el = document.querySelector(".wp-continent-grid");
+    if (el) el.scrollIntoView({ behavior: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  } }, /* @__PURE__ */ React.createElement(Compass, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featExploreTitle), /* @__PURE__ */ React.createElement("span", null, T.featExploreDesc))), /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => goToStatic("map") }, /* @__PURE__ */ React.createElement(MapPinIcon, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featTrackTitle), /* @__PURE__ */ React.createElement("span", null, T.featTrackDesc))), /* @__PURE__ */ React.createElement("button", { className: "wp-hero-feature-card", onClick: () => goToStatic("trips") }, /* @__PURE__ */ React.createElement(CalendarClock, { size: 18 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, T.featPlanTitle), /* @__PURE__ */ React.createElement("span", null, T.featPlanDesc)))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stats" }, /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, allCountriesFlat.length), /* @__PURE__ */ React.createElement("span", null, T.statsCountries)), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, totalAttractions, "+"), /* @__PURE__ */ React.createElement("span", null, T.statsAttractions)), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-stat" }, /* @__PURE__ */ React.createElement("b", null, "2"), /* @__PURE__ */ React.createElement("span", null, T.statsLanguages)))), /* @__PURE__ */ React.createElement("div", { className: "wp-hero-visual" }, /* @__PURE__ */ React.createElement(HeroIllustration, null))), view !== "continents" && /* @__PURE__ */ React.createElement("div", { className: "wp-header", style: { marginBottom: "1.6rem" } }, /* @__PURE__ */ React.createElement("div", { className: "wp-brand" }, /* @__PURE__ */ React.createElement("div", { className: "wp-brand-mark" }, /* @__PURE__ */ React.createElement(Compass, { size: 16, style: { color: "#F3EDE0" } })), /* @__PURE__ */ React.createElement("h1", { className: "wp-title", style: { fontSize: "1.4rem" } }, "Waypoint"))), view === "continents" && !homeQuery.trim() && /* @__PURE__ */ React.createElement("div", { className: "wp-continent-grid" }, continents.map((c) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: c.id,
@@ -3006,11 +3037,30 @@ function Waypoint() {
     return /* @__PURE__ */ React.createElement("div", { className: "wp-accordion-row", key }, /* @__PURE__ */ React.createElement("button", { className: "wp-accordion-trigger", onClick: () => toggleAccordion(akey), "aria-expanded": isOpen }, /* @__PURE__ */ React.createElement(Icon, { size: 17, style: { color: continent.color, flexShrink: 0 } }), /* @__PURE__ */ React.createElement("span", { className: "wp-accordion-trigger-label" }, label), /* @__PURE__ */ React.createElement(ChevronRight, { size: 15, className: "wp-accordion-chevron" + (isOpen ? " wp-accordion-chevron-open" : "") })), isOpen && /* @__PURE__ */ React.createElement("div", { className: "wp-accordion-content" }, value));
   }))), /* @__PURE__ */ React.createElement("div", { ref: (el) => {
     detailSectionRefs.current.food = el;
-  }, id: "section-food" }), country.food && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "1.9rem" } }, /* @__PURE__ */ React.createElement("h3", { className: "wp-section-title", style: { display: "flex", alignItems: "center", gap: "0.5rem" } }, /* @__PURE__ */ React.createElement(Utensils, { size: 18, style: { color: continent.color } }), " ", T.tastesOf, " ", country.name), /* @__PURE__ */ React.createElement("div", { className: "wp-food-grid" }, country.food.map((f, i) => /* @__PURE__ */ React.createElement("div", { className: "wp-food-item", key: i }, /* @__PURE__ */ React.createElement("div", { className: "wp-food-name" }, f.name), /* @__PURE__ */ React.createElement("div", { className: "wp-food-desc" }, f.desc))))), /* @__PURE__ */ React.createElement("div", { ref: (el) => {
+  }, id: "section-food" }), country.food && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "1.9rem" } }, /* @__PURE__ */ React.createElement("h3", { className: "wp-section-title", style: { display: "flex", alignItems: "center", gap: "0.5rem" } }, /* @__PURE__ */ React.createElement(Utensils, { size: 18, style: { color: continent.color } }), " ", T.tastesOf, " ", country.name), /* @__PURE__ */ React.createElement("div", { className: "wp-accordion" }, country.food.map((f, i) => {
+    const akey = "food:" + country.id + ":" + i;
+    const isOpen = !!openAccordion[akey];
+    return /* @__PURE__ */ React.createElement("div", { className: "wp-accordion-row", key: i }, /* @__PURE__ */ React.createElement("button", { className: "wp-accordion-trigger", onClick: () => toggleAccordion(akey), "aria-expanded": isOpen }, /* @__PURE__ */ React.createElement("span", { className: "wp-accordion-trigger-label wp-faq-q-label" }, f.name), /* @__PURE__ */ React.createElement(ChevronRight, { size: 15, className: "wp-accordion-chevron" + (isOpen ? " wp-accordion-chevron-open" : "") })), isOpen && /* @__PURE__ */ React.createElement("div", { className: "wp-accordion-content" }, f.desc));
+  }))), /* @__PURE__ */ React.createElement("div", { ref: (el) => {
     detailSectionRefs.current.places = el;
-  }, id: "section-places" }), country.attractions ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { className: "wp-section-title" }, T.topAttractions), /* @__PURE__ */ React.createElement("div", { className: "wp-attractions-grid" }, country.attractions.map((a, i) => /* @__PURE__ */ React.createElement("div", { key: i }, /* @__PURE__ */ React.createElement(AttractionImage, { title: a.wiki, alt: a.name }), /* @__PURE__ */ React.createElement("div", { className: "wp-attraction-name" }, a.name), /* @__PURE__ */ React.createElement("div", { className: "wp-attraction-desc" }, a.desc)))), /* @__PURE__ */ React.createElement("div", { ref: (el) => {
+  }, id: "section-places" }), country.attractions ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h3", { className: "wp-section-title" }, T.topAttractions), /* @__PURE__ */ React.createElement("div", { className: "wp-attractions-grid" }, country.attractions.map((a, i) => {
+    const akey = "attraction:" + country.id + ":" + i;
+    const isExpanded = !!openAccordion[akey];
+    const summary = truncateSummary(a.desc, 110);
+    const needsToggle = summary !== a.desc;
+    return /* @__PURE__ */ React.createElement("div", { key: i }, /* @__PURE__ */ React.createElement(AttractionImage, { title: a.wiki, alt: a.name }), /* @__PURE__ */ React.createElement("div", { className: "wp-attraction-name" }, a.name), /* @__PURE__ */ React.createElement("div", { className: "wp-attraction-desc" }, isExpanded ? a.desc : summary), needsToggle && /* @__PURE__ */ React.createElement("button", { className: "wp-read-more-btn", onClick: () => toggleAccordion(akey), "aria-expanded": isExpanded }, isExpanded ? T.readLess : T.readMore));
+  })), /* @__PURE__ */ React.createElement("div", { ref: (el) => {
     detailSectionRefs.current.route = el;
-  }, id: "section-route" }), /* @__PURE__ */ React.createElement("div", { className: "wp-itinerary-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "wp-itinerary-head" }, /* @__PURE__ */ React.createElement("h3", { className: "wp-section-title", style: { marginBottom: 0, display: "flex", alignItems: "center", gap: "0.5rem" } }, /* @__PURE__ */ React.createElement(MapPinIcon, { size: 18, style: { color: continent.color } }), " ", T.suggestedItinerary), /* @__PURE__ */ React.createElement("span", { className: "wp-itinerary-total" }, country.itineraryDays, " ", country.itineraryDays === 1 ? T.day : T.days)), country.daysReason && /* @__PURE__ */ React.createElement("p", { className: "wp-days-reason" }, country.daysReason), /* @__PURE__ */ React.createElement(CountryMap, { country, accentColor: continent.color }), /* @__PURE__ */ React.createElement("div", { className: "wp-route" }, country.itinerary.map((step, i) => /* @__PURE__ */ React.createElement("div", { className: "wp-day", style: { "--accent-color": continent.color }, key: i }, /* @__PURE__ */ React.createElement("span", { className: "wp-day-label" }, country.itinerary.some((s) => typeof s.lat === "number") ? i + 1 + ". " : "", step.label), /* @__PURE__ */ React.createElement("div", { className: "wp-day-title" }, step.title), /* @__PURE__ */ React.createElement("div", { className: "wp-day-desc" }, step.desc), (step.logistics || step.bookAhead) && /* @__PURE__ */ React.createElement("div", { className: "wp-day-tags" }, step.logistics && /* @__PURE__ */ React.createElement("span", { className: "wp-day-tag" }, step.logistics), step.bookAhead && /* @__PURE__ */ React.createElement("span", { className: "wp-day-tag wp-day-tag-book" }, T.bookAhead)), step.cost && /* @__PURE__ */ React.createElement("div", { className: "wp-day-extra" }, /* @__PURE__ */ React.createElement("strong", null, T.cost, ":"), " ", step.cost), step.food && /* @__PURE__ */ React.createElement("div", { className: "wp-day-extra" }, /* @__PURE__ */ React.createElement("strong", null, T.eat, ":"), " ", step.food))))), /* @__PURE__ */ React.createElement("div", { ref: (el) => {
+  }, id: "section-route" }), /* @__PURE__ */ React.createElement("div", { className: "wp-itinerary-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "wp-itinerary-head" }, /* @__PURE__ */ React.createElement("h3", { className: "wp-section-title", style: { marginBottom: 0, display: "flex", alignItems: "center", gap: "0.5rem" } }, /* @__PURE__ */ React.createElement(MapPinIcon, { size: 18, style: { color: continent.color } }), " ", T.suggestedItinerary), /* @__PURE__ */ React.createElement("span", { className: "wp-itinerary-total" }, country.itineraryDays, " ", country.itineraryDays === 1 ? T.day : T.days)), country.daysReason && /* @__PURE__ */ React.createElement("p", { className: "wp-days-reason" }, country.daysReason), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      className: "wp-map-toggle-btn",
+      onClick: () => toggleAccordion("mapVisible:" + country.id),
+      "aria-expanded": !!openAccordion["mapVisible:" + country.id]
+    },
+    /* @__PURE__ */ React.createElement(MapPinIcon, { size: 15 }),
+    openAccordion["mapVisible:" + country.id] ? T.hideMap : T.showMap
+  ), openAccordion["mapVisible:" + country.id] && /* @__PURE__ */ React.createElement(CountryMap, { country, accentColor: continent.color }), /* @__PURE__ */ React.createElement("div", { className: "wp-route" }, country.itinerary.map((step, i) => /* @__PURE__ */ React.createElement("div", { className: "wp-day", style: { "--accent-color": continent.color }, key: i }, /* @__PURE__ */ React.createElement("span", { className: "wp-day-label" }, country.itinerary.some((s) => typeof s.lat === "number") ? i + 1 + ". " : "", step.label), /* @__PURE__ */ React.createElement("div", { className: "wp-day-title" }, step.title), /* @__PURE__ */ React.createElement("div", { className: "wp-day-desc" }, step.desc), (step.logistics || step.bookAhead) && /* @__PURE__ */ React.createElement("div", { className: "wp-day-tags" }, step.logistics && /* @__PURE__ */ React.createElement("span", { className: "wp-day-tag" }, step.logistics), step.bookAhead && /* @__PURE__ */ React.createElement("span", { className: "wp-day-tag wp-day-tag-book" }, T.bookAhead)), step.cost && /* @__PURE__ */ React.createElement("div", { className: "wp-day-extra" }, /* @__PURE__ */ React.createElement("strong", null, T.cost, ":"), " ", step.cost), step.food && /* @__PURE__ */ React.createElement("div", { className: "wp-day-extra" }, /* @__PURE__ */ React.createElement("strong", null, T.eat, ":"), " ", step.food))))), /* @__PURE__ */ React.createElement("div", { ref: (el) => {
     detailSectionRefs.current.faq = el;
   }, id: "section-faq" }), country.faq && country.faq.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-faq-wrap" }, /* @__PURE__ */ React.createElement("h3", { className: "wp-section-title", style: { display: "flex", alignItems: "center", gap: "0.5rem" } }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 18, style: { color: continent.color } }), " ", T.faqTitle), /* @__PURE__ */ React.createElement("div", { className: "wp-accordion" }, country.faq.map((item, i) => {
     const akey = "faq:" + country.id + ":" + i;
