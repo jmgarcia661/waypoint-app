@@ -110,6 +110,7 @@ const UI_STRINGS = {
     routeTab: "Route", daysTab: "Days", bookingsTab: "Bookings", comingSoonBadge: "coming soon",
     whereToSleepBtn: "Where to sleep", whereToEatBtn: "Where to eat",
     placesBtn: "Places", placesCountSuffix: "places", transportTitle: "Transport",
+    transportModeLabel: "Mode of transport", transportDurationLabel: "Duration", transportCostLabel: "Cost",
     mapIllustrativeLabel: "Illustrative map", mapIllustrativeNote: "Overland route shown, not to scale.",
     transitAddBtn: "Add travel time", transitEditBtn: "Edit",
     highlightsChipLabel: "highlights", doneEditingLabel: "done",
@@ -220,6 +221,7 @@ const UI_STRINGS = {
     routeTab: "Percurso", daysTab: "Dias", bookingsTab: "Reservas", comingSoonBadge: "em breve",
     whereToSleepBtn: "Onde dormir", whereToEatBtn: "Onde comer",
     placesBtn: "Locais", placesCountSuffix: "locais", transportTitle: "Transporte",
+    transportModeLabel: "Meio de transporte", transportDurationLabel: "Duração", transportCostLabel: "Custo",
     mapIllustrativeLabel: "Mapa ilustrativo", mapIllustrativeNote: "Percurso terrestre, não está à escala.",
     transitAddBtn: "Adicionar tempo de viagem", transitEditBtn: "Editar",
     highlightsChipLabel: "destaques", doneEditingLabel: "concluído",
@@ -2095,7 +2097,9 @@ function Waypoint() {
         .wp-task-sheet-context { margin: 0.15rem 0 0; font-size: 0.82rem; color: var(--ink-soft); }
         .wp-task-sheet-scroll { flex: 1; overflow-y: auto; padding: 1.2rem 1.3rem; }
         .wp-task-sheet-footer { padding: 0.9rem 1.3rem; border-top: 1px solid var(--hairline); flex-shrink: 0; }
-        .wp-trip-transit-edit-form { display: flex; flex-direction: column; gap: 0.8rem; }
+        .wp-trip-transit-edit-form { display: flex; flex-direction: column; gap: 1rem; }
+        .wp-trip-field-group { display: flex; flex-direction: column; gap: 0.35rem; }
+        .wp-trip-field-label { font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.02em; }
         .wp-trip-transit-duration-row { display: flex; gap: 0.6rem; }
         .wp-nav-link { background: none; border: none; cursor: pointer; font-family: 'Work Sans', sans-serif; font-size: 0.88rem; color: var(--ink-soft); padding: 0.3rem 0; border-bottom: 2px solid transparent; }
         .wp-nav-link:hover { color: var(--ink); }
@@ -2338,9 +2342,9 @@ function Waypoint() {
         .wp-trip-suggestion-chip { display: flex; align-items: center; gap: 0.25rem; font-size: 0.76rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.25rem 0.6rem; cursor: pointer; color: var(--ink-soft); }
         .wp-trip-suggestion-chip:hover { border-color: var(--gold); color: var(--ink); }
         .wp-trip-transit-row { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.5rem 0.2rem; margin-left: 1rem; border-left: 2px dashed var(--hairline); }
-        .wp-trip-transit-select, .wp-trip-transit-input { font-size: 0.78rem; padding: 0.35rem 0.5rem; border: 1px solid var(--hairline); border-radius: 8px; background: #fff; min-width: 0; }
-        .wp-trip-transit-select { flex: 1 1 6rem; }
-        .wp-trip-transit-input { flex: 1 1 5rem; min-width: 0; }
+        .wp-trip-transit-select, .wp-trip-transit-input { flex: none; font-size: 0.9rem; padding: 0.6rem 0.75rem; border: 1px solid var(--hairline); border-radius: 10px; background: #fff; min-width: 0; width: 100%; }
+        .wp-trip-transit-select { width: 100%; }
+        .wp-trip-transit-input { width: 100%; }
         .wp-trip-add-stop-btn { display: flex; align-items: center; justify-content: center; gap: 0.4rem; width: 100%; background: none; border: 1px dashed var(--hairline); border-radius: 10px; padding: 0.6rem; font-size: 0.85rem; color: var(--ink-soft); cursor: pointer; margin: 0.6rem 0 1.2rem; }
         .wp-trip-add-stop-btn:hover { border-color: var(--gold); color: var(--ink); }
         .wp-trip-footer-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
@@ -3659,38 +3663,47 @@ function Waypoint() {
 
                         {activeEditPanel.type === "transit" && aTransit && (
                           <div className="wp-trip-transit-edit-form">
-                            <select
-                              className="wp-trip-transit-select"
-                              value={aTransit.mode}
-                              onChange={(e) => updateTransit(trip.id, aStop.id, "mode", e.target.value)}
-                            >
-                              <option value="">{T.chooseTransit}</option>
-                              <option value="flight">{T.transitFlight}</option>
-                              <option value="train">{T.transitTrain}</option>
-                              <option value="bus">{T.transitBus}</option>
-                              <option value="car">{T.transitCar}</option>
-                              <option value="boat">{T.transitBoat}</option>
-                            </select>
-                            <div className="wp-trip-transit-duration-row">
+                            <div className="wp-trip-field-group">
+                              <label className="wp-trip-field-label">{T.transportModeLabel}</label>
+                              <select
+                                className="wp-trip-transit-select"
+                                value={aTransit.mode}
+                                onChange={(e) => updateTransit(trip.id, aStop.id, "mode", e.target.value)}
+                              >
+                                <option value="">{T.chooseTransit}</option>
+                                <option value="flight">{T.transitFlight}</option>
+                                <option value="train">{T.transitTrain}</option>
+                                <option value="bus">{T.transitBus}</option>
+                                <option value="car">{T.transitCar}</option>
+                                <option value="boat">{T.transitBoat}</option>
+                              </select>
+                            </div>
+                            <div className="wp-trip-field-group">
+                              <label className="wp-trip-field-label">{T.transportDurationLabel}</label>
+                              <div className="wp-trip-transit-duration-row">
+                                <input
+                                  type="number" min="0" className="wp-trip-transit-input wp-trip-transit-num"
+                                  placeholder={T.hoursLabel}
+                                  value={aTransit.durationHours}
+                                  onChange={(e) => updateTransit(trip.id, aStop.id, "durationHours", e.target.value)}
+                                />
+                                <input
+                                  type="number" min="0" max="59" className="wp-trip-transit-input wp-trip-transit-num"
+                                  placeholder={T.minutesLabel}
+                                  value={aTransit.durationMinutes}
+                                  onChange={(e) => updateTransit(trip.id, aStop.id, "durationMinutes", e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <div className="wp-trip-field-group">
+                              <label className="wp-trip-field-label">{T.transportCostLabel}</label>
                               <input
-                                type="number" min="0" className="wp-trip-transit-input wp-trip-transit-num"
-                                placeholder={T.hoursLabel}
-                                value={aTransit.durationHours}
-                                onChange={(e) => updateTransit(trip.id, aStop.id, "durationHours", e.target.value)}
-                              />
-                              <input
-                                type="number" min="0" max="59" className="wp-trip-transit-input wp-trip-transit-num"
-                                placeholder={T.minutesLabel}
-                                value={aTransit.durationMinutes}
-                                onChange={(e) => updateTransit(trip.id, aStop.id, "durationMinutes", e.target.value)}
+                                type="text" className="wp-trip-transit-input"
+                                placeholder={T.transitPrice}
+                                value={aTransit.price}
+                                onChange={(e) => updateTransit(trip.id, aStop.id, "price", e.target.value)}
                               />
                             </div>
-                            <input
-                              type="text" className="wp-trip-transit-input"
-                              placeholder={T.transitPrice}
-                              value={aTransit.price}
-                              onChange={(e) => updateTransit(trip.id, aStop.id, "price", e.target.value)}
-                            />
                             {aTransit.mode && (
                               <p className="wp-trip-typical-hint">{T.typicalRange}: {TRANSIT_TYPICAL[aTransit.mode]}</p>
                             )}
