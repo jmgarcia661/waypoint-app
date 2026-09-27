@@ -2321,7 +2321,8 @@ function Waypoint() {
         .wp-trip-route-line { position: absolute; left: 0.85rem; top: 1.7rem; bottom: 3rem; width: 1px; background: var(--hairline); }
         .wp-trip-insert-link { display: flex; align-items: center; gap: 0.35rem; background: none; border: none; color: var(--ink-soft); font-size: 0.74rem; opacity: 0.65; cursor: pointer; padding: 0 0 0.8rem; margin-left: -0.1rem; }
         .wp-trip-insert-link:hover { opacity: 1; color: var(--gold); }
-        .wp-trip-entry { position: relative; display: flex; gap: 1.2rem; margin-bottom: 0.4rem; }
+        .wp-trip-entry { position: relative; display: flex; flex-direction: column; gap: 0.9rem; margin-bottom: 0.4rem; }
+        .wp-trip-entry-top-row { display: flex; gap: 1.2rem; }
         .wp-trip-entry-dot { position: absolute; left: -2.3rem; top: 0.3rem; width: 15px; height: 15px; border-radius: 50%; background: var(--hairline); border: 3px solid var(--parchment); }
         .wp-trip-entry-dot-active { background: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
         .wp-trip-entry-photo { width: 150px; height: 108px; border-radius: 14px; flex-shrink: 0; background-size: cover; }
@@ -3523,40 +3524,44 @@ function Waypoint() {
 
                   <div className="wp-trip-entry">
                     <span className={"wp-trip-entry-dot" + (stop.highlights.length || (stop.stays||[]).length || (stop.meals||[]).length ? " wp-trip-entry-dot-active" : "")}></span>
-                    <div className="wp-trip-entry-photo" style={{ background: "linear-gradient(160deg, " + ((countryData && countryData.continentColor) || "#2F5D62") + ", #142035)" }}></div>
-                    <div className="wp-trip-entry-body">
-                      <div className="wp-trip-entry-head">
-                        <input
-                          type="text"
-                          className="wp-trip-city-input"
-                          placeholder={T.cityPlaceholder}
-                          value={stop.city}
-                          onChange={(e) => updateStopField(trip.id, stop.id, "city", e.target.value)}
-                        />
-                        <span className="wp-trip-entry-days">
-                          {T.day}
+                    <div className="wp-trip-entry-top-row">
+                      <div className="wp-trip-entry-photo" style={{ background: "linear-gradient(160deg, " + ((countryData && countryData.continentColor) || "#2F5D62") + ", #142035)" }}></div>
+                      <div className="wp-trip-entry-body">
+                        <div className="wp-trip-entry-head">
                           <input
-                            type="number" min="1" className="wp-trip-day-num"
-                            value={stop.dayStart}
-                            onChange={(e) => updateStopField(trip.id, stop.id, "dayStart", e.target.value === "" ? "" : parseInt(e.target.value))}
-                            onBlur={(e) => { const n = parseInt(e.target.value); updateStopField(trip.id, stop.id, "dayStart", n > 0 ? n : 1); }}
+                            type="text"
+                            className="wp-trip-city-input"
+                            placeholder={T.cityPlaceholder}
+                            value={stop.city}
+                            onChange={(e) => updateStopField(trip.id, stop.id, "city", e.target.value)}
                           />
-                          -
-                          <input
-                            type="number" min="1" className="wp-trip-day-num"
-                            value={stop.dayEnd}
-                            onChange={(e) => updateStopField(trip.id, stop.id, "dayEnd", e.target.value === "" ? "" : parseInt(e.target.value))}
-                            onBlur={(e) => { const n = parseInt(e.target.value); updateStopField(trip.id, stop.id, "dayEnd", n > 0 ? n : 1); }}
-                          />
-                        </span>
-                        {trip.stops.length > 1 && (
-                          <button className="wp-trip-remove-btn" onClick={() => removeStop(trip.id, stop.id)} aria-label="Remove stop"><X size={14} /></button>
+                          <span className="wp-trip-entry-days">
+                            {T.day}
+                            <input
+                              type="number" min="1" className="wp-trip-day-num"
+                              value={stop.dayStart}
+                              onChange={(e) => updateStopField(trip.id, stop.id, "dayStart", e.target.value === "" ? "" : parseInt(e.target.value))}
+                              onBlur={(e) => { const n = parseInt(e.target.value); updateStopField(trip.id, stop.id, "dayStart", n > 0 ? n : 1); }}
+                            />
+                            -
+                            <input
+                              type="number" min="1" className="wp-trip-day-num"
+                              value={stop.dayEnd}
+                              onChange={(e) => updateStopField(trip.id, stop.id, "dayEnd", e.target.value === "" ? "" : parseInt(e.target.value))}
+                              onBlur={(e) => { const n = parseInt(e.target.value); updateStopField(trip.id, stop.id, "dayEnd", n > 0 ? n : 1); }}
+                            />
+                          </span>
+                          {trip.stops.length > 1 && (
+                            <button className="wp-trip-remove-btn" onClick={() => removeStop(trip.id, stop.id)} aria-label="Remove stop"><X size={14} /></button>
+                          )}
+                        </div>
+                        {formatDayRange(trip, stop.dayStart, stop.dayEnd) && (
+                          <p className="wp-trip-date-range-hint">{formatDayRange(trip, stop.dayStart, stop.dayEnd)}</p>
                         )}
                       </div>
-                      {formatDayRange(trip, stop.dayStart, stop.dayEnd) && (
-                        <p className="wp-trip-date-range-hint">{formatDayRange(trip, stop.dayStart, stop.dayEnd)}</p>
-                      )}
+                    </div>
 
+                    <div className="wp-trip-entry-full">
                       <div className="wp-trip-chips-row">
                         {stop.highlights.map((h) => (
                           <span key={h.id} className="wp-trip-chip">
