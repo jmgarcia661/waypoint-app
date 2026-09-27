@@ -121,6 +121,7 @@ const UI_STRINGS = {
     pctOfWorldVisited: "of the world visited",
     myTrips: "Trips", tripsSubtitle: "Plan your next trip, day by day.",
     tripsStatTrips: "TRIPS", tripsStatContinents: "CONTINENTS", tripsStatNights: "NIGHTS PLANNED", tripsStatDone: "COMPLETED",
+    tripsFilterAll: "All", tripsFilterPlanning: "Planning", tripsFilterClosed: "Closed",
     routeTab: "Route", daysTab: "Days", bookingsTab: "Bookings", comingSoonBadge: "coming soon",
     whereToSleepBtn: "Where to sleep", whereToEatBtn: "Where to eat",
     placesBtn: "Places", placesCountSuffix: "places", transportTitle: "Transport",
@@ -233,6 +234,7 @@ const UI_STRINGS = {
     pctOfWorldVisited: "do mundo visitado",
     myTrips: "Viagens", tripsSubtitle: "Planeia a tua próxima viagem, dia a dia.",
     tripsStatTrips: "VIAGENS", tripsStatContinents: "CONTINENTES", tripsStatNights: "NOITES PLANEADAS", tripsStatDone: "CONCLUÍDAS",
+    tripsFilterAll: "Todas", tripsFilterPlanning: "A planear", tripsFilterClosed: "Concluídas",
     routeTab: "Percurso", daysTab: "Dias", bookingsTab: "Reservas", comingSoonBadge: "em breve",
     whereToSleepBtn: "Onde dormir", whereToEatBtn: "Onde comer",
     placesBtn: "Locais", placesCountSuffix: "locais", transportTitle: "Transporte",
@@ -882,6 +884,7 @@ function Waypoint() {
 
   const [activeTripTab, setActiveTripTab] = useState("route");
   const [bookingsSubTab, setBookingsSubTab] = useState("all");
+  const [tripsStatusFilter, setTripsStatusFilter] = useState("all");
   const [documentDraft, setDocumentDraft] = useState("");
   const [selectedDay, setSelectedDay] = useState(1);
   const [dayView, setDayView] = useState("list");
@@ -1438,6 +1441,11 @@ function Waypoint() {
     if (transit.durationHours) parts.push(transit.durationHours + "h");
     if (transit.durationMinutes) parts.push(transit.durationMinutes + "min");
     return parts.join(" ");
+  };
+  const formatContentDate = (isoDate) => {
+    const d = new Date(isoDate + "T00:00:00");
+    const locale = lang === "pt" ? "pt-PT" : "en-US";
+    return d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
   };
   const formatDayRange = (trip, dayStart, dayEnd) => {
     if (!trip.startDate || !dayStart || !dayEnd) return "";
@@ -2270,6 +2278,9 @@ function Waypoint() {
 
         /* ---- Trip planner redesign ---- */
         .wp-trips-stat-strip { display: flex; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; margin-bottom: 1.4rem; }
+        .wp-trips-filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+        .wp-trips-filter-pill { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.45rem 1.1rem; font-size: 0.82rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
+        .wp-trips-filter-pill-active { background: var(--navy); border-color: var(--navy); color: #fff; font-weight: 600; }
         .wp-trips-stat-cell { flex: 1; background: #fff; padding: 0.85rem 1.2rem; min-width: 120px; }
         .wp-trips-stat-label { margin: 0 0 0.2rem; font-size: 0.68rem; color: var(--ink-soft); font-weight: 500; letter-spacing: 0.02em; }
         .wp-trips-stat-value { margin: 0; font-size: 1.35rem; }
@@ -2324,7 +2335,7 @@ function Waypoint() {
         .wp-trip-chip-add { background: var(--parchment); border: 1px dashed var(--hairline); color: var(--ink-soft); cursor: pointer; }
 
         .wp-trip-panel-row { display: flex; gap: 0.5rem; position: relative; flex-wrap: nowrap; }
-        .wp-trip-panel-btn { display: flex; align-items: center; justify-content: center; gap: 0.35rem; flex: 1 1 0; min-width: 0; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.5rem 0.5rem; font-size: 0.74rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; text-align: center; white-space: normal; line-height: 1.2; }
+        .wp-trip-panel-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; flex: 1 1 0; min-width: 0; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.55rem 0.4rem; font-size: 0.7rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; text-align: center; white-space: normal; line-height: 1.2; }
         .wp-trip-panel-btn svg { flex-shrink: 0; }
         @media (max-width: 380px) {
           .wp-trip-panel-row { gap: 0.35rem; }
@@ -2417,6 +2428,7 @@ function Waypoint() {
           .wp-trip-panel-box { padding: 1.1rem; }
         }
         .wp-trip-add-btn { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; }
+        .wp-trip-time-input { flex: 0 0 130px; }
         .wp-trip-suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
         .wp-trip-suggestions-label { margin: 0.9rem 0 0.4rem; font-size: 0.72rem; color: var(--ink-soft); }
         .wp-trip-suggestion-chip { display: flex; align-items: center; gap: 0.25rem; font-size: 0.76rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.25rem 0.6rem; cursor: pointer; color: var(--ink-soft); }
@@ -3350,8 +3362,18 @@ function Waypoint() {
             })()}
 
             {user && Object.keys(trips).length > 0 && (
+              <div className="wp-trips-filter-row">
+                <button className={"wp-trips-filter-pill" + (tripsStatusFilter === "all" ? " wp-trips-filter-pill-active" : "")} onClick={() => setTripsStatusFilter("all")}>{T.tripsFilterAll}</button>
+                <button className={"wp-trips-filter-pill" + (tripsStatusFilter === "planning" ? " wp-trips-filter-pill-active" : "")} onClick={() => setTripsStatusFilter("planning")}>{T.tripsFilterPlanning}</button>
+                <button className={"wp-trips-filter-pill" + (tripsStatusFilter === "done" ? " wp-trips-filter-pill-active" : "")} onClick={() => setTripsStatusFilter("done")}>{T.tripsFilterClosed}</button>
+              </div>
+            )}
+
+            {user && Object.keys(trips).length > 0 && (
               <div className="wp-trips-grid">
-                {Object.values(trips).map((trip) => {
+                {Object.values(trips)
+                  .filter((trip) => tripsStatusFilter === "all" || (tripsStatusFilter === "done" ? trip.status === "done" : trip.status !== "done"))
+                  .map((trip) => {
                   const tc = allCountriesFlat.find((c) => c.id === trip.countryId);
                   const accent = (tc && tc.continentColor) || "#2F5D62";
                   return (
@@ -3902,9 +3924,8 @@ function Waypoint() {
                         ))}
                         <div className="wp-trip-add-highlight-row" style={{ marginTop: "0.7rem" }}>
                           <input
-                            type="text"
-                            className="wp-trip-highlight-input"
-                            style={{ flex: "0 0 90px" }}
+                            type="time"
+                            className="wp-trip-highlight-input wp-trip-time-input"
                             placeholder={T.activityTimePlaceholder}
                             value={draft.time || ""}
                             onChange={(e) => setActivityDrafts({ ...activityDrafts, [selectedDay]: { ...draft, time: e.target.value } })}
@@ -4244,7 +4265,8 @@ function Waypoint() {
             <h2 className="wp-section-title" style={{ marginBottom: "1.3rem" }}>{T.articles}</h2>
             <a href="articles/namibia-solo-road-trip.html" style={{ display: "block", background: "#fff", border: "1px solid var(--hairline)", borderRadius: "10px", padding: "1.3rem 1.4rem", textDecoration: "none", color: "var(--ink)", marginBottom: "1rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--gold)", fontWeight: 600, marginBottom: "0.6rem" }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }}></span>Trip report · Namibia</div>
-              <div style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.5rem" }}>Ten Days of Silence: A Solo Self-Drive Through Namibia</div>
+              <div style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.3rem" }}>Ten Days of Silence: A Solo Self-Drive Through Namibia</div>
+              <div style={{ fontSize: "0.76rem", color: "var(--ink-soft)", marginBottom: "0.5rem" }}>{formatContentDate("2026-09-17")}</div>
               <div style={{ fontSize: "0.92rem", color: "#4a4436", lineHeight: 1.55 }}>A practical, honest account of driving myself across Namibia — Etosha's waterholes, Cape Cross's seals, sleeping on the roof of a 4x4, and everything I'd do again.</div>
             </a>
             <p className="wp-blurb" style={{ color: "var(--ink-soft)", fontSize: "0.88rem" }}>More articles are on their way — check back soon.</p>
@@ -4256,7 +4278,8 @@ function Waypoint() {
             <h2 className="wp-section-title" style={{ marginBottom: "1.3rem" }}>{T.products}</h2>
             <div style={{ background: "#fff", border: "1px solid var(--hairline)", borderRadius: "10px", padding: "1.5rem 1.6rem", marginBottom: "1rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--gold)", fontWeight: 600, marginBottom: "0.6rem" }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }}></span>Free download</div>
-              <div style={{ fontSize: "1.3rem", fontWeight: 600, marginBottom: "0.6rem" }}>Namibia Self-Drive Checklist &amp; Planner</div>
+              <div style={{ fontSize: "1.3rem", fontWeight: 600, marginBottom: "0.3rem" }}>Namibia Self-Drive Checklist &amp; Planner</div>
+              <div style={{ fontSize: "0.76rem", color: "var(--ink-soft)", marginBottom: "0.7rem" }}>{formatContentDate("2026-09-17")}</div>
               <p style={{ fontSize: "0.95rem", color: "#4a4436", lineHeight: 1.6, marginBottom: "1.1rem" }}>The route at a glance, what to book months ahead, offline driving apps that actually work, and a gear checklist — everything from the Namibia trip report, organized into a printable planner.</p>
               <button
                 onClick={() => goToStatic("newsletter")}

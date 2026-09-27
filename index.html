@@ -298,6 +298,9 @@ const UI_STRINGS = {
     tripsStatContinents: "CONTINENTS",
     tripsStatNights: "NIGHTS PLANNED",
     tripsStatDone: "COMPLETED",
+    tripsFilterAll: "All",
+    tripsFilterPlanning: "Planning",
+    tripsFilterClosed: "Closed",
     routeTab: "Route",
     daysTab: "Days",
     bookingsTab: "Bookings",
@@ -548,6 +551,9 @@ const UI_STRINGS = {
     tripsStatContinents: "CONTINENTES",
     tripsStatNights: "NOITES PLANEADAS",
     tripsStatDone: "CONCLU\xCDDAS",
+    tripsFilterAll: "Todas",
+    tripsFilterPlanning: "A planear",
+    tripsFilterClosed: "Conclu\xEDdas",
     routeTab: "Percurso",
     daysTab: "Dias",
     bookingsTab: "Reservas",
@@ -1185,6 +1191,7 @@ function Waypoint() {
   }, [activeEditPanel]);
   const [activeTripTab, setActiveTripTab] = useState("route");
   const [bookingsSubTab, setBookingsSubTab] = useState("all");
+  const [tripsStatusFilter, setTripsStatusFilter] = useState("all");
   const [documentDraft, setDocumentDraft] = useState("");
   const [selectedDay, setSelectedDay] = useState(1);
   const [dayView, setDayView] = useState("list");
@@ -1851,6 +1858,11 @@ function Waypoint() {
     if (transit.durationHours) parts.push(transit.durationHours + "h");
     if (transit.durationMinutes) parts.push(transit.durationMinutes + "min");
     return parts.join(" ");
+  };
+  const formatContentDate = (isoDate) => {
+    const d = /* @__PURE__ */ new Date(isoDate + "T00:00:00");
+    const locale = lang === "pt" ? "pt-PT" : "en-US";
+    return d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
   };
   const formatDayRange = (trip, dayStart, dayEnd) => {
     if (!trip.startDate || !dayStart || !dayEnd) return "";
@@ -2674,6 +2686,9 @@ function Waypoint() {
 
         /* ---- Trip planner redesign ---- */
         .wp-trips-stat-strip { display: flex; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; margin-bottom: 1.4rem; }
+        .wp-trips-filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+        .wp-trips-filter-pill { background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 0.45rem 1.1rem; font-size: 0.82rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; }
+        .wp-trips-filter-pill-active { background: var(--navy); border-color: var(--navy); color: #fff; font-weight: 600; }
         .wp-trips-stat-cell { flex: 1; background: #fff; padding: 0.85rem 1.2rem; min-width: 120px; }
         .wp-trips-stat-label { margin: 0 0 0.2rem; font-size: 0.68rem; color: var(--ink-soft); font-weight: 500; letter-spacing: 0.02em; }
         .wp-trips-stat-value { margin: 0; font-size: 1.35rem; }
@@ -2728,7 +2743,7 @@ function Waypoint() {
         .wp-trip-chip-add { background: var(--parchment); border: 1px dashed var(--hairline); color: var(--ink-soft); cursor: pointer; }
 
         .wp-trip-panel-row { display: flex; gap: 0.5rem; position: relative; flex-wrap: nowrap; }
-        .wp-trip-panel-btn { display: flex; align-items: center; justify-content: center; gap: 0.35rem; flex: 1 1 0; min-width: 0; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.5rem 0.5rem; font-size: 0.74rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; text-align: center; white-space: normal; line-height: 1.2; }
+        .wp-trip-panel-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; flex: 1 1 0; min-width: 0; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.55rem 0.4rem; font-size: 0.7rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; text-align: center; white-space: normal; line-height: 1.2; }
         .wp-trip-panel-btn svg { flex-shrink: 0; }
         @media (max-width: 380px) {
           .wp-trip-panel-row { gap: 0.35rem; }
@@ -2821,6 +2836,7 @@ function Waypoint() {
           .wp-trip-panel-box { padding: 1.1rem; }
         }
         .wp-trip-add-btn { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; }
+        .wp-trip-time-input { flex: 0 0 130px; }
         .wp-trip-suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
         .wp-trip-suggestions-label { margin: 0.9rem 0 0.4rem; font-size: 0.72rem; color: var(--ink-soft); }
         .wp-trip-suggestion-chip { display: flex; align-items: center; gap: 0.25rem; font-size: 0.76rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.25rem 0.6rem; cursor: pointer; color: var(--ink-soft); }
@@ -3209,7 +3225,7 @@ function Waypoint() {
       if (trip.status === "done") totalDone += 1;
     });
     return /* @__PURE__ */ React.createElement("div", { className: "wp-trips-stat-strip" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trips-stat-cell" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trips-stat-label" }, T.tripsStatTrips), /* @__PURE__ */ React.createElement("p", { className: "wp-trips-stat-value" }, tripList.length)), /* @__PURE__ */ React.createElement("div", { className: "wp-trips-stat-cell" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trips-stat-label" }, T.tripsStatContinents), /* @__PURE__ */ React.createElement("p", { className: "wp-trips-stat-value" }, continentIds.size)), /* @__PURE__ */ React.createElement("div", { className: "wp-trips-stat-cell" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trips-stat-label" }, T.tripsStatNights), /* @__PURE__ */ React.createElement("p", { className: "wp-trips-stat-value" }, totalNights)), /* @__PURE__ */ React.createElement("div", { className: "wp-trips-stat-cell" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trips-stat-label" }, T.tripsStatDone), /* @__PURE__ */ React.createElement("p", { className: "wp-trips-stat-value" }, totalDone)));
-  })(), user && Object.keys(trips).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trips-grid" }, Object.values(trips).map((trip) => {
+  })(), user && Object.keys(trips).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trips-filter-row" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trips-filter-pill" + (tripsStatusFilter === "all" ? " wp-trips-filter-pill-active" : ""), onClick: () => setTripsStatusFilter("all") }, T.tripsFilterAll), /* @__PURE__ */ React.createElement("button", { className: "wp-trips-filter-pill" + (tripsStatusFilter === "planning" ? " wp-trips-filter-pill-active" : ""), onClick: () => setTripsStatusFilter("planning") }, T.tripsFilterPlanning), /* @__PURE__ */ React.createElement("button", { className: "wp-trips-filter-pill" + (tripsStatusFilter === "done" ? " wp-trips-filter-pill-active" : ""), onClick: () => setTripsStatusFilter("done") }, T.tripsFilterClosed)), user && Object.keys(trips).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trips-grid" }, Object.values(trips).filter((trip) => tripsStatusFilter === "all" || (tripsStatusFilter === "done" ? trip.status === "done" : trip.status !== "done")).map((trip) => {
     const tc = allCountriesFlat.find((c) => c.id === trip.countryId);
     const accent = tc && tc.continentColor || "#2F5D62";
     return /* @__PURE__ */ React.createElement(
@@ -3530,9 +3546,8 @@ function Waypoint() {
       })), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-header-row" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-city" }, dayStop ? dayStop.city || T.cityPlaceholder : ""), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-view-toggle" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (dayView === "list" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setDayView("list") }, T.listViewLabel), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (dayView === "map" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setDayView("map") }, T.mapViewLabel))), dayStop && dayStop.highlights.filter((h) => !dayActivities.some((a) => a.name === h.text)).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-suggestions" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-suggestions-label" }, T.daySuggestionsLabel), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row" }, dayStop.highlights.filter((h) => !dayActivities.some((a) => a.name === h.text)).map((h) => /* @__PURE__ */ React.createElement("button", { key: h.id, className: "wp-trip-suggestion-chip", onClick: () => addDayActivity(trip.id, selectedDay, "", h.text) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", h.text)))), dayView === "list" ? /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-list" }, dayActivities.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-list-empty" }, T.dayListEmpty), dayActivities.map((a) => /* @__PURE__ */ React.createElement("div", { key: a.id, className: "wp-trip-day-activity-row" }, a.time && /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-time" }, a.time), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-name" }, a.name), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeDayActivity(trip.id, selectedDay, a.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row", style: { marginTop: "0.7rem" } }, /* @__PURE__ */ React.createElement(
         "input",
         {
-          type: "text",
-          className: "wp-trip-highlight-input",
-          style: { flex: "0 0 90px" },
+          type: "time",
+          className: "wp-trip-highlight-input wp-trip-time-input",
           placeholder: T.activityTimePlaceholder,
           value: draft.time || "",
           onChange: (e) => setActivityDrafts({ ...activityDrafts, [selectedDay]: { ...draft, time: e.target.value } })
@@ -3699,7 +3714,7 @@ function Waypoint() {
       const noteText = notes[day] || "";
       return /* @__PURE__ */ React.createElement("div", { key: day, className: "wp-trip-timeline-entry" }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-timeline-dot" + (noteText.trim() ? " wp-trip-timeline-dot-filled" : "") }), /* @__PURE__ */ React.createElement("p", { className: "wp-trip-timeline-day" }, /* @__PURE__ */ React.createElement("b", null, T.day, " ", day), covering && covering.city ? /* @__PURE__ */ React.createElement("span", { className: "wp-trip-timeline-city" }, " \xB7 ", covering.city) : null), noteText.trim() && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-timeline-note wp-trip-timeline-note-readonly" }, noteText));
     }))), /* @__PURE__ */ React.createElement("a", { className: "wp-quiz-btn wp-quiz-btn-primary", href: "index.html", style: { display: "inline-flex", textDecoration: "none", marginTop: "1rem" } }, T.planYourOwnTrip));
-  })()), view === "articles" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "wp-section-title", style: { marginBottom: "1.3rem" } }, T.articles), /* @__PURE__ */ React.createElement("a", { href: "articles/namibia-solo-road-trip.html", style: { display: "block", background: "#fff", border: "1px solid var(--hairline)", borderRadius: "10px", padding: "1.3rem 1.4rem", textDecoration: "none", color: "var(--ink)", marginBottom: "1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--gold)", fontWeight: 600, marginBottom: "0.6rem" } }, /* @__PURE__ */ React.createElement("span", { style: { width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" } }), "Trip report \xB7 Namibia"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.5rem" } }, "Ten Days of Silence: A Solo Self-Drive Through Namibia"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.92rem", color: "#4a4436", lineHeight: 1.55 } }, "A practical, honest account of driving myself across Namibia \u2014 Etosha's waterholes, Cape Cross's seals, sleeping on the roof of a 4x4, and everything I'd do again.")), /* @__PURE__ */ React.createElement("p", { className: "wp-blurb", style: { color: "var(--ink-soft)", fontSize: "0.88rem" } }, "More articles are on their way \u2014 check back soon.")), view === "products" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "wp-section-title", style: { marginBottom: "1.3rem" } }, T.products), /* @__PURE__ */ React.createElement("div", { style: { background: "#fff", border: "1px solid var(--hairline)", borderRadius: "10px", padding: "1.5rem 1.6rem", marginBottom: "1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--gold)", fontWeight: 600, marginBottom: "0.6rem" } }, /* @__PURE__ */ React.createElement("span", { style: { width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" } }), "Free download"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "1.3rem", fontWeight: 600, marginBottom: "0.6rem" } }, "Namibia Self-Drive Checklist & Planner"), /* @__PURE__ */ React.createElement("p", { style: { fontSize: "0.95rem", color: "#4a4436", lineHeight: 1.6, marginBottom: "1.1rem" } }, "The route at a glance, what to book months ahead, offline driving apps that actually work, and a gear checklist \u2014 everything from the Namibia trip report, organized into a printable planner."), /* @__PURE__ */ React.createElement(
+  })()), view === "articles" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "wp-section-title", style: { marginBottom: "1.3rem" } }, T.articles), /* @__PURE__ */ React.createElement("a", { href: "articles/namibia-solo-road-trip.html", style: { display: "block", background: "#fff", border: "1px solid var(--hairline)", borderRadius: "10px", padding: "1.3rem 1.4rem", textDecoration: "none", color: "var(--ink)", marginBottom: "1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--gold)", fontWeight: 600, marginBottom: "0.6rem" } }, /* @__PURE__ */ React.createElement("span", { style: { width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" } }), "Trip report \xB7 Namibia"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.3rem" } }, "Ten Days of Silence: A Solo Self-Drive Through Namibia"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.76rem", color: "var(--ink-soft)", marginBottom: "0.5rem" } }, formatContentDate("2026-09-17")), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.92rem", color: "#4a4436", lineHeight: 1.55 } }, "A practical, honest account of driving myself across Namibia \u2014 Etosha's waterholes, Cape Cross's seals, sleeping on the roof of a 4x4, and everything I'd do again.")), /* @__PURE__ */ React.createElement("p", { className: "wp-blurb", style: { color: "var(--ink-soft)", fontSize: "0.88rem" } }, "More articles are on their way \u2014 check back soon.")), view === "products" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "wp-section-title", style: { marginBottom: "1.3rem" } }, T.products), /* @__PURE__ */ React.createElement("div", { style: { background: "#fff", border: "1px solid var(--hairline)", borderRadius: "10px", padding: "1.5rem 1.6rem", marginBottom: "1rem" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--gold)", fontWeight: 600, marginBottom: "0.6rem" } }, /* @__PURE__ */ React.createElement("span", { style: { width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" } }), "Free download"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "1.3rem", fontWeight: 600, marginBottom: "0.3rem" } }, "Namibia Self-Drive Checklist & Planner"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.76rem", color: "var(--ink-soft)", marginBottom: "0.7rem" } }, formatContentDate("2026-09-17")), /* @__PURE__ */ React.createElement("p", { style: { fontSize: "0.95rem", color: "#4a4436", lineHeight: 1.6, marginBottom: "1.1rem" } }, "The route at a glance, what to book months ahead, offline driving apps that actually work, and a gear checklist \u2014 everything from the Namibia trip report, organized into a printable planner."), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => goToStatic("newsletter"),
