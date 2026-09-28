@@ -126,6 +126,11 @@ const UI_STRINGS = {
     whereToSleepBtn: "Where to sleep", whereToEatBtn: "Where to eat",
     placesBtn: "Places", placesCountSuffix: "places", transportTitle: "Transport",
     transportModeLabel: "Mode of transport", transportDurationLabel: "Duration", transportCostLabel: "Cost",
+    activitiesBtn: "Activities", activitiesCountSuffix: "activities", addActivityBtn: "Add activity",
+    activityNameLabel: "Activity or tour", activityNamePlaceholder: "e.g. Sintra day trip",
+    activityDayLabel: "Day", activityTimeLabel: "Time", anyDay: "Any day",
+    bookingsActivities: "Activities", noActivitiesYet: "No activities added yet — add one with \"Activities\" in Route.",
+    pdfSleepPrefix: "Stay", pdfEatPrefix: "Eat", pdfActivityPrefix: "Activity",
     daysUnitLabel: "days", hoursUnitLabel: "hours", minutesUnitLabel: "min",
     mapIllustrativeLabel: "Illustrative map", mapIllustrativeNote: "Overland route shown, not to scale.",
     transitAddBtn: "Add travel time", transitEditBtn: "Edit",
@@ -239,6 +244,11 @@ const UI_STRINGS = {
     whereToSleepBtn: "Onde dormir", whereToEatBtn: "Onde comer",
     placesBtn: "Locais", placesCountSuffix: "locais", transportTitle: "Transporte",
     transportModeLabel: "Meio de transporte", transportDurationLabel: "Duração", transportCostLabel: "Custo",
+    activitiesBtn: "Atividades", activitiesCountSuffix: "atividades", addActivityBtn: "Adicionar atividade",
+    activityNameLabel: "Atividade ou excursão", activityNamePlaceholder: "ex: Excursão a Sintra",
+    activityDayLabel: "Dia", activityTimeLabel: "Hora", anyDay: "Qualquer dia",
+    bookingsActivities: "Atividades", noActivitiesYet: "Ainda sem atividades — adiciona uma em \"Atividades\" no Percurso.",
+    pdfSleepPrefix: "Dormir", pdfEatPrefix: "Comer", pdfActivityPrefix: "Atividade",
     daysUnitLabel: "dias", hoursUnitLabel: "horas", minutesUnitLabel: "min",
     mapIllustrativeLabel: "Mapa ilustrativo", mapIllustrativeNote: "Percurso terrestre, não está à escala.",
     transitAddBtn: "Adicionar tempo de viagem", transitEditBtn: "Editar",
@@ -885,6 +895,7 @@ function Waypoint() {
   const [activeTripTab, setActiveTripTab] = useState("route");
   const [bookingsSubTab, setBookingsSubTab] = useState("all");
   const [tripsStatusFilter, setTripsStatusFilter] = useState("all");
+  const [stopActivityDrafts, setStopActivityDrafts] = useState({});
   const [documentDraft, setDocumentDraft] = useState("");
   const [selectedDay, setSelectedDay] = useState(1);
   const [dayView, setDayView] = useState("list");
@@ -1447,6 +1458,13 @@ function Waypoint() {
     const locale = lang === "pt" ? "pt-PT" : "en-US";
     return d.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
   };
+  const formatTripDay = (trip, dayNum) => {
+    const n = parseInt(dayNum);
+    if (!n) return "";
+    if (!trip.startDate) return T.day + " " + n;
+    const d = new Date(new Date(trip.startDate).getTime() + (n - 1) * 86400000);
+    return d.toLocaleDateString(lang === "pt" ? "pt-PT" : "en-GB", { day: "numeric", month: "short" });
+  };
   const formatDayRange = (trip, dayStart, dayEnd) => {
     if (!trip.startDate || !dayStart || !dayEnd) return "";
     const start = new Date(new Date(trip.startDate).getTime() + (dayStart - 1) * 86400000);
@@ -1478,7 +1496,7 @@ function Waypoint() {
       startDate: newTripStart,
       endDate: newTripEnd,
       status: "planning",
-      stops: [{ id: "stop_" + Date.now(), city: "", dayStart: 1, dayEnd: total, highlights: [], stays: [], meals: [] }],
+      stops: [{ id: "stop_" + Date.now(), city: "", dayStart: 1, dayEnd: total, highlights: [], stays: [], meals: [], activities: [] }],
       transits: [],
       dailyNotes: {},
       isPublic: false,
@@ -1520,7 +1538,7 @@ function Waypoint() {
     return next;
   };
 
-  const makeBlankStop = (dayStart, dayEnd) => ({ id: "stop_" + Date.now() + "_" + Math.floor(Math.random() * 1000), city: "", dayStart, dayEnd, highlights: [], stays: [], meals: [] });
+  const makeBlankStop = (dayStart, dayEnd) => ({ id: "stop_" + Date.now() + "_" + Math.floor(Math.random() * 1000), city: "", dayStart, dayEnd, highlights: [], stays: [], meals: [], activities: [] });
 
   const addStop = (tripId) => {
     updateTrip(tripId, (t) => {
@@ -1644,10 +1662,35 @@ function Waypoint() {
   };
   const stopForDay = (trip, dayNum) => trip.stops.find((s) => dayNum >= s.dayStart && dayNum <= s.dayEnd) || trip.stops[0];
 
+  // Activities/tours per stop. `day` is a day number inside the stop's own range
+  // (kept as a string from the <select>), so an activity can never point outside
+  // the stop it belongs to. Older stops have no `activities` field: always read
+  // it as `(stop.activities || [])`.
+  const addActivity = (tripId, stopId, name, day, time, price) => {
+    if (!name || !name.trim()) return;
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, activities: [...(s.activities || []), { id: "ac_" + Date.now(), name: name.trim(), day: day || "", time: time || "", price: price || "" }] } : s)),
+    }));
+  };
+  const removeActivity = (tripId, stopId, activityId) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, activities: (s.activities || []).filter((a) => a.id !== activityId) } : s)),
+    }));
+  };
+  const toggleActivityConfirmed = (tripId, stopId, activityId) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, activities: (s.activities || []).map((a) => (a.id === activityId ? { ...a, confirmed: !a.confirmed } : a)) } : s)),
+    }));
+  };
+
   const tripTotalCost = (trip) => {
     const transitSum = trip.transits.reduce((sum, tr) => sum + (parseFloat(tr.price) || 0), 0);
     const staySum = trip.stops.reduce((sum, s) => sum + (s.stays || []).reduce((ss, st) => ss + (parseFloat(st.price) || 0), 0), 0);
-    return transitSum + staySum;
+    const activitySum = trip.stops.reduce((sum, s) => sum + (s.activities || []).reduce((as, a) => as + (parseFloat(a.price) || 0), 0), 0);
+    return transitSum + staySum + activitySum;
   };
 
   const TRANSIT_TYPICAL = {
@@ -1840,8 +1883,9 @@ function Waypoint() {
       const dateRange = formatDayRange(trip, stop.dayStart, stop.dayEnd);
       const rawLines = [
         ...stop.highlights.map((h) => "· " + h.text),
-        ...(stop.stays || []).map((st) => "🏨 " + st.name + (st.nights ? " (" + st.nights + " " + T.nights + ")" : "") + (st.price ? " · " + st.price : "")),
-        ...(stop.meals || []).map((m) => "🍽 " + m.name),
+        ...(stop.stays || []).map((st) => T.pdfSleepPrefix + ": " + st.name + (st.nights ? " (" + st.nights + " " + T.nights + ")" : "") + (st.price ? " · " + st.price : "")),
+        ...(stop.meals || []).map((m) => T.pdfEatPrefix + ": " + m.name),
+        ...(stop.activities || []).map((a) => T.pdfActivityPrefix + ": " + a.name + ((a.day || a.time) ? " (" + [a.day ? formatTripDay(trip, a.day) : "", a.time || ""].filter(Boolean).join(", ") + ")" : "") + (a.price ? " · " + a.price : "")),
       ];
       const allLines = rawLines.reduce((acc, line) => acc.concat(doc.splitTextToSize(line, textWidth)), []);
       const blockHeight = 16 + (dateRange ? 5 : 0) + allLines.length * 5.4 + 6;
@@ -2184,7 +2228,10 @@ function Waypoint() {
         .wp-task-sheet-scroll { flex: 1; overflow-y: auto; padding: 1.2rem 1.3rem; }
         .wp-task-sheet-footer { padding: 0.9rem 1.3rem; border-top: 1px solid var(--hairline); flex-shrink: 0; }
         .wp-trip-transit-edit-form { display: flex; flex-direction: column; gap: 1rem; }
-        .wp-trip-field-group { display: flex; flex-direction: column; gap: 0.35rem; }
+        .wp-trip-field-group { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+        .wp-trip-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+        .wp-trip-add-full-btn { display: flex; align-items: center; justify-content: center; gap: 0.4rem; width: 100%; background: var(--navy-subtle); color: var(--navy); border: 1px dashed var(--navy); border-radius: 10px; padding: 0.65rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .wp-trip-add-full-btn:hover { background: #E3ECFF; }
         .wp-trip-field-label { font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.02em; }
         .wp-trip-transit-duration-row { display: flex; gap: 0.6rem; }
         .wp-trip-transit-num-group { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
@@ -2338,8 +2385,8 @@ function Waypoint() {
         .wp-trip-panel-row { display: flex; gap: 0.5rem; position: relative; flex-wrap: nowrap; }
         .wp-trip-panel-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.3rem; flex: 1 1 0; min-width: 0; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; padding: 0.55rem 0.4rem; font-size: 0.7rem; font-weight: 500; color: var(--ink-soft); cursor: pointer; text-align: center; white-space: normal; line-height: 1.2; }
         .wp-trip-panel-btn svg { flex-shrink: 0; }
-        @media (max-width: 380px) {
-          .wp-trip-panel-row { gap: 0.35rem; }
+        @media (max-width: 420px) {
+          .wp-trip-panel-row { gap: 0.3rem; }
           .wp-trip-panel-btn { font-size: 0.68rem; padding: 0.45rem 0.3rem; gap: 0.25rem; }
         }
         .wp-trip-panel-btn-active { background: var(--navy-subtle); border: 1.5px solid var(--navy); color: var(--navy); font-weight: 600; }
@@ -3516,6 +3563,7 @@ function Waypoint() {
                 const sleepOpen = isActive("sleep");
                 const eatOpen = isActive("eat");
                 const highlightsOpen = isActive("highlights");
+                const activitiesOpen = isActive("activities");
                 return (
                 <div key={stop.id}>
                   <button className="wp-trip-insert-link" onClick={() => insertStopBefore(trip.id, stop.id)}>
@@ -3523,7 +3571,7 @@ function Waypoint() {
                   </button>
 
                   <div className="wp-trip-entry">
-                    <span className={"wp-trip-entry-dot" + (stop.highlights.length || (stop.stays||[]).length || (stop.meals||[]).length ? " wp-trip-entry-dot-active" : "")}></span>
+                    <span className={"wp-trip-entry-dot" + (stop.highlights.length || (stop.stays||[]).length || (stop.meals||[]).length || (stop.activities||[]).length ? " wp-trip-entry-dot-active" : "")}></span>
                     <div className="wp-trip-entry-top-row">
                       <div className="wp-trip-entry-photo" style={{ background: "linear-gradient(160deg, " + ((countryData && countryData.continentColor) || "#2F5D62") + ", #142035)" }}></div>
                       <div className="wp-trip-entry-body">
@@ -3593,6 +3641,13 @@ function Waypoint() {
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={eatOpen ? "#2457E6" : "#586579"} strokeWidth="1.8"><path d="M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11"/></svg>
                           {T.whereToEatBtn}
                         </button>
+                        <button
+                          className={"wp-trip-panel-btn" + (activitiesOpen ? " wp-trip-panel-btn-active" : "") + ((stop.activities||[]).length === 0 ? " wp-trip-panel-btn-empty" : "")}
+                          onClick={(e) => openEditPanel(stop.id, "activities", e.currentTarget)}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={activitiesOpen ? "#2457E6" : "#586579"} strokeWidth="1.8"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 11v2M13 17v2"/></svg>
+                          {T.activitiesBtn}
+                        </button>
                       </div>
 
                       {(stop.stays || []).length > 0 && (
@@ -3603,6 +3658,11 @@ function Waypoint() {
                       {(stop.meals || []).length > 0 && (
                         <button className="wp-trip-summary-line" onClick={(e) => openEditPanel(stop.id, "eat", e.currentTarget)}>
                           🍽 {stop.meals[0].name}{stop.meals.length > 1 ? " · +" + (stop.meals.length - 1) + " " + T.placesCountSuffix : ""}
+                        </button>
+                      )}
+                      {(stop.activities || []).length > 0 && (
+                        <button className="wp-trip-summary-line" onClick={(e) => openEditPanel(stop.id, "activities", e.currentTarget)}>
+                          🎟 {stop.activities[0].name}{stop.activities[0].day ? " · " + formatTripDay(trip, stop.activities[0].day) : ""}{stop.activities.length > 1 ? " · +" + (stop.activities.length - 1) + " " + T.activitiesCountSuffix : ""}
                         </button>
                       )}
                     </div>
@@ -3629,7 +3689,7 @@ function Waypoint() {
                 const aStop = trip.stops.find((s) => s.id === activeEditPanel.stopId);
                 if (!aStop) return null;
                 const aTransit = trip.transits.find((tr) => tr.afterStopId === activeEditPanel.stopId);
-                const titleMap = { highlights: T.placesBtn, sleep: T.whereToSleep, eat: T.whereToEat, transit: T.transportTitle };
+                const titleMap = { highlights: T.placesBtn, sleep: T.whereToSleep, eat: T.whereToEat, transit: T.transportTitle, activities: T.activitiesBtn };
                 return (
                   <div className="wp-task-sheet-overlay" onClick={closeEditPanel}>
                     <div
@@ -3768,6 +3828,59 @@ function Waypoint() {
                           </>
                         )}
 
+                        {activeEditPanel.type === "activities" && (() => {
+                          const d = stopActivityDrafts[aStop.id] || {};
+                          const setD = (patch) => setStopActivityDrafts({ ...stopActivityDrafts, [aStop.id]: { ...d, ...patch } });
+                          const from = parseInt(aStop.dayStart) || 1;
+                          const to = Math.min(parseInt(aStop.dayEnd) || from, from + 60);
+                          const dayOptions = [];
+                          for (let n = from; n <= to; n++) dayOptions.push(n);
+                          const commit = () => {
+                            if ((d.name || "").trim()) {
+                              addActivity(trip.id, aStop.id, d.name, d.day, d.time, d.price);
+                              setStopActivityDrafts({ ...stopActivityDrafts, [aStop.id]: {} });
+                            }
+                          };
+                          return (
+                            <>
+                              {(aStop.activities || []).map((a) => (
+                                <div key={a.id} className="wp-trip-highlight-row">
+                                  <span style={{ fontSize: "0.85rem" }}>🎟</span>
+                                  <span className="wp-trip-highlight-text">{a.name}{a.day ? " · " + formatTripDay(trip, a.day) : ""}{a.time ? " · " + a.time : ""}{a.price ? " · " + a.price : ""}</span>
+                                  <button className="wp-trip-remove-btn" onClick={() => removeActivity(trip.id, aStop.id, a.id)} aria-label="Remove"><X size={12} /></button>
+                                </div>
+                              ))}
+                              <div className="wp-trip-transit-edit-form" style={{ marginTop: (aStop.activities || []).length ? "1rem" : 0 }}>
+                                <div className="wp-trip-field-group">
+                                  <label className="wp-trip-field-label">{T.activityNameLabel}</label>
+                                  <input type="text" className="wp-trip-transit-input" placeholder={T.activityNamePlaceholder}
+                                    value={d.name || ""} onChange={(e) => setD({ name: e.target.value })}
+                                    onKeyDown={(e) => { if (e.key === "Enter") commit(); }} />
+                                </div>
+                                <div className="wp-trip-two-col">
+                                  <div className="wp-trip-field-group">
+                                    <label className="wp-trip-field-label">{T.activityDayLabel}</label>
+                                    <select className="wp-trip-transit-select" value={d.day || ""} onChange={(e) => setD({ day: e.target.value })}>
+                                      <option value="">{T.anyDay}</option>
+                                      {dayOptions.map((n) => <option key={n} value={String(n)}>{formatTripDay(trip, n)}</option>)}
+                                    </select>
+                                  </div>
+                                  <div className="wp-trip-field-group">
+                                    <label className="wp-trip-field-label">{T.activityTimeLabel}</label>
+                                    <input type="time" className="wp-trip-transit-input" value={d.time || ""} onChange={(e) => setD({ time: e.target.value })} />
+                                  </div>
+                                </div>
+                                <div className="wp-trip-field-group">
+                                  <label className="wp-trip-field-label">{T.transportCostLabel}</label>
+                                  <input type="text" className="wp-trip-transit-input" placeholder={T.transitPrice}
+                                    value={d.price || ""} onChange={(e) => setD({ price: e.target.value })} />
+                                </div>
+                                <button className="wp-trip-add-full-btn" onClick={commit}><PlusIcon size={14} /> {T.addActivityBtn}</button>
+                              </div>
+                            </>
+                          );
+                        })()}
+
                         {activeEditPanel.type === "transit" && aTransit && (
                           <div className="wp-trip-transit-edit-form">
                             <div className="wp-trip-field-group">
@@ -3849,6 +3962,12 @@ function Waypoint() {
                               if ((d.name || "").trim()) {
                                 addMeal(trip.id, aStop.id, d.name || "");
                                 setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
+                              }
+                            } else if (activeEditPanel.type === "activities") {
+                              const d = stopActivityDrafts[aStop.id] || {};
+                              if ((d.name || "").trim()) {
+                                addActivity(trip.id, aStop.id, d.name, d.day, d.time, d.price);
+                                setStopActivityDrafts({ ...stopActivityDrafts, [aStop.id]: {} });
                               }
                             } else if (activeEditPanel.type === "highlights") {
                               if ((highlightDrafts[aStop.id] || "").trim()) {
@@ -3980,6 +4099,7 @@ function Waypoint() {
                     <button className={"wp-trip-day-view-btn" + (bookingsSubTab === "all" ? " wp-trip-day-view-btn-active" : "")} onClick={() => setBookingsSubTab("all")}>{T.bookingsAll}</button>
                     <button className={"wp-trip-day-view-btn" + (bookingsSubTab === "flights" ? " wp-trip-day-view-btn-active" : "")} onClick={() => setBookingsSubTab("flights")}>{T.bookingsFlights}</button>
                     <button className={"wp-trip-day-view-btn" + (bookingsSubTab === "hotels" ? " wp-trip-day-view-btn-active" : "")} onClick={() => setBookingsSubTab("hotels")}>{T.bookingsHotels}</button>
+                    <button className={"wp-trip-day-view-btn" + (bookingsSubTab === "activities" ? " wp-trip-day-view-btn-active" : "")} onClick={() => setBookingsSubTab("activities")}>{T.bookingsActivities}</button>
                   </div>
 
                   {(bookingsSubTab === "all" || bookingsSubTab === "flights") && (() => {
@@ -4033,6 +4153,29 @@ function Waypoint() {
                                 onClick={() => toggleStayConfirmed(trip.id, s.id, st.id)}
                               >
                                 {st.confirmed ? T.confirmedLabel : T.pendingLabel}
+                              </button>
+                            </div>
+                          </div>
+                        )))}
+                      </div>
+                    );
+                  })()}
+
+                  {(bookingsSubTab === "all" || bookingsSubTab === "activities") && (() => {
+                    const stopsWithActivities = trip.stops.filter((s) => (s.activities || []).length > 0);
+                    return (
+                      <div className="wp-trip-booking-section">
+                        <p className="wp-trip-booking-section-title">🎟 {T.bookingsActivities}</p>
+                        {stopsWithActivities.length === 0 && <p className="wp-trip-day-list-empty">{T.noActivitiesYet}</p>}
+                        {stopsWithActivities.map((s) => s.activities.map((a) => (
+                          <div key={a.id} className="wp-trip-booking-card">
+                            <div className="wp-trip-booking-card-head">
+                              <span className="wp-trip-booking-route">{a.name} · {s.city}{a.day ? " · " + formatTripDay(trip, a.day) : ""}{a.time ? " · " + a.time : ""}{a.price ? " · " + a.price : ""}</span>
+                              <button
+                                className={"wp-trip-confirm-toggle" + (a.confirmed ? " wp-trip-confirm-toggle-on" : "")}
+                                onClick={() => toggleActivityConfirmed(trip.id, s.id, a.id)}
+                              >
+                                {a.confirmed ? T.confirmedLabel : T.pendingLabel}
                               </button>
                             </div>
                           </div>
@@ -4218,6 +4361,18 @@ function Waypoint() {
                                 <div key={m.id} className="wp-trip-highlight-row">
                                   <span style={{ fontSize: "0.85rem" }}>🍽</span>
                                   <span className="wp-trip-highlight-text">{m.name}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {(stop.activities || []).length > 0 && (
+                            <div className="wp-trip-subsection">
+                              <p className="wp-trip-subsection-label">{T.activitiesBtn}</p>
+                              {stop.activities.map((a) => (
+                                <div key={a.id} className="wp-trip-highlight-row">
+                                  <span style={{ fontSize: "0.85rem" }}>🎟</span>
+                                  <span className="wp-trip-highlight-text">{a.name}{a.day ? " · " + formatTripDay(sharedTrip, a.day) : ""}{a.time ? " · " + a.time : ""}{a.price ? " · " + a.price : ""}</span>
                                 </div>
                               ))}
                             </div>
