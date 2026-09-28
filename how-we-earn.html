@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How we earn | Waypoint</title>
+<meta name="description" content="How Waypoint earns money: no banner ads, and any partner (affiliate) links are clearly labelled, at no extra cost to you." />
+<link rel="canonical" href="https://hellowaypoint.com/how-we-earn.html" />
+<meta name="robots" content="index, follow" />
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+
+<!-- Cookie consent + gated Google Analytics loading -->
+<script>
+(function() {
+  var GA_ID = 'G-PZ12RZ4RMF';
+  function loadGA() {
+    if (window.__wpGALoaded) return;
+    window.__wpGALoaded = true;
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function(){ dataLayer.push(arguments); };
+    gtag('js', new Date());
+    gtag('config', GA_ID);
+  }
+  var consent = localStorage.getItem('wp_cookie_consent');
+  if (consent === 'granted') { loadGA(); return; }
+  if (consent === 'denied') { return; }
+  document.addEventListener('DOMContentLoaded', function() {
+    var banner = document.createElement('div');
+    banner.id = 'wp-cookie-banner';
+    banner.innerHTML =
+      '<div class="wp-cookie-inner">' +
+        '<p>We use cookies to understand how visitors use Waypoint. See our <a href="privacy-policy.html">Privacy Policy</a>.</p>' +
+        '<div class="wp-cookie-actions">' +
+          '<button id="wp-cookie-reject" type="button">Decline</button>' +
+          '<button id="wp-cookie-accept" type="button">Accept</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(banner);
+    document.getElementById('wp-cookie-accept').addEventListener('click', function() {
+      localStorage.setItem('wp_cookie_consent', 'granted');
+      loadGA();
+      banner.remove();
+    });
+    document.getElementById('wp-cookie-reject').addEventListener('click', function() {
+      localStorage.setItem('wp_cookie_consent', 'denied');
+      banner.remove();
+    });
+  });
+})();
+</script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap');
+  :root { --parchment:#F6F8FC; --ink:#14213D; --ink-soft:#586579; --hairline:#E3E8EF; --navy:#2457E6; }
+  * { box-sizing: border-box; }
+  html,body { margin:0; padding:0; }
+  body { font-family:'Work Sans',sans-serif; background:var(--parchment); color:var(--ink); }
+  .wp-shell { max-width: 720px; margin:0 auto; padding: 1.75rem 1.25rem 4rem; }
+  .wp-nav { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0 0 1.3rem; border-bottom:1px solid var(--hairline); margin-bottom:1.8rem; }
+  .wp-nav-brand { display:flex; align-items:center; gap:0.5rem; text-decoration:none; font-size:1.05rem; font-weight:600; color:var(--ink); }
+  .wp-brand-mark { width:26px; height:26px; border-radius:50%; background:var(--navy); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .wp-back { display:inline-flex; align-items:center; gap:0.4rem; color:var(--ink-soft); text-decoration:none; font-size:0.88rem; margin-bottom:1.4rem; }
+  .wp-back:hover { color:var(--ink); }
+  h1 { font-size:2rem; font-weight:700; margin:0 0 0.3rem; letter-spacing:-0.02em; line-height:1.15; }
+  .wp-updated { font-size:0.85rem; color:var(--ink-soft); margin-bottom:2rem; }
+  h2 { font-size:1.2rem; font-weight:600; margin:2.1rem 0 0.8rem; }
+  p, li { font-size:0.96rem; line-height:1.65; color:#2A3752; }
+  ul { padding-left: 1.2rem; margin: 0.6rem 0; }
+  li { margin-bottom: 0.5rem; }
+  a { color: var(--navy); }
+  .wp-intro { font-size:1rem; line-height:1.65; margin-bottom: 0.5rem; }
+  .wp-table-wrap { overflow-x:auto; }
+  .wp-table { width:100%; border-collapse: collapse; margin: 1rem 0 0.5rem; font-size: 0.9rem; line-height: 1.5; color:#2A3752; }
+  .wp-table th, .wp-table td { text-align:left; padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+  .wp-table th { font-size:0.76rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-soft); font-weight: 600; }
+  .wp-note { background:#fff; border:1px solid var(--hairline); border-radius:12px; padding:1rem 1.2rem; font-size:0.88rem; color:#2A3752; margin: 1.5rem 0; }
+  .wp-lang-jump { display:block; margin: 0 0 1.4rem; font-size:0.88rem; }
+  @media (max-width: 560px) {
+    .wp-table, .wp-table tbody, .wp-table tr, .wp-table td { display:block; width:100%; }
+    .wp-table tr:first-child { display:none; }
+    .wp-table tr { padding: 0.9rem 0; border-bottom: 1px solid var(--hairline); }
+    .wp-table td { border:0; padding: 0.2rem 0; }
+    .wp-table td::before { content: attr(data-label); display:block; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink-soft); font-weight:600; margin-bottom:0.1rem; }
+  }
+  .wp-divider { border:0; border-top:1px solid var(--hairline); margin: 3rem 0 2rem; }
+  .wp-footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--hairline); font-size: 0.8rem; color: var(--ink-soft); text-align: center; }
+  .wp-footer a { color: var(--ink-soft); }
+  #wp-cookie-banner { position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999; background: #14213D; }
+  .wp-cookie-inner { max-width: 900px; margin: 0 auto; padding: 1rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; font-family: 'Work Sans', sans-serif; }
+  .wp-cookie-inner p { margin: 0; font-size: 0.85rem; line-height: 1.5; flex: 1; min-width: 220px; color: #fff; }
+  .wp-cookie-inner a { color: #fff; text-decoration: underline; }
+  .wp-cookie-actions { display: flex; gap: 0.6rem; flex-shrink: 0; }
+  .wp-cookie-actions button { font-family: 'Work Sans', sans-serif; font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 11px; cursor: pointer; border: 1px solid #fff; }
+  #wp-cookie-accept { background: #fff; color: #14213D; }
+  #wp-cookie-reject { background: transparent; color: #fff; }
+</style>
+</head>
+<body>
+<div class="wp-shell">
+  <nav class="wp-nav">
+    <a class="wp-nav-brand" href="index.html">
+      <span class="wp-brand-mark"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></span>
+      Waypoint
+    </a>
+  </nav>
+
+  <a class="wp-back" href="index.html">&larr; Back to Waypoint</a>
+
+  <a class="wp-lang-jump" href="#pt">Ler em português &darr;</a>
+
+  <h1>How Waypoint earns money</h1>
+  <div class="wp-updated">Last updated: 28 September 2026</div>
+
+  <p class="wp-intro">Waypoint is free to use, and we don't run banner ads. To help cover the cost of building and running it, some links on the site may be partner links, also called affiliate links. This page explains how that works.</p>
+
+  <h2>What an affiliate link is</h2>
+  <p>If you click a link to a travel partner and then book something, the partner may pay us a small commission. It costs you nothing extra: the price you see is the price the partner charges everyone.</p>
+
+  <h2>Our partners</h2>
+  <p>We haven't added any partner links yet. This page will list every partner as soon as we do.</p>
+
+  <h2>How we label them</h2>
+  <p>Every partner link or button will be labelled "Partner link", with a short note that we may earn a commission. Partner links open in a new tab and are marked as sponsored for search engines.</p>
+
+  <h2>What doesn't change</h2>
+  <ul>
+    <li>Our country guides, itineraries and tips are written independently. A partner link never changes what we recommend.</li>
+    <li>We don't add a place, stay or tour to a guide because a partner pays for it.</li>
+    <li>We only show partners we'd be happy to point a friend to.</li>
+  </ul>
+
+  <h2>Your data</h2>
+  <p>We don't share your trips, notes or account details with partners. What a partner link may include is described in our <a href="privacy-policy.html">Privacy Policy</a>.</p>
+
+  <h2>Questions</h2>
+  <p>Write to <a href="mailto:jose@openforyou.org">jose@openforyou.org</a>.</p>
+
+  <hr class="wp-divider" />
+
+  <section id="pt" lang="pt">
+    <h1>Como o Waypoint ganha dinheiro</h1>
+    <div class="wp-updated">Última atualização: 28 de setembro de 2026</div>
+
+    <p class="wp-intro">O Waypoint é gratuito e não tem anúncios em banner. Para ajudar a pagar o custo de o construir e manter, alguns links do site podem ser links de parceiros, também chamados links de afiliados. Esta página explica como funciona.</p>
+
+    <h2>O que é um link de afiliado</h2>
+    <p>Se clicares num link para um parceiro de viagens e depois fizeres uma reserva, o parceiro pode pagar-nos uma pequena comissão. Não custa nada a mais: o preço que vês é o preço que o parceiro cobra a toda a gente.</p>
+
+    <h2>Os nossos parceiros</h2>
+    <p>Ainda não adicionámos nenhum link de parceiro. Esta página vai listar todos os parceiros assim que o fizermos.</p>
+
+    <h2>Como os identificamos</h2>
+    <p>Cada link ou botão de parceiro vai estar identificado como "Link de parceiro", com uma nota curta a dizer que podemos receber uma comissão. Os links de parceiros abrem num novo separador e estão marcados como patrocinados para os motores de busca.</p>
+
+    <h2>O que não muda</h2>
+    <ul>
+      <li>Os nossos guias de país, roteiros e dicas são escritos de forma independente. Um link de parceiro nunca muda o que recomendamos.</li>
+      <li>Não acrescentamos um local, alojamento ou excursão a um guia porque um parceiro paga por isso.</li>
+      <li>Só mostramos parceiros que teríamos gosto em recomendar a um amigo.</li>
+    </ul>
+
+    <h2>Os teus dados</h2>
+    <p>Não partilhamos as tuas viagens, notas ou dados de conta com os parceiros. O que um link de parceiro pode incluir está descrito na nossa <a href="privacy-policy.html">Política de Privacidade</a> (em inglês).</p>
+
+    <h2>Perguntas</h2>
+    <p>Escreve para <a href="mailto:jose@openforyou.org">jose@openforyou.org</a>.</p>
+  </section>
+
+  <footer class="wp-footer">
+    <p>&copy; 2026 Waypoint &middot; <a href="index.html">hellowaypoint.com</a> &middot; <a href="privacy-policy.html">Privacy Policy</a> &middot; <a href="how-we-earn.html">How we earn</a></p>
+  </footer>
+</div>
+</body>
+</html>

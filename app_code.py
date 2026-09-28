@@ -139,7 +139,7 @@ const UI_STRINGS = {
     openMenu: "Open menu", closeMenu: "Close menu", menuLabel: "MENU", languageLabel: "Language",
     signedInAs: "Signed in as", notSignedIn: "Not signed in — tap to sign in",
     daySuggestionsLabel: "From your highlights — tap to add to this day", suggestionsIn: "Suggestions in",
-    pdfCoverTagline: "A slow, ad-free way to explore the world.",
+    pdfCoverTagline: "A slow, independent way to explore the world.",
     pdfEssentialsTitle: "Trip essentials", pdfAboutTitle: "About",
     pdfRouteTitle: "Your route", pdfFarewellTitle: "Have a wonderful trip!",
     pdfFarewellLine: "Wherever these days take you, we hope they're unhurried, well-fed, and full of good light.",
@@ -151,7 +151,8 @@ const UI_STRINGS = {
     noFlightsYet: "No flights added yet — set a stop's travel mode to \"Flight\" in Route to add one here.",
     noHotelsYet: "No stays added yet — add one under \"Where to sleep\" in Route.",
     confirmedLabel: "Confirmed", pendingLabel: "Pending",
-    documentsTitle: "Documents", addDocumentPlaceholder: "e.g. Passport — no. ABC123, valid until 2029",
+    documentsTitle: "Documents", addDocumentPlaceholder: "e.g. Passport valid until 2029",
+    documentsHint: "Reminders only. Don't enter passport, ID or card numbers.",
     noDocumentsYet: "No documents added yet.", viewInRoute: "View in Route",
     tripsSignInPrompt: "Sign in to start planning a trip.", noTripsYet: "No trips yet — start planning your next one.",
     newTrip: "New trip", tripNameLabel: "name", tripNamePlaceholder: "e.g. Thailand 2027",
@@ -181,7 +182,8 @@ const UI_STRINGS = {
     articlesComingSoon: "Long-form guides, itineraries, and travel notes are on their way — check back soon.",
     productsComingSoon: "Downloadable guides, packing lists, and planning tools are on their way — check back soon.",
     newsletterIntro: "Get a new destination in your inbox every week — real itinerary ideas and travel notes, no spam.",
-    footerTagline: "A slow, ad-free way to explore the world, one country at a time.",
+    footerHowWeEarn: "How we earn",
+    footerTagline: "A slow, independent way to explore the world, one country at a time.",
     footerExplore: "Explore", footerConnect: "Connect", footerProjectBy: "A project by",
     footerBuiltFor: "Built for people who plan their trips a little too carefully.",
   },
@@ -257,7 +259,7 @@ const UI_STRINGS = {
     openMenu: "Abrir menu", closeMenu: "Fechar menu", menuLabel: "MENU", languageLabel: "Idioma",
     signedInAs: "Sessão iniciada como", notSignedIn: "Sem sessão iniciada — toca para entrar",
     daySuggestionsLabel: "Dos teus destaques — toca para adicionar a este dia", suggestionsIn: "Sugestões em",
-    pdfCoverTagline: "Uma forma tranquila e sem publicidade de explorar o mundo.",
+    pdfCoverTagline: "Uma forma tranquila e independente de explorar o mundo.",
     pdfEssentialsTitle: "Essencial de viagem", pdfAboutTitle: "Sobre",
     pdfRouteTitle: "O teu percurso", pdfFarewellTitle: "Boa viagem!",
     pdfFarewellLine: "Onde quer que estes dias te levem, esperamos que sejam tranquilos, bem regados a boa comida, e cheios de luz bonita.",
@@ -269,7 +271,8 @@ const UI_STRINGS = {
     noFlightsYet: "Ainda sem voos adicionados — muda o meio de transporte de uma paragem para \"Voo\" no Percurso para o adicionar aqui.",
     noHotelsYet: "Ainda sem dormidas adicionadas — adiciona uma em \"Onde dormir\" no Percurso.",
     confirmedLabel: "Confirmado", pendingLabel: "Por confirmar",
-    documentsTitle: "Documentos", addDocumentPlaceholder: "ex: Passaporte — nº ABC123, válido até 2029",
+    documentsTitle: "Documentos", addDocumentPlaceholder: "ex: Passaporte válido até 2029",
+    documentsHint: "Só lembretes. Não escrevas números de passaporte, identificação ou cartão.",
     noDocumentsYet: "Ainda sem documentos adicionados.", viewInRoute: "Ver no Percurso",
     tripsSignInPrompt: "Entra para começares a planear uma viagem.", noTripsYet: "Ainda sem viagens — começa a planear a próxima.",
     newTrip: "Nova viagem", tripNameLabel: "nome", tripNamePlaceholder: "ex: Tailândia 2027",
@@ -299,7 +302,8 @@ const UI_STRINGS = {
     articlesComingSoon: "Guias mais longos, itinerários e notas de viagem estão a caminho — volta em breve.",
     productsComingSoon: "Guias para descarregar, listas de bagagem e ferramentas de planeamento estão a caminho — volta em breve.",
     newsletterIntro: "Recebe um novo destino no teu email todas as semanas — ideias de itinerários reais e notas de viagem, sem spam.",
-    footerTagline: "Uma forma tranquila e sem anúncios de explorar o mundo, país a país.",
+    footerHowWeEarn: "Como ganhamos dinheiro",
+    footerTagline: "Uma forma tranquila e independente de explorar o mundo, país a país.",
     footerExplore: "Explorar", footerConnect: "Contacto", footerProjectBy: "Um projeto da",
     footerBuiltFor: "Feito para quem planeia as viagens com um cuidado quase exagerado.",
   },
@@ -451,11 +455,11 @@ function HeroIllustration() {
   return (
     <svg viewBox="0 0 400 190" className="wp-hero-svg" xmlns="http://www.w3.org/2000/svg">
       <g opacity="0.9">
-        <circle cx="140" cy="100" r="72" fill="none" stroke="#16233B" strokeWidth="1.6" />
-        <ellipse cx="140" cy="100" rx="72" ry="24" fill="none" stroke="#16233B" strokeWidth="1" opacity="0.55" />
-        <ellipse cx="140" cy="100" rx="72" ry="48" fill="none" stroke="#16233B" strokeWidth="1" opacity="0.4" />
-        <ellipse cx="140" cy="100" rx="24" ry="72" fill="none" stroke="#16233B" strokeWidth="1" opacity="0.55" />
-        <line x1="68" y1="100" x2="212" y2="100" stroke="#16233B" strokeWidth="1" opacity="0.4" />
+        <circle cx="140" cy="100" r="72" fill="none" stroke="#14213D" strokeWidth="1.6" />
+        <ellipse cx="140" cy="100" rx="72" ry="24" fill="none" stroke="#14213D" strokeWidth="1" opacity="0.55" />
+        <ellipse cx="140" cy="100" rx="72" ry="48" fill="none" stroke="#14213D" strokeWidth="1" opacity="0.4" />
+        <ellipse cx="140" cy="100" rx="24" ry="72" fill="none" stroke="#14213D" strokeWidth="1" opacity="0.55" />
+        <line x1="68" y1="100" x2="212" y2="100" stroke="#14213D" strokeWidth="1" opacity="0.4" />
         <circle cx="112" cy="72" r="2.6" fill="#B0552E" />
         <circle cx="168" cy="120" r="2.6" fill="#C9A24B" />
         <circle cx="122" cy="132" r="2.6" fill="#2F5D62" />
@@ -463,7 +467,7 @@ function HeroIllustration() {
       </g>
       <path d="M40 150 C 100 60, 220 40, 330 55" fill="none" stroke="#C9A24B" strokeWidth="1.4" strokeDasharray="1 7" strokeLinecap="round" />
       <g transform="translate(318,46) rotate(28)">
-        <path d="M0 8 L26 2 L34 5 L27 9 L20 22 L15 21 L17 10 L8 12 L4 18 L0 16 L3 9 Z" fill="#16233B" />
+        <path d="M0 8 L26 2 L34 5 L27 9 L20 22 L15 21 L17 10 L8 12 L4 18 L0 16 L3 9 Z" fill="#14213D" />
       </g>
     </svg>
   );
@@ -741,8 +745,8 @@ function StatBlock({ icon: Icon, label, value, accent }) {
     <div style={{ display: "flex", gap: "0.65rem", alignItems: "flex-start" }}>
       <Icon size={17} style={{ color: accent, marginTop: "2px", flexShrink: 0 }} />
       <div>
-        <div style={{ fontSize: "0.95rem", color: "#262119", fontWeight: 500, lineHeight: 1.3 }}>{value}</div>
-        <div style={{ fontSize: "0.78rem", color: "#8a8272", marginTop: "1px" }}>{label}</div>
+        <div style={{ fontSize: "0.95rem", color: "#14213D", fontWeight: 500, lineHeight: 1.3 }}>{value}</div>
+        <div style={{ fontSize: "0.78rem", color: "#586579", marginTop: "1px" }}>{label}</div>
       </div>
     </div>
   );
@@ -1386,7 +1390,10 @@ function Waypoint() {
     startDate: trip.startDate,
     endDate: trip.endDate,
     stops: trip.stops,
-    transits: trip.transits,
+    // Booking references can give access to a reservation, so they are never
+    // copied into the public read-only snapshot (the shared link is visible to
+    // anyone who has it). Everything else about the transit stays visible.
+    transits: (trip.transits || []).map(({ reference, ...publicTransit }) => publicTransit),
     dailyNotes: trip.dailyNotes || {},
     ownerUid: user ? user.uid : null,
     updatedAt: new Date().toISOString(),
@@ -2122,7 +2129,7 @@ function Waypoint() {
         .wp-quiz-option-correct { background: #E4EFE2; border-color: #6B9E68; font-weight: 600; }
         .wp-quiz-option-wrong { background: #F5E2E0; border-color: #C1665F; }
         .wp-quiz-btn { background: #fff; border: 1px solid var(--hairline); border-radius: 11px; padding: 0.65rem 1.4rem; font-family: 'Work Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--ink); display: inline-flex; align-items: center; gap: 0.4rem; }
-        .wp-quiz-btn-primary { background: var(--navy); color: #F3EDE0; border-color: var(--navy); }
+        .wp-quiz-btn-primary { background: var(--navy); color: #FFFFFF; border-color: var(--navy); }
         .wp-quiz-score { font-size: 2.6rem; font-weight: 600; margin: 0.5rem 0 0.15rem; color: #fff; }
         .wp-quiz-rank { font-size: 1rem; color: #B7BECC; margin-bottom: 1.2rem; }
         .wp-quiz-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; justify-content: center; }
@@ -2229,6 +2236,7 @@ function Waypoint() {
         .wp-task-sheet-footer { padding: 0.9rem 1.3rem; border-top: 1px solid var(--hairline); flex-shrink: 0; }
         .wp-trip-transit-edit-form { display: flex; flex-direction: column; gap: 1rem; }
         .wp-trip-field-group { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+        .wp-trip-field-hint { margin: 0.6rem 0 0; font-size: 0.75rem; color: var(--ink-soft); line-height: 1.45; }
         .wp-trip-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
         .wp-trip-add-full-btn { display: flex; align-items: center; justify-content: center; gap: 0.4rem; width: 100%; background: var(--navy-subtle); color: var(--navy); border: 1px dashed var(--navy); border-radius: 10px; padding: 0.65rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
         .wp-trip-add-full-btn:hover { background: #E3ECFF; }
@@ -2599,7 +2607,7 @@ function Waypoint() {
 
         .wp-day-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
         .wp-day-tag { font-size: 0.74rem; background: #EDE6D4; color: #4a4436; padding: 0.15rem 0.55rem; border-radius: 999px; }
-        .wp-day-tag-book { background: #16233B; color: #F3EDE0; }
+        .wp-day-tag-book { background: var(--navy); color: #FFFFFF; }
         .wp-day-extra { font-size: 0.82rem; color: #4a4436; line-height: 1.5; margin-top: 0.4rem; }
         .wp-day-extra strong { color: var(--ink); }
 
@@ -2632,7 +2640,7 @@ function Waypoint() {
       <div className="wp-shell">
         <nav className="wp-nav">
           <button className="wp-nav-brand" onClick={goToContinents}>
-            <div className="wp-brand-mark" style={{ width: 24, height: 24 }}><Compass size={13} style={{ color: "#F3EDE0" }} /></div>
+            <div className="wp-brand-mark" style={{ width: 24, height: 24 }}><Compass size={13} style={{ color: "#FFFFFF" }} /></div>
             Waypoint
           </button>
           <div className="wp-nav-links">
@@ -2707,7 +2715,7 @@ function Waypoint() {
             >
               <div className="wp-mobile-menu-head">
                 <button className="wp-nav-brand" onClick={() => { goToContinents(); setMobileMenuOpen(false); }}>
-                  <div className="wp-brand-mark" style={{ width: 24, height: 24 }}><Compass size={13} style={{ color: "#F3EDE0" }} /></div>
+                  <div className="wp-brand-mark" style={{ width: 24, height: 24 }}><Compass size={13} style={{ color: "#FFFFFF" }} /></div>
                   Waypoint
                 </button>
                 <button className="wp-mobile-menu-close" onClick={() => setMobileMenuOpen(false)} aria-label={T.closeMenu}>
@@ -2825,7 +2833,7 @@ function Waypoint() {
         {view !== "continents" && (
           <div className="wp-header" style={{ marginBottom: "1.6rem" }}>
             <div className="wp-brand">
-              <div className="wp-brand-mark"><Compass size={16} style={{ color: "#F3EDE0" }} /></div>
+              <div className="wp-brand-mark"><Compass size={16} style={{ color: "#FFFFFF" }} /></div>
               <h1 className="wp-title" style={{ fontSize: "1.4rem" }}>Waypoint</h1>
             </div>
           </div>
@@ -2862,7 +2870,7 @@ function Waypoint() {
                     <div className="wp-country-name"><span>{cty.flag}</span>{cty.name}<StatusDot status={countryStatuses[cty.id]} /></div>
                     <div className="wp-country-capital">{cty.continentName} · {T.capital}: {cty.capital}</div>
                   </div>
-                  <ChevronRight size={18} style={{ color: "#8a8272", flexShrink: 0 }} />
+                  <ChevronRight size={18} style={{ color: "#586579", flexShrink: 0 }} />
                 </button>
               ))
             )}
@@ -2985,7 +2993,7 @@ function Waypoint() {
                     <div className="wp-country-name"><span>{cty.flag}</span>{cty.name}<StatusDot status={countryStatuses[cty.id]} /></div>
                     <div className="wp-country-capital">{T.capital}: {cty.capital}</div>
                   </div>
-                  <ChevronRight size={18} style={{ color: "#8a8272", flexShrink: 0 }} />
+                  <ChevronRight size={18} style={{ color: "#586579", flexShrink: 0 }} />
                 </button>
               ))
             )}
@@ -3199,7 +3207,7 @@ function Waypoint() {
                       <button className="wp-pairs-card" key={id} onClick={() => goToCountryById(id)}>
                         <span>{other.flag}</span>
                         <span>{other.name}</span>
-                        <ChevronRight size={16} style={{ color: "#8a8272" }} />
+                        <ChevronRight size={16} style={{ color: "#586579" }} />
                       </button>
                     );
                   })}
@@ -3430,7 +3438,7 @@ function Waypoint() {
                       className="wp-trip-card-v2"
                       onClick={() => { setActiveTripId(trip.id); setView("trip-detail"); window.scrollTo(0, 0); }}
                     >
-                      <div className="wp-trip-card-v2-photo" style={{ background: "linear-gradient(135deg, " + accent + ", #142035)" }}>
+                      <div className="wp-trip-card-v2-photo" style={{ background: "linear-gradient(135deg, " + accent + ", #14213D)" }}>
                         <span className="wp-trip-card-v2-flag">{trip.flag}</span>
                         {tc && (
                           <span className="wp-trip-card-v2-icon"><ContinentIcon id={tc.continentId} size={16} /></span>
@@ -3573,7 +3581,7 @@ function Waypoint() {
                   <div className="wp-trip-entry">
                     <span className={"wp-trip-entry-dot" + (stop.highlights.length || (stop.stays||[]).length || (stop.meals||[]).length || (stop.activities||[]).length ? " wp-trip-entry-dot-active" : "")}></span>
                     <div className="wp-trip-entry-top-row">
-                      <div className="wp-trip-entry-photo" style={{ background: "linear-gradient(160deg, " + ((countryData && countryData.continentColor) || "#2F5D62") + ", #142035)" }}></div>
+                      <div className="wp-trip-entry-photo" style={{ background: "linear-gradient(160deg, " + ((countryData && countryData.continentColor) || "#2F5D62") + ", #14213D)" }}></div>
                       <div className="wp-trip-entry-body">
                         <div className="wp-trip-entry-head">
                           <input
@@ -4204,6 +4212,7 @@ function Waypoint() {
                       />
                       <button className="wp-trip-add-btn" onClick={() => { if (documentDraft.trim()) { addDocument(trip.id, documentDraft); setDocumentDraft(""); } }}><PlusIcon size={14} /></button>
                     </div>
+                    <p className="wp-trip-field-hint">{T.documentsHint}</p>
                   </div>
 
                   <button className="wp-trip-view-in-route-link" onClick={() => setActiveTripTab("route")}>{T.viewInRoute} →</button>
@@ -4475,7 +4484,7 @@ function Waypoint() {
         <footer className="wp-footer">
           <div className="wp-footer-top">
             <div className="wp-footer-brand">
-              <div className="wp-brand-mark" style={{ width: 26, height: 26 }}><Compass size={14} style={{ color: "#F3EDE0" }} /></div>
+              <div className="wp-brand-mark" style={{ width: 26, height: 26 }}><Compass size={14} style={{ color: "#FFFFFF" }} /></div>
               <div>
                 <div className="wp-footer-brand-name">Waypoint</div>
                 <div className="wp-footer-tagline">{T.footerTagline}</div>
@@ -4501,6 +4510,7 @@ function Waypoint() {
             <span>© {new Date().getFullYear()} Waypoint</span>
             <span>{T.footerProjectBy} <a className="wp-footer-org-link" href="https://openforyou.org" target="_blank" rel="noopener noreferrer">OpenForYou.org</a></span>
             <a className="wp-footer-org-link" href="privacy-policy.html">Privacy Policy</a>
+            <a className="wp-footer-org-link" href="how-we-earn.html">{T.footerHowWeEarn}</a>
             <span>{T.footerBuiltFor}</span>
           </div>
         </footer>
