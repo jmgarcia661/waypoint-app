@@ -156,7 +156,7 @@ const UI_STRINGS = {
     openMenu: "Open menu", closeMenu: "Close menu", menuLabel: "MENU", languageLabel: "Language",
     signedInAs: "Signed in as", notSignedIn: "Not signed in — tap to sign in",
     daySuggestionsLabel: "From your highlights — tap to add to this day", suggestionsIn: "Suggestions in",
-    moveToDayLabel: "Move to day", unassignedLabel: "Unassigned", unassignedForCity: "Unassigned in",
+    moveToDayLabel: "Move to day", unassignedLabel: "Unassigned", unassignedForCity: "Unassigned in", unassignBtn: "Remove from this day",
     limitTripDays: "Trips can be at most " + LIMITS.tripDays + " days long.",
     limitTripsPerAccount: "You've reached the limit of " + LIMITS.tripsPerAccount + " trips. Delete an old one to make room for a new one.",
     limitStops: "A trip can have at most " + LIMITS.stopsPerTrip + " stops.",
@@ -287,7 +287,7 @@ const UI_STRINGS = {
     openMenu: "Abrir menu", closeMenu: "Fechar menu", menuLabel: "MENU", languageLabel: "Idioma",
     signedInAs: "Sessão iniciada como", notSignedIn: "Sem sessão iniciada — toca para entrar",
     daySuggestionsLabel: "Dos teus destaques — toca para adicionar a este dia", suggestionsIn: "Sugestões em",
-    moveToDayLabel: "Mover para o dia", unassignedLabel: "Por atribuir", unassignedForCity: "Por atribuir em",
+    moveToDayLabel: "Mover para o dia", unassignedLabel: "Por atribuir", unassignedForCity: "Por atribuir em", unassignBtn: "Tirar deste dia",
     limitTripDays: "Uma viagem pode ter no máximo " + LIMITS.tripDays + " dias.",
     limitTripsPerAccount: "Atingiste o limite de " + LIMITS.tripsPerAccount + " viagens. Apaga uma antiga para abrir espaço a uma nova.",
     limitStops: "Uma viagem pode ter no máximo " + LIMITS.stopsPerTrip + " paragens.",
@@ -4258,7 +4258,12 @@ function Waypoint() {
                             )}
                             <span className="wp-trip-day-activity-name">{a.name}{a._source === "activity" && a.price ? " · " + a.price : ""}</span>
                             {a._source !== "day" && <DayMoveSelect item={a} currentDay={String(selectedDay)} />}
-                            <button className="wp-trip-remove-btn" onClick={() => removeItem(a)} aria-label="Remove"><X size={12} /></button>
+                            <button
+                              className="wp-trip-remove-btn"
+                              onClick={() => a._source === "day" ? removeItem(a) : moveItem(a, "")}
+                              aria-label={a._source === "day" ? "Remove" : T.unassignBtn}
+                              title={a._source === "day" ? "" : T.unassignBtn}
+                            ><X size={12} /></button>
                           </div>
                         ))}
                         <div className="wp-trip-add-highlight-row wp-trip-add-activity-row" style={{ marginTop: "0.7rem" }}>
