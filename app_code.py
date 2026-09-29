@@ -2527,6 +2527,13 @@ function Waypoint() {
           .wp-trip-add-highlight-row input.wp-trip-highlight-input { flex: 1 1 auto; width: 100%; box-sizing: border-box; }
           .wp-trip-add-highlight-row .wp-trip-add-btn { align-self: flex-end; }
           .wp-trip-panel-box { padding: 1.1rem; }
+          /* Only two fields here (a compact time + a free-text name), unlike the
+             3-4 field forms elsewhere on this same class -- those still stack, but
+             this one has room to stay on one line even on a narrow phone. */
+          .wp-trip-add-activity-row { flex-direction: row; align-items: center; }
+          .wp-trip-add-activity-row input.wp-trip-highlight-input.wp-trip-time-input { flex: 0 0 auto; width: 6.6rem; }
+          .wp-trip-add-activity-row input.wp-trip-highlight-input:not(.wp-trip-time-input) { flex: 1 1 auto; width: auto; min-width: 0; }
+          .wp-trip-add-activity-row .wp-trip-add-btn { align-self: center; flex-shrink: 0; }
         }
         .wp-trip-add-btn { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; }
         .wp-trip-time-input { flex: 0 0 130px; }
@@ -4189,7 +4196,7 @@ function Waypoint() {
                             <button className="wp-trip-remove-btn" onClick={() => removeItem(a)} aria-label="Remove"><X size={12} /></button>
                           </div>
                         ))}
-                        <div className="wp-trip-add-highlight-row" style={{ marginTop: "0.7rem" }}>
+                        <div className="wp-trip-add-highlight-row wp-trip-add-activity-row" style={{ marginTop: "0.7rem" }}>
                           <input
                             type="time"
                             className="wp-trip-highlight-input wp-trip-time-input"
