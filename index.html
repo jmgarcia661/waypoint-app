@@ -1838,12 +1838,12 @@ function Waypoint() {
         firebase.firestore().collection("shared_trips").doc(trip.shareId).delete().catch(() => {
         });
       }
-      updateTrip(trip.id, (t) => ({ ...t, isPublic: false }));
+      updateTrip(trip.id, (t) => ({ ...t, isPublic: false }), true);
     } else {
       const shareId = trip.shareId || generateShareId();
       firebase.firestore().collection("shared_trips").doc(shareId).set(buildShareSnapshot({ ...trip, shareId })).catch(() => {
       });
-      updateTrip(trip.id, (t) => ({ ...t, isPublic: true, shareId }));
+      updateTrip(trip.id, (t) => ({ ...t, isPublic: true, shareId }), true);
     }
   };
   const copyShareLink = (shareId) => {
@@ -1957,14 +1957,19 @@ function Waypoint() {
   const deleteTrip = (tripId) => {
     const next = { ...trips };
     delete next[tripId];
-    saveTrips(next);
+    setTrips(next);
+    flushTripsSave(next);
     setActiveTripId(null);
     setView("trips");
   };
-  const updateTrip = (tripId, updater) => {
+  const updateTrip = (tripId, updater, immediate) => {
     const current = trips[tripId];
     if (!current) return;
-    saveTrips({ ...trips, [tripId]: updater(current) });
+    const next = { ...trips, [tripId]: updater(current) };
+    if (immediate) {
+      setTrips(next);
+      flushTripsSave(next);
+    } else saveTrips(next);
   };
   const reconcileTransits = (stops, transits) => {
     const byAfter = {};
@@ -2439,7 +2444,7 @@ function Waypoint() {
     doc.save(trip.name.replace(/[^a-z0-9]/gi, "_") + ".pdf");
   };
   const markTripDone = (tripId) => {
-    updateTrip(tripId, (t) => ({ ...t, status: "done" }));
+    updateTrip(tripId, (t) => ({ ...t, status: "done" }), true);
     const trip = trips[tripId];
     if (trip) setCountryStatus(trip.countryId, "visited");
   };
