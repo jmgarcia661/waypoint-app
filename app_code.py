@@ -1410,11 +1410,11 @@ function Waypoint() {
       if (trip.shareId) {
         firebase.firestore().collection("shared_trips").doc(trip.shareId).delete().catch(() => {});
       }
-      updateTrip(trip.id, (t) => ({ ...t, isPublic: false }));
+      updateTrip(trip.id, (t) => ({ ...t, isPublic: false }), true);
     } else {
       const shareId = trip.shareId || generateShareId();
       firebase.firestore().collection("shared_trips").doc(shareId).set(buildShareSnapshot({ ...trip, shareId })).catch(() => {});
-      updateTrip(trip.id, (t) => ({ ...t, isPublic: true, shareId }));
+      updateTrip(trip.id, (t) => ({ ...t, isPublic: true, shareId }), true);
     }
   };
 
@@ -1519,7 +1519,8 @@ function Waypoint() {
   const deleteTrip = (tripId) => {
     const next = { ...trips };
     delete next[tripId];
-    saveTrips(next);
+    setTrips(next);
+    flushTripsSave(next);
     setActiveTripId(null);
     setView("trips");
   };
@@ -1528,10 +1529,15 @@ function Waypoint() {
   // highlights, day activities, documents...). `updater` receives the current trip
   // and returns the next one; this keeps every edit path consistent and means a
   // Firestore write shape only needs to be correct in one place (saveTrips).
-  const updateTrip = (tripId, updater) => {
+  // `immediate` bypasses the 500ms debounce below: deliberate, one-off actions
+  // (delete, mark done, share toggle) must never risk being lost to a quick
+  // refresh or tab close before the debounced write gets a chance to fire.
+  const updateTrip = (tripId, updater, immediate) => {
     const current = trips[tripId];
     if (!current) return;
-    saveTrips({ ...trips, [tripId]: updater(current) });
+    const next = { ...trips, [tripId]: updater(current) };
+    if (immediate) { setTrips(next); flushTripsSave(next); }
+    else saveTrips(next);
   };
 
   const reconcileTransits = (stops, transits) => {
@@ -2017,7 +2023,7 @@ function Waypoint() {
   };
 
   const markTripDone = (tripId) => {
-    updateTrip(tripId, (t) => ({ ...t, status: "done" }));
+    updateTrip(tripId, (t) => ({ ...t, status: "done" }), true);
     const trip = trips[tripId];
     if (trip) setCountryStatus(trip.countryId, "visited");
   };
