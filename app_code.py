@@ -1223,7 +1223,7 @@ function Waypoint() {
       nextLog = visitedLog.filter((l) => l.id !== countryId);
       setVisitedLog(nextLog);
     }
-    firebase.firestore().collection("users").doc(user.uid).set({ countries: next, visitedLog: nextLog }, { merge: true }).catch(() => {});
+    firebase.firestore().collection("users").doc(user.uid).set({ countries: next, visitedLog: nextLog }, { mergeFields: ["countries", "visitedLog"] }).catch(() => {});
   };
 
   const goToDetailFromMap = (cty) => {
@@ -1346,14 +1346,14 @@ function Waypoint() {
     if (saveWriteTimer.current) clearTimeout(saveWriteTimer.current);
     saveWriteTimer.current = setTimeout(() => {
       saveWriteTimer.current = null;
-      firebase.firestore().collection("users").doc(user.uid).set({ trips: next }, { merge: true }).catch(() => {});
+      firebase.firestore().collection("users").doc(user.uid).set({ trips: next }, { mergeFields: ["trips"] }).catch(() => {});
     }, 500);
   };
   // Bypasses the debounce above for the explicit "Save" button: cancels any pending
   // delayed write and persists the current state to Firestore right away.
   const flushTripsSave = (next) => {
     if (saveWriteTimer.current) { clearTimeout(saveWriteTimer.current); saveWriteTimer.current = null; }
-    if (user) firebase.firestore().collection("users").doc(user.uid).set({ trips: next }, { merge: true }).catch(() => {});
+    if (user) firebase.firestore().collection("users").doc(user.uid).set({ trips: next }, { mergeFields: ["trips"] }).catch(() => {});
   };
   // Safety net: if the tab closes (or the person navigates away) while a debounced
   // write is still pending, flush it immediately instead of silently losing the
