@@ -139,6 +139,7 @@ const UI_STRINGS = {
     openMenu: "Open menu", closeMenu: "Close menu", menuLabel: "MENU", languageLabel: "Language",
     signedInAs: "Signed in as", notSignedIn: "Not signed in — tap to sign in",
     daySuggestionsLabel: "From your highlights — tap to add to this day", suggestionsIn: "Suggestions in",
+    moveToDayLabel: "Move to day", unassignedLabel: "Unassigned", unassignedForCity: "Unassigned in",
     pdfCoverTagline: "A slow, independent way to explore the world.",
     pdfEssentialsTitle: "Trip essentials", pdfAboutTitle: "About",
     pdfRouteTitle: "Your route", pdfFarewellTitle: "Have a wonderful trip!",
@@ -259,6 +260,7 @@ const UI_STRINGS = {
     openMenu: "Abrir menu", closeMenu: "Fechar menu", menuLabel: "MENU", languageLabel: "Idioma",
     signedInAs: "Sessão iniciada como", notSignedIn: "Sem sessão iniciada — toca para entrar",
     daySuggestionsLabel: "Dos teus destaques — toca para adicionar a este dia", suggestionsIn: "Sugestões em",
+    moveToDayLabel: "Mover para o dia", unassignedLabel: "Por atribuir", unassignedForCity: "Por atribuir em",
     pdfCoverTagline: "Uma forma tranquila e independente de explorar o mundo.",
     pdfEssentialsTitle: "Essencial de viagem", pdfAboutTitle: "Sobre",
     pdfRouteTitle: "O teu percurso", pdfFarewellTitle: "Boa viagem!",
@@ -1603,6 +1605,21 @@ function Waypoint() {
       stops: t.stops.map((s) => (s.id === stopId ? { ...s, highlights: s.highlights.filter((h) => h.id !== highlightId) } : s)),
     }));
   };
+  // Assigns (or clears, with day="") which day of the stop's own range a highlight
+  // belongs to. A highlight with no day sits in the "unassigned" pool in Days;
+  // it can only ever belong to one day at a time, never several.
+  const setHighlightDay = (tripId, stopId, highlightId, day) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, highlights: s.highlights.map((h) => (h.id === highlightId ? { ...h, day: day || "" } : h)) } : s)),
+    }));
+  };
+  const setActivityDay = (tripId, stopId, activityId, day) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, activities: (s.activities || []).map((a) => (a.id === activityId ? { ...a, day: day || "" } : a)) } : s)),
+    }));
+  };
 
   const updateTransit = (tripId, afterStopId, field, value) => {
     updateTrip(tripId, (t) => ({
@@ -2437,10 +2454,15 @@ function Waypoint() {
         .wp-trip-day-view-btn { background: none; border: none; padding: 0.4rem 0.9rem; font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); border-radius: 6px; cursor: pointer; }
         .wp-trip-day-view-btn-active { background: #fff; color: var(--navy); box-shadow: 0 1px 2px rgba(20,32,53,0.08); }
         .wp-trip-day-list { background: #fff; border: 1px solid var(--hairline); border-radius: 14px; padding: 1.2rem 1.3rem; }
+        .wp-trip-day-pool { background: var(--parchment-deep); border: 1px dashed var(--hairline); border-radius: 14px; padding: 1rem 1.3rem; margin-bottom: 1.1rem; }
+        .wp-trip-day-pool-label { margin: 0 0 0.6rem; font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.02em; }
+        .wp-trip-drag-handle { color: var(--ink-soft); cursor: grab; flex-shrink: 0; font-size: 0.9rem; opacity: 0.6; }
+        .wp-trip-drag-handle:active { cursor: grabbing; }
+        .wp-trip-day-move-select { font-size: 0.76rem; padding: 0.3rem 0.5rem; border: 1px solid var(--hairline); border-radius: 8px; background: #fff; color: var(--ink-soft); flex-shrink: 0; max-width: 8rem; }
         .wp-trip-day-list-empty { margin: 0 0 0.8rem; font-size: 0.85rem; color: var(--ink-soft); }
         .wp-trip-day-activity-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.55rem 0; border-bottom: 1px solid var(--parchment-deep); }
         .wp-trip-day-activity-time { font-size: 0.82rem; color: var(--gold); min-width: 3.2rem; }
-        .wp-trip-day-activity-name { flex: 1; font-size: 0.9rem; }
+        .wp-trip-day-activity-name { flex: 1; min-width: 0; font-size: 0.9rem; }
         .wp-day-map-empty-text { font-size: 0.82rem; color: var(--ink-soft); padding: 0 1rem; text-align: center; }
 
         .wp-trip-bookings-tab { margin-bottom: 1.6rem; }
@@ -4009,19 +4031,67 @@ function Waypoint() {
 
               {activeTripTab === "days" && (() => {
                 const dayStop = stopForDay(trip, selectedDay);
-                // Two separate stores feed into a day's view: entries added right here in
-                // Days (trip.days[dayNumber]) and entries added via the "Activities" button
-                // on the stop in Route (stop.activities, filtered to this day). They're kept
-                // as separate data on purpose (Route's entries carry a price and belong to
-                // the stop even if unscheduled), but merged here so nothing typed in Route
-                // silently fails to show up in Days.
+                const stopFrom = dayStop ? (parseInt(dayStop.dayStart) || 1) : 1;
+                const stopTo = dayStop ? Math.min(parseInt(dayStop.dayEnd) || stopFrom, stopFrom + 60) : 1;
+                const stopDayOptions = [];
+                for (let n = stopFrom; n <= stopTo; n++) stopDayOptions.push(n);
+
+                // Highlights and Route-added activities are shared with the stop: with no
+                // day, an item sits in the "unassigned" pool below; give it a day and it
+                // moves into that day's list. It can only ever be in one place at a time,
+                // so assigning a new day silently replaces the old one -- no separate
+                // "unassign first" step needed. Day notes typed directly in Days
+                // (trip.days[n]) have no stop of their own, so they stay simple: no pool,
+                // just remove.
+                const poolHighlights = ((dayStop && dayStop.highlights) || []).filter((h) => !h.day).map((h) => ({ id: h.id, name: h.text, time: "", price: "", _source: "highlight" }));
+                const poolActivities = ((dayStop && dayStop.activities) || []).filter((a) => !a.day).map((a) => ({ id: a.id, name: a.name, time: a.time, price: a.price, _source: "activity" }));
+                const unassignedItems = [...poolHighlights, ...poolActivities];
+
                 const dayNoteActivities = ((trip.days && trip.days[selectedDay]) || []).map((a) => ({ ...a, _source: "day" }));
                 const dayStopActivities = ((dayStop && dayStop.activities) || [])
                   .filter((a) => String(a.day) === String(selectedDay))
-                  .map((a) => ({ ...a, _source: "stop", _stopId: dayStop.id }));
-                const dayActivities = [...dayNoteActivities, ...dayStopActivities].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+                  .map((a) => ({ ...a, _source: "activity" }));
+                const dayHighlights = ((dayStop && dayStop.highlights) || [])
+                  .filter((h) => String(h.day) === String(selectedDay))
+                  .map((h) => ({ id: h.id, name: h.text, time: "", price: "", _source: "highlight" }));
+                const dayActivities = [...dayNoteActivities, ...dayStopActivities, ...dayHighlights].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+
                 const dayDate = trip.startDate ? new Date(new Date(trip.startDate).getTime() + (selectedDay - 1) * 86400000) : null;
                 const draft = activityDrafts[selectedDay] || {};
+
+                const moveItem = (item, day) => {
+                  if (item._source === "highlight") setHighlightDay(trip.id, dayStop.id, item.id, day);
+                  else if (item._source === "activity") setActivityDay(trip.id, dayStop.id, item.id, day);
+                };
+                const removeItem = (item) => {
+                  if (item._source === "highlight") removeHighlight(trip.id, dayStop.id, item.id);
+                  else if (item._source === "activity") removeActivity(trip.id, dayStop.id, item.id);
+                  else removeDayActivity(trip.id, selectedDay, item.id);
+                };
+                const onItemDragStart = (e, item) => { e.dataTransfer.setData("text/plain", JSON.stringify({ id: item.id, source: item._source })); e.dataTransfer.effectAllowed = "move"; };
+                const onDropToDay = (e, day) => {
+                  e.preventDefault();
+                  try {
+                    const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+                    const item = [...unassignedItems, ...dayActivities].find((it) => it.id === data.id && it._source === data.source);
+                    if (item && item._source !== "day") moveItem(item, day);
+                  } catch (err) {}
+                };
+
+                const DayMoveSelect = ({ item, currentDay }) => (
+                  <select
+                    className="wp-trip-day-move-select"
+                    value={currentDay || ""}
+                    onChange={(e) => moveItem(item, e.target.value)}
+                    aria-label={T.moveToDayLabel}
+                  >
+                    <option value="">{T.unassignedLabel}</option>
+                    {stopDayOptions.map((n) => (
+                      <option key={n} value={String(n)}>{formatTripDay(trip, n)}</option>
+                    ))}
+                  </select>
+                );
+
                 return (
                   <div className="wp-trip-days-tab">
                     <div className="wp-trip-day-pills">
@@ -4047,31 +4117,51 @@ function Waypoint() {
                       </div>
                     </div>
 
-                    {dayStop && dayStop.highlights.filter((h) => !dayActivities.some((a) => a.name === h.text)).length > 0 && (
-                      <div className="wp-trip-day-suggestions">
-                        <p className="wp-trip-day-suggestions-label">{T.daySuggestionsLabel}</p>
-                        <div className="wp-trip-chips-row">
-                          {dayStop.highlights.filter((h) => !dayActivities.some((a) => a.name === h.text)).map((h) => (
-                            <button key={h.id} className="wp-trip-suggestion-chip" onClick={() => addDayActivity(trip.id, selectedDay, "", h.text)}>
-                              <PlusIcon size={11} /> {h.text}
-                            </button>
-                          ))}
-                        </div>
+                    {dayStop && (
+                      <div className="wp-trip-panel-row" style={{ marginBottom: "1.1rem" }}>
+                        <button className="wp-trip-panel-btn" onClick={(e) => openEditPanel(dayStop.id, "highlights", e.currentTarget)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#586579" strokeWidth="1.8"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                          {T.placesBtn}
+                        </button>
+                        <button className="wp-trip-panel-btn" onClick={(e) => openEditPanel(dayStop.id, "sleep", e.currentTarget)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#586579" strokeWidth="1.8"><path d="M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2M21 18v2M5 10V7a2 2 0 0 1 2-2h3v5"/></svg>
+                          {T.whereToSleepBtn}
+                        </button>
+                        <button className="wp-trip-panel-btn" onClick={(e) => openEditPanel(dayStop.id, "eat", e.currentTarget)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#586579" strokeWidth="1.8"><path d="M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11"/></svg>
+                          {T.whereToEatBtn}
+                        </button>
+                        <button className="wp-trip-panel-btn" onClick={(e) => openEditPanel(dayStop.id, "activities", e.currentTarget)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#586579" strokeWidth="1.8"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 11v2M13 17v2"/></svg>
+                          {T.activitiesBtn}
+                        </button>
+                      </div>
+                    )}
+
+                    {dayStop && unassignedItems.length > 0 && (
+                      <div className="wp-trip-day-pool" onDragOver={(e) => e.preventDefault()} onDrop={(e) => onDropToDay(e, "")}>
+                        <p className="wp-trip-day-pool-label">{T.unassignedForCity} {dayStop.city}</p>
+                        {unassignedItems.map((item) => (
+                          <div key={item._source + item.id} className="wp-trip-day-activity-row" draggable onDragStart={(e) => onItemDragStart(e, item)}>
+                            <span className="wp-trip-drag-handle" aria-hidden="true">⠿</span>
+                            <span className="wp-trip-day-activity-name">{item.name}</span>
+                            <DayMoveSelect item={item} currentDay="" />
+                            <button className="wp-trip-remove-btn" onClick={() => removeItem(item)} aria-label="Remove"><X size={12} /></button>
+                          </div>
+                        ))}
                       </div>
                     )}
 
                     {dayView === "list" ? (
-                      <div className="wp-trip-day-list">
+                      <div className="wp-trip-day-list" onDragOver={(e) => e.preventDefault()} onDrop={(e) => onDropToDay(e, String(selectedDay))}>
                         {dayActivities.length === 0 && <p className="wp-trip-day-list-empty">{T.dayListEmpty}</p>}
                         {dayActivities.map((a) => (
-                          <div key={a._source + a.id} className="wp-trip-day-activity-row">
+                          <div key={a._source + a.id} className="wp-trip-day-activity-row" draggable={a._source !== "day"} onDragStart={(e) => a._source !== "day" && onItemDragStart(e, a)}>
+                            {a._source !== "day" && <span className="wp-trip-drag-handle" aria-hidden="true">⠿</span>}
                             {a.time && <span className="wp-trip-day-activity-time">{a.time}</span>}
-                            <span className="wp-trip-day-activity-name">{a.name}{a._source === "stop" && a.price ? " · " + a.price : ""}</span>
-                            <button
-                              className="wp-trip-remove-btn"
-                              onClick={() => a._source === "stop" ? removeActivity(trip.id, a._stopId, a.id) : removeDayActivity(trip.id, selectedDay, a.id)}
-                              aria-label="Remove"
-                            ><X size={12} /></button>
+                            <span className="wp-trip-day-activity-name">{a.name}{a._source === "activity" && a.price ? " · " + a.price : ""}</span>
+                            {a._source !== "day" && <DayMoveSelect item={a} currentDay={String(selectedDay)} />}
+                            <button className="wp-trip-remove-btn" onClick={() => removeItem(a)} aria-label="Remove"><X size={12} /></button>
                           </div>
                         ))}
                         <div className="wp-trip-add-highlight-row" style={{ marginTop: "0.7rem" }}>
