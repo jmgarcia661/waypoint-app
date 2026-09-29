@@ -4003,7 +4003,17 @@ function Waypoint() {
 
               {activeTripTab === "days" && (() => {
                 const dayStop = stopForDay(trip, selectedDay);
-                const dayActivities = (trip.days && trip.days[selectedDay]) || [];
+                // Two separate stores feed into a day's view: entries added right here in
+                // Days (trip.days[dayNumber]) and entries added via the "Activities" button
+                // on the stop in Route (stop.activities, filtered to this day). They're kept
+                // as separate data on purpose (Route's entries carry a price and belong to
+                // the stop even if unscheduled), but merged here so nothing typed in Route
+                // silently fails to show up in Days.
+                const dayNoteActivities = ((trip.days && trip.days[selectedDay]) || []).map((a) => ({ ...a, _source: "day" }));
+                const dayStopActivities = ((dayStop && dayStop.activities) || [])
+                  .filter((a) => String(a.day) === String(selectedDay))
+                  .map((a) => ({ ...a, _source: "stop", _stopId: dayStop.id }));
+                const dayActivities = [...dayNoteActivities, ...dayStopActivities].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
                 const dayDate = trip.startDate ? new Date(new Date(trip.startDate).getTime() + (selectedDay - 1) * 86400000) : null;
                 const draft = activityDrafts[selectedDay] || {};
                 return (
@@ -4048,10 +4058,14 @@ function Waypoint() {
                       <div className="wp-trip-day-list">
                         {dayActivities.length === 0 && <p className="wp-trip-day-list-empty">{T.dayListEmpty}</p>}
                         {dayActivities.map((a) => (
-                          <div key={a.id} className="wp-trip-day-activity-row">
+                          <div key={a._source + a.id} className="wp-trip-day-activity-row">
                             {a.time && <span className="wp-trip-day-activity-time">{a.time}</span>}
-                            <span className="wp-trip-day-activity-name">{a.name}</span>
-                            <button className="wp-trip-remove-btn" onClick={() => removeDayActivity(trip.id, selectedDay, a.id)} aria-label="Remove"><X size={12} /></button>
+                            <span className="wp-trip-day-activity-name">{a.name}{a._source === "stop" && a.price ? " · " + a.price : ""}</span>
+                            <button
+                              className="wp-trip-remove-btn"
+                              onClick={() => a._source === "stop" ? removeActivity(trip.id, a._stopId, a.id) : removeDayActivity(trip.id, selectedDay, a.id)}
+                              aria-label="Remove"
+                            ><X size={12} /></button>
                           </div>
                         ))}
                         <div className="wp-trip-add-highlight-row" style={{ marginTop: "0.7rem" }}>
