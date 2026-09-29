@@ -66,6 +66,23 @@ const GoogleG = (p) => (
 );
 
 /* ---------- UI text translations (chrome only; country data is localized separately via .pt fields) ---------- */
+// Reasonable limits for a normal trip, kept low enough that a very active account
+// with many trips stays comfortably under Firestore's 1MB-per-document ceiling --
+// all of a user's trips live inside one document (users/{uid}.trips), so this is a
+// real technical constraint, not just a UX preference.
+const LIMITS = {
+  tripDays: 120,
+  tripsPerAccount: 30,
+  stopsPerTrip: 20,
+  highlightsPerStop: 20,
+  staysPerStop: 10,
+  mealsPerStop: 20,
+  activitiesPerStop: 20,
+  documentsPerTrip: 20,
+  shortTextLength: 200,
+  noteTextLength: 2000,
+};
+
 const UI_STRINGS = {
   en: {
     home: "Home", articles: "Articles", products: "Products", newsletter: "Newsletter", aboutMe: "About me",
@@ -140,6 +157,16 @@ const UI_STRINGS = {
     signedInAs: "Signed in as", notSignedIn: "Not signed in — tap to sign in",
     daySuggestionsLabel: "From your highlights — tap to add to this day", suggestionsIn: "Suggestions in",
     moveToDayLabel: "Move to day", unassignedLabel: "Unassigned", unassignedForCity: "Unassigned in",
+    limitTripDays: "Trips can be at most " + LIMITS.tripDays + " days long.",
+    limitTripsPerAccount: "You've reached the limit of " + LIMITS.tripsPerAccount + " trips. Delete an old one to make room for a new one.",
+    limitStops: "A trip can have at most " + LIMITS.stopsPerTrip + " stops.",
+    limitHighlights: "A stop can have at most " + LIMITS.highlightsPerStop + " highlights.",
+    limitStays: "A stop can have at most " + LIMITS.staysPerStop + " places to sleep.",
+    limitMeals: "A stop can have at most " + LIMITS.mealsPerStop + " places to eat.",
+    limitActivities: "A stop can have at most " + LIMITS.activitiesPerStop + " activities.",
+    limitDocuments: "A trip can have at most " + LIMITS.documentsPerTrip + " documents.",
+    limitTextLength: "That's a bit long — keep it under " + LIMITS.shortTextLength + " characters.",
+    limitNoteLength: "That note is a bit long — keep it under " + LIMITS.noteTextLength + " characters.",
     pdfCoverTagline: "A slow, independent way to explore the world.",
     pdfEssentialsTitle: "Trip essentials", pdfAboutTitle: "About",
     pdfRouteTitle: "Your route", pdfFarewellTitle: "Have a wonderful trip!",
@@ -261,6 +288,16 @@ const UI_STRINGS = {
     signedInAs: "Sessão iniciada como", notSignedIn: "Sem sessão iniciada — toca para entrar",
     daySuggestionsLabel: "Dos teus destaques — toca para adicionar a este dia", suggestionsIn: "Sugestões em",
     moveToDayLabel: "Mover para o dia", unassignedLabel: "Por atribuir", unassignedForCity: "Por atribuir em",
+    limitTripDays: "Uma viagem pode ter no máximo " + LIMITS.tripDays + " dias.",
+    limitTripsPerAccount: "Atingiste o limite de " + LIMITS.tripsPerAccount + " viagens. Apaga uma antiga para abrir espaço a uma nova.",
+    limitStops: "Uma viagem pode ter no máximo " + LIMITS.stopsPerTrip + " paragens.",
+    limitHighlights: "Uma paragem pode ter no máximo " + LIMITS.highlightsPerStop + " destaques.",
+    limitStays: "Uma paragem pode ter no máximo " + LIMITS.staysPerStop + " locais para dormir.",
+    limitMeals: "Uma paragem pode ter no máximo " + LIMITS.mealsPerStop + " locais para comer.",
+    limitActivities: "Uma paragem pode ter no máximo " + LIMITS.activitiesPerStop + " atividades.",
+    limitDocuments: "Uma viagem pode ter no máximo " + LIMITS.documentsPerTrip + " documentos.",
+    limitTextLength: "Isso é um pouco comprido — mantém abaixo de " + LIMITS.shortTextLength + " carateres.",
+    limitNoteLength: "Essa nota é um pouco comprida — mantém abaixo de " + LIMITS.noteTextLength + " carateres.",
     pdfCoverTagline: "Uma forma tranquila e independente de explorar o mundo.",
     pdfEssentialsTitle: "Essencial de viagem", pdfAboutTitle: "Sobre",
     pdfRouteTitle: "O teu percurso", pdfFarewellTitle: "Boa viagem!",
@@ -1378,8 +1415,11 @@ function Waypoint() {
     setTimeout(() => setTripSaveStatus(""), 1800);
   };
 
+  // Called on every keystroke while typing a note, so an alert() here would be
+  // disruptive -- silently cap the length instead of blocking with a popup.
   const updateDailyNote = (tripId, day, text) => {
-    updateTrip(tripId, (t) => ({ ...t, dailyNotes: { ...(t.dailyNotes || {}), [day]: text } }));
+    const capped = text.length > LIMITS.noteTextLength ? text.slice(0, LIMITS.noteTextLength) : text;
+    updateTrip(tripId, (t) => ({ ...t, dailyNotes: { ...(t.dailyNotes || {}), [day]: capped } }));
   };
 
   const generateShareId = () => (Math.random().toString(36).slice(2, 8) + Date.now().toString(36)).slice(0, 12);
@@ -1492,10 +1532,12 @@ function Waypoint() {
 
   const createTrip = () => {
     if (!newTripCountryId || !newTripName.trim()) return;
+    if (Object.keys(trips).length >= LIMITS.tripsPerAccount) { window.alert(T.limitTripsPerAccount); return; }
     const cty = allCountriesForMap.find((c) => c.id === newTripCountryId);
     if (!cty) return;
     const id = "trip_" + Date.now();
     const total = dayCount(newTripStart, newTripEnd);
+    if (total > LIMITS.tripDays) { window.alert(T.limitTripDays); return; }
     const trip = {
       id,
       name: newTripName.trim(),
@@ -1556,6 +1598,8 @@ function Waypoint() {
   const makeBlankStop = (dayStart, dayEnd) => ({ id: "stop_" + Date.now() + "_" + Math.floor(Math.random() * 1000), city: "", dayStart, dayEnd, highlights: [], stays: [], meals: [], activities: [] });
 
   const addStop = (tripId) => {
+    const current = trips[tripId];
+    if (current && current.stops.length >= LIMITS.stopsPerTrip) { window.alert(T.limitStops); return; }
     updateTrip(tripId, (t) => {
       const lastStop = t.stops[t.stops.length - 1];
       const nextDay = lastStop ? lastStop.dayEnd + 1 : 1;
@@ -1567,6 +1611,8 @@ function Waypoint() {
   };
 
   const insertStopBefore = (tripId, beforeStopId) => {
+    const current = trips[tripId];
+    if (current && current.stops.length >= LIMITS.stopsPerTrip) { window.alert(T.limitStops); return; }
     updateTrip(tripId, (t) => {
       const idx = beforeStopId ? t.stops.findIndex((s) => s.id === beforeStopId) : 0;
       const refDay = idx >= 0 && t.stops[idx] ? t.stops[idx].dayStart : 1;
@@ -1593,6 +1639,9 @@ function Waypoint() {
 
   const addHighlight = (tripId, stopId, text, source) => {
     if (!text.trim()) return;
+    if (text.trim().length > LIMITS.shortTextLength) { window.alert(T.limitTextLength); return; }
+    const stop = (trips[tripId] || {}).stops && trips[tripId].stops.find((s) => s.id === stopId);
+    if (stop && stop.highlights.length >= LIMITS.highlightsPerStop) { window.alert(T.limitHighlights); return; }
     updateTrip(tripId, (t) => ({
       ...t,
       stops: t.stops.map((s) => (s.id === stopId ? { ...s, highlights: [...s.highlights, { id: "h_" + Date.now(), text: text.trim(), source: source || "" }] } : s)),
@@ -1646,6 +1695,9 @@ function Waypoint() {
 
   const addStay = (tripId, stopId, name, nights, price) => {
     if (!name.trim()) return;
+    if (name.trim().length > LIMITS.shortTextLength) { window.alert(T.limitTextLength); return; }
+    const stop = (trips[tripId] || {}).stops && trips[tripId].stops.find((s) => s.id === stopId);
+    if (stop && (stop.stays || []).length >= LIMITS.staysPerStop) { window.alert(T.limitStays); return; }
     updateTrip(tripId, (t) => ({
       ...t,
       stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: [...s.stays, { id: "st_" + Date.now(), name: name.trim(), nights: nights || "", price: price || "" }] } : s)),
@@ -1671,6 +1723,9 @@ function Waypoint() {
   };
   const addDocument = (tripId, text) => {
     if (!text.trim()) return;
+    if (text.trim().length > LIMITS.noteTextLength) { window.alert(T.limitNoteLength); return; }
+    const trip = trips[tripId];
+    if (trip && (trip.documents || []).length >= LIMITS.documentsPerTrip) { window.alert(T.limitDocuments); return; }
     updateTrip(tripId, (t) => ({ ...t, documents: [...(t.documents || []), { id: "doc_" + Date.now(), text: text.trim() }] }));
   };
   const removeDocument = (tripId, docId) => {
@@ -1678,6 +1733,9 @@ function Waypoint() {
   };
   const addMeal = (tripId, stopId, name) => {
     if (!name.trim()) return;
+    if (name.trim().length > LIMITS.shortTextLength) { window.alert(T.limitTextLength); return; }
+    const stop = (trips[tripId] || {}).stops && trips[tripId].stops.find((s) => s.id === stopId);
+    if (stop && (stop.meals || []).length >= LIMITS.mealsPerStop) { window.alert(T.limitMeals); return; }
     updateTrip(tripId, (t) => ({
       ...t,
       stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim() }] } : s)),
@@ -1692,6 +1750,7 @@ function Waypoint() {
 
   const addDayActivity = (tripId, dayNum, time, name) => {
     if (!name.trim()) return;
+    if (name.trim().length > LIMITS.shortTextLength) { window.alert(T.limitTextLength); return; }
     updateTrip(tripId, (t) => {
       const days = { ...(t.days || {}) };
       const list = days[dayNum] || [];
@@ -1714,6 +1773,9 @@ function Waypoint() {
   // it as `(stop.activities || [])`.
   const addActivity = (tripId, stopId, name, day, time, price) => {
     if (!name || !name.trim()) return;
+    if (name.trim().length > LIMITS.shortTextLength) { window.alert(T.limitTextLength); return; }
+    const stop = (trips[tripId] || {}).stops && trips[tripId].stops.find((s) => s.id === stopId);
+    if (stop && (stop.activities || []).length >= LIMITS.activitiesPerStop) { window.alert(T.limitActivities); return; }
     updateTrip(tripId, (t) => ({
       ...t,
       stops: t.stops.map((s) => (s.id === stopId ? { ...s, activities: [...(s.activities || []), { id: "ac_" + Date.now(), name: name.trim(), day: day || "", time: time || "", price: price || "" }] } : s)),
