@@ -3044,10 +3044,13 @@ function Waypoint() {
           .wp-trip-panel-box { padding: 1.1rem; }
           /* Only two fields here (a compact time + a free-text name), unlike the
              3-4 field forms elsewhere on this same class -- those still stack, but
-             this one has room to stay on one line even on a narrow phone. */
-          .wp-trip-add-activity-row { flex-direction: row; align-items: center; }
-          .wp-trip-add-activity-row input.wp-trip-highlight-input.wp-trip-time-input { flex: 0 0 auto; width: 6.6rem; }
-          .wp-trip-add-activity-row input.wp-trip-highlight-input:not(.wp-trip-time-input) { flex: 1 1 auto; width: auto; min-width: 0; }
+             this one has room to stay on one line even on a narrow phone.
+             flex-wrap: nowrap is the important part: without it, the browser can
+             still drop the name field onto its own line even with the right
+             widths set below, since the base rule sets flex-wrap: wrap. */
+          .wp-trip-add-activity-row { flex-direction: row !important; flex-wrap: nowrap !important; align-items: center; }
+          .wp-trip-add-activity-row input.wp-trip-highlight-input.wp-trip-time-input { flex: 0 0 auto !important; width: 6.6rem !important; }
+          .wp-trip-add-activity-row input.wp-trip-highlight-input:not(.wp-trip-time-input) { flex: 1 1 0 !important; width: auto !important; min-width: 0 !important; }
           .wp-trip-add-activity-row .wp-trip-add-btn { align-self: center; flex-shrink: 0; }
         }
         .wp-trip-add-btn { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; }
