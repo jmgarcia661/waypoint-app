@@ -333,6 +333,7 @@ const UI_STRINGS = {
     activityDayLabel: "Day",
     activityTimeLabel: "Time",
     anyDay: "Any day",
+    searchingPlaces: "Searching\u2026",
     bookingsActivities: "Activities",
     noActivitiesYet: 'No activities added yet \u2014 add one with "Activities" in Route.',
     pdfSleepPrefix: "Stay",
@@ -615,6 +616,7 @@ const UI_STRINGS = {
     activityDayLabel: "Dia",
     activityTimeLabel: "Hora",
     anyDay: "Qualquer dia",
+    searchingPlaces: "A procurar\u2026",
     bookingsActivities: "Atividades",
     noActivitiesYet: 'Ainda sem atividades \u2014 adiciona uma em "Atividades" no Percurso.',
     pdfSleepPrefix: "Dormir",
@@ -975,12 +977,16 @@ function DayMap({ activities, cityName, countryName, geocodeCache, geocodeCity, 
   const mapRef = useRef(null);
   const locationContext = [cityName, countryName].filter(Boolean).join(", ");
   const points = activities.map((a, i) => {
+    if (typeof a.lat === "number" && typeof a.lng === "number") {
+      return { activity: a, index: i, hit: { lat: a.lat, lng: a.lng }, key: "coords:" + a.id };
+    }
     const key = ((a.name || "") + "|" + locationContext).toLowerCase();
     const hit = geocodeCache[key];
     return { activity: a, index: i, hit, key };
   });
   useEffect(() => {
     activities.forEach((a) => {
+      if (typeof a.lat === "number" && typeof a.lng === "number") return;
       if (a.name && a.name.trim()) geocodeCity(a.name.trim(), locationContext);
     });
   }, [JSON.stringify(activities.map((a) => a.name)), locationContext]);
@@ -1277,6 +1283,27 @@ function Waypoint() {
     };
   }, [view, activeTripId]);
   const [geocodeCache, setGeocodeCache] = useState({});
+  const [placeSuggest, setPlaceSuggest] = useState({ field: "", query: "", results: [], loading: false });
+  const placeSearchTimer = useRef(null);
+  const searchPlaces = (field, query, countryName) => {
+    if (placeSearchTimer.current) clearTimeout(placeSearchTimer.current);
+    if (!query || query.trim().length < 3) {
+      setPlaceSuggest({ field, query, results: [], loading: false });
+      return;
+    }
+    setPlaceSuggest({ field, query, results: [], loading: true });
+    placeSearchTimer.current = setTimeout(() => {
+      const q = encodeURIComponent(query.trim() + (countryName ? ", " + countryName : ""));
+      fetch("https://nominatim.openstreetmap.org/search?format=json&limit=5&q=" + q).then((r) => r.json()).then((results) => {
+        setPlaceSuggest((cur) => cur.field === field && cur.query === query ? { field, query, results: results || [], loading: false } : cur);
+      }).catch(() => setPlaceSuggest((cur) => cur.field === field && cur.query === query ? { field, query, results: [], loading: false } : cur));
+    }, 450);
+  };
+  const clearPlaceSuggest = () => setPlaceSuggest({ field: "", query: "", results: [], loading: false });
+  const splitSuggestion = (r) => {
+    const parts = (r.display_name || "").split(",").map((p) => p.trim()).filter(Boolean);
+    return { name: parts[0] || r.display_name || "", context: parts.slice(1, 3).join(", ") };
+  };
   const geocodeCity = (query, countryName) => {
     const key = (query + "|" + (countryName || "")).toLowerCase();
     if (!query || geocodeCache[key]) return;
@@ -2075,7 +2102,7 @@ function Waypoint() {
       stops: t.stops.map((s) => s.id === stopId ? { ...s, [field]: value } : s)
     }));
   };
-  const addHighlight = (tripId, stopId, text, source) => {
+  const addHighlight = (tripId, stopId, text, source, place) => {
     if (!text.trim()) return;
     if (text.trim().length > LIMITS.shortTextLength) {
       window.alert(T.limitTextLength);
@@ -2088,7 +2115,7 @@ function Waypoint() {
     }
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => s.id === stopId ? { ...s, highlights: [...s.highlights, { id: "h_" + Date.now(), text: text.trim(), source: source || "" }] } : s)
+      stops: t.stops.map((s) => s.id === stopId ? { ...s, highlights: [...s.highlights, { id: "h_" + Date.now(), text: text.trim(), source: source || "", ...place ? { lat: place.lat, lng: place.lng } : {} }] } : s)
     }));
   };
   const removeHighlight = (tripId, stopId, highlightId) => {
@@ -2151,7 +2178,7 @@ function Waypoint() {
       transits: t.transits.map((tr) => tr.afterStopId === afterStopId ? { ...tr, [field]: value } : tr)
     }));
   };
-  const addStay = (tripId, stopId, name, nights, price, day) => {
+  const addStay = (tripId, stopId, name, nights, price, day, place) => {
     if (!name.trim()) return;
     if (name.trim().length > LIMITS.shortTextLength) {
       window.alert(T.limitTextLength);
@@ -2164,7 +2191,7 @@ function Waypoint() {
     }
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => s.id === stopId ? { ...s, stays: [...s.stays, { id: "st_" + Date.now(), name: name.trim(), nights: nights || "", price: price || "", day: day || "" }] } : s)
+      stops: t.stops.map((s) => s.id === stopId ? { ...s, stays: [...s.stays, { id: "st_" + Date.now(), name: name.trim(), nights: nights || "", price: price || "", day: day || "", ...place ? { lat: place.lat, lng: place.lng } : {} }] } : s)
     }));
   };
   const removeStay = (tripId, stopId, stayId) => {
@@ -2201,7 +2228,7 @@ function Waypoint() {
   const removeDocument = (tripId, docId) => {
     updateTrip(tripId, (t) => ({ ...t, documents: (t.documents || []).filter((d) => d.id !== docId) }));
   };
-  const addMeal = (tripId, stopId, name, day) => {
+  const addMeal = (tripId, stopId, name, day, place) => {
     if (!name.trim()) return;
     if (name.trim().length > LIMITS.shortTextLength) {
       window.alert(T.limitTextLength);
@@ -2214,7 +2241,7 @@ function Waypoint() {
     }
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim(), day: day || "" }] } : s)
+      stops: t.stops.map((s) => s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim(), day: day || "", ...place ? { lat: place.lat, lng: place.lng } : {} }] } : s)
     }));
   };
   const removeMeal = (tripId, stopId, mealId) => {
@@ -3103,6 +3130,13 @@ function Waypoint() {
         .wp-trip-add-btn { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; }
         .wp-trip-time-input { flex: 0 0 130px; }
         .wp-trip-suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+        .wp-trip-place-suggest-dropdown { position: absolute; top: calc(100% + 0.3rem); left: 0; right: 0; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; box-shadow: 0 6px 18px rgba(20,32,53,0.12); z-index: 20; max-height: 14rem; overflow-y: auto; }
+        .wp-trip-place-suggest-item { display: flex; align-items: flex-start; gap: 0.5rem; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid var(--parchment-deep); padding: 0.6rem 0.75rem; cursor: pointer; font-size: 0.85rem; color: var(--ink); }
+        .wp-trip-place-suggest-item:last-child { border-bottom: none; }
+        .wp-trip-place-suggest-item:hover { background: var(--navy-subtle); }
+        .wp-trip-place-suggest-item svg { flex-shrink: 0; margin-top: 0.15rem; color: var(--ink-soft); }
+        .wp-trip-place-suggest-context { color: var(--ink-soft); font-weight: 400; }
+        .wp-trip-place-suggest-loading { padding: 0.6rem 0.75rem; font-size: 0.8rem; color: var(--ink-soft); }
         .wp-trip-suggestions-label { margin: 0.9rem 0 0.4rem; font-size: 0.72rem; color: var(--ink-soft); }
         .wp-trip-suggestion-chip { display: flex; align-items: center; gap: 0.25rem; font-size: 0.76rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.25rem 0.6rem; cursor: pointer; color: var(--ink-soft); }
         .wp-trip-suggestion-chip:hover { border-color: var(--gold); color: var(--ink); }
@@ -3641,18 +3675,22 @@ function Waypoint() {
           onClick: (e) => e.stopPropagation()
         },
         /* @__PURE__ */ React.createElement("div", { className: "wp-task-sheet-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "wp-task-sheet-title" }, titleMap[activeEditPanel.type]), /* @__PURE__ */ React.createElement("p", { className: "wp-task-sheet-context" }, aStop.city || T.cityPlaceholder)), /* @__PURE__ */ React.createElement("button", { className: "wp-mobile-menu-close", onClick: closeEditPanel, "aria-label": T.closeMenu }, /* @__PURE__ */ React.createElement(X, { size: 18 }))),
-        /* @__PURE__ */ React.createElement("div", { className: "wp-task-sheet-scroll" }, activeEditPanel.type === "highlights" && /* @__PURE__ */ React.createElement(React.Fragment, null, aStop.highlights.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row", style: { marginBottom: "1rem" } }, aStop.highlights.map((h) => /* @__PURE__ */ React.createElement("span", { key: h.id, className: "wp-trip-chip" }, h.text, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-chip-remove", onClick: () => removeHighlight(trip.id, aStop.id, h.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 11 }))))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("div", { className: "wp-task-sheet-scroll" }, activeEditPanel.type === "highlights" && /* @__PURE__ */ React.createElement(React.Fragment, null, aStop.highlights.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-chips-row", style: { marginBottom: "1rem" } }, aStop.highlights.map((h) => /* @__PURE__ */ React.createElement("span", { key: h.id, className: "wp-trip-chip" }, h.text, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-chip-remove", onClick: () => removeHighlight(trip.id, aStop.id, h.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 11 }))))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row", style: { position: "relative" } }, /* @__PURE__ */ React.createElement(
           "input",
           {
             type: "text",
             className: "wp-trip-highlight-input",
             placeholder: T.addHighlightPlaceholder,
             value: highlightDrafts[aStop.id] || "",
-            onChange: (e) => setHighlightDrafts({ ...highlightDrafts, [aStop.id]: e.target.value }),
+            onChange: (e) => {
+              setHighlightDrafts({ ...highlightDrafts, [aStop.id]: e.target.value });
+              searchPlaces("highlight", e.target.value, countryData ? countryData.name : trip.countryName || "");
+            },
             onKeyDown: (e) => {
               if (e.key === "Enter" && (highlightDrafts[aStop.id] || "").trim()) {
                 addHighlight(trip.id, aStop.id, highlightDrafts[aStop.id], "custom");
                 setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+                clearPlaceSuggest();
               }
             }
           }
@@ -3664,21 +3702,47 @@ function Waypoint() {
               if ((highlightDrafts[aStop.id] || "").trim()) {
                 addHighlight(trip.id, aStop.id, highlightDrafts[aStop.id], "custom");
                 setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+                clearPlaceSuggest();
               }
             }
           },
           /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })
-        )), suggestions.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-suggestions-label" }, T.suggestionsIn, " ", countryData ? countryData.name : trip.countryName || ""), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-suggestions" }, suggestions.filter((s) => !aStop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => /* @__PURE__ */ React.createElement("button", { key: s, className: "wp-trip-suggestion-chip", onClick: () => addHighlight(trip.id, aStop.id, s, "attraction") }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", s))))), activeEditPanel.type === "sleep" && /* @__PURE__ */ React.createElement(React.Fragment, null, (aStop.stays || []).map((st) => /* @__PURE__ */ React.createElement("div", { key: st.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F3E8}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, st.name, st.nights ? " \xB7 " + st.nights + " " + T.nights : "", st.price ? " \xB7 " + st.price : ""), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeStay(trip.id, aStop.id, st.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
+        ), placeSuggest.field === "highlight" && placeSuggest.query === (highlightDrafts[aStop.id] || "") && (placeSuggest.loading || placeSuggest.results.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-place-suggest-dropdown" }, placeSuggest.loading && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-place-suggest-loading" }, T.searchingPlaces), placeSuggest.results.map((r, i) => {
+          const { name, context } = splitSuggestion(r);
+          return /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              key: i,
+              className: "wp-trip-place-suggest-item",
+              onClick: () => {
+                addHighlight(trip.id, aStop.id, name, "custom", { lat: parseFloat(r.lat), lng: parseFloat(r.lon) });
+                setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+                clearPlaceSuggest();
+              }
+            },
+            /* @__PURE__ */ React.createElement(MapPinIcon, { size: 13 }),
+            /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, name), context ? /* @__PURE__ */ React.createElement("span", { className: "wp-trip-place-suggest-context" }, " \xB7 ", context) : null)
+          );
+        }))), suggestions.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-suggestions-label" }, T.suggestionsIn, " ", countryData ? countryData.name : trip.countryName || ""), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-suggestions" }, suggestions.filter((s) => !aStop.highlights.some((h) => h.text === s)).slice(0, 4).map((s) => /* @__PURE__ */ React.createElement("button", { key: s, className: "wp-trip-suggestion-chip", onClick: () => addHighlight(trip.id, aStop.id, s, "attraction") }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", s))))), activeEditPanel.type === "sleep" && /* @__PURE__ */ React.createElement(React.Fragment, null, (aStop.stays || []).map((st) => /* @__PURE__ */ React.createElement("div", { key: st.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F3E8}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, st.name, st.nights ? " \xB7 " + st.nights + " " + T.nights : "", st.price ? " \xB7 " + st.price : ""), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeStay(trip.id, aStop.id, st.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-place-input-wrap", style: { flex: 2, position: "relative" } }, /* @__PURE__ */ React.createElement(
           "input",
           {
             type: "text",
             className: "wp-trip-highlight-input",
-            style: { flex: 2 },
+            style: { width: "100%" },
             placeholder: T.stayNamePlaceholder,
             value: (stayDrafts[aStop.id] || {}).name || "",
-            onChange: (e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...stayDrafts[aStop.id] || {}, name: e.target.value } })
+            onChange: (e) => {
+              setStayDrafts({ ...stayDrafts, [aStop.id]: { ...stayDrafts[aStop.id] || {}, name: e.target.value } });
+              searchPlaces("stay", e.target.value, countryData ? countryData.name : trip.countryName || "");
+            }
           }
-        ), /* @__PURE__ */ React.createElement(
+        ), placeSuggest.field === "stay" && placeSuggest.query === ((stayDrafts[aStop.id] || {}).name || "") && (placeSuggest.loading || placeSuggest.results.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-place-suggest-dropdown" }, placeSuggest.loading && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-place-suggest-loading" }, T.searchingPlaces), placeSuggest.results.map((r, i) => {
+          const { name, context } = splitSuggestion(r);
+          return /* @__PURE__ */ React.createElement("button", { key: i, className: "wp-trip-place-suggest-item", onClick: () => {
+            setStayDrafts({ ...stayDrafts, [aStop.id]: { ...stayDrafts[aStop.id] || {}, name, lat: parseFloat(r.lat), lng: parseFloat(r.lon) } });
+            clearPlaceSuggest();
+          } }, /* @__PURE__ */ React.createElement(MapPinIcon, { size: 13 }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, name), context ? /* @__PURE__ */ React.createElement("span", { className: "wp-trip-place-suggest-context" }, " \xB7 ", context) : null));
+        }))), /* @__PURE__ */ React.createElement(
           "input",
           {
             type: "text",
@@ -3711,25 +3775,36 @@ function Waypoint() {
           panelDayOptions.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: String(n) }, formatTripDay(trip, n)))
         ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-btn", onClick: () => {
           const d = stayDrafts[aStop.id] || {};
-          addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "", d.day || "");
+          addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "", d.day || "", d.lat != null ? { lat: d.lat, lng: d.lng } : null);
           setStayDrafts({ ...stayDrafts, [aStop.id]: {} });
-        } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })))), activeEditPanel.type === "eat" && /* @__PURE__ */ React.createElement(React.Fragment, null, (aStop.meals || []).map((m) => /* @__PURE__ */ React.createElement("div", { key: m.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F37D}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, m.name), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeMeal(trip.id, aStop.id, m.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
+        } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })))), activeEditPanel.type === "eat" && /* @__PURE__ */ React.createElement(React.Fragment, null, (aStop.meals || []).map((m) => /* @__PURE__ */ React.createElement("div", { key: m.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F37D}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, m.name), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeMeal(trip.id, aStop.id, m.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement("div", { className: "wp-trip-place-input-wrap", style: { flex: 2, position: "relative" } }, /* @__PURE__ */ React.createElement(
           "input",
           {
             type: "text",
             className: "wp-trip-highlight-input",
-            style: { flex: 2 },
+            style: { width: "100%" },
             placeholder: T.addMealPlaceholder,
             value: (mealDrafts[aStop.id] || {}).name || "",
-            onChange: (e) => setMealDrafts({ ...mealDrafts, [aStop.id]: { ...mealDrafts[aStop.id] || {}, name: e.target.value } }),
+            onChange: (e) => {
+              setMealDrafts({ ...mealDrafts, [aStop.id]: { ...mealDrafts[aStop.id] || {}, name: e.target.value } });
+              searchPlaces("meal", e.target.value, countryData ? countryData.name : trip.countryName || "");
+            },
             onKeyDown: (e) => {
               if (e.key === "Enter" && ((mealDrafts[aStop.id] || {}).name || "").trim()) {
-                addMeal(trip.id, aStop.id, mealDrafts[aStop.id].name, (mealDrafts[aStop.id] || {}).day || "");
+                const d = mealDrafts[aStop.id] || {};
+                addMeal(trip.id, aStop.id, d.name, d.day || "", d.lat != null ? { lat: d.lat, lng: d.lng } : null);
                 setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
+                clearPlaceSuggest();
               }
             }
           }
-        ), /* @__PURE__ */ React.createElement(
+        ), placeSuggest.field === "meal" && placeSuggest.query === ((mealDrafts[aStop.id] || {}).name || "") && (placeSuggest.loading || placeSuggest.results.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-place-suggest-dropdown" }, placeSuggest.loading && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-place-suggest-loading" }, T.searchingPlaces), placeSuggest.results.map((r, i) => {
+          const { name, context } = splitSuggestion(r);
+          return /* @__PURE__ */ React.createElement("button", { key: i, className: "wp-trip-place-suggest-item", onClick: () => {
+            setMealDrafts({ ...mealDrafts, [aStop.id]: { ...mealDrafts[aStop.id] || {}, name, lat: parseFloat(r.lat), lng: parseFloat(r.lon) } });
+            clearPlaceSuggest();
+          } }, /* @__PURE__ */ React.createElement(MapPinIcon, { size: 13 }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, name), context ? /* @__PURE__ */ React.createElement("span", { className: "wp-trip-place-suggest-context" }, " \xB7 ", context) : null));
+        }))), /* @__PURE__ */ React.createElement(
           "select",
           {
             className: "wp-trip-highlight-input",
@@ -3742,7 +3817,7 @@ function Waypoint() {
           panelDayOptions.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: String(n) }, formatTripDay(trip, n)))
         ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-btn", onClick: () => {
           const d = mealDrafts[aStop.id] || {};
-          addMeal(trip.id, aStop.id, d.name || "", d.day || "");
+          addMeal(trip.id, aStop.id, d.name || "", d.day || "", d.lat != null ? { lat: d.lat, lng: d.lng } : null);
           setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
         } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 }))), countryData && countryData.food && countryData.food.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-suggestions-label" }, T.suggestionsIn, " ", countryData.name), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-suggestions" }, countryData.food.filter((f) => !aStop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => /* @__PURE__ */ React.createElement("button", { key: f.name, className: "wp-trip-suggestion-chip", onClick: () => addMeal(trip.id, aStop.id, f.name) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", f.name))))), activeEditPanel.type === "activities" && (() => {
           const d = stopActivityDrafts[aStop.id] || {};
@@ -3875,16 +3950,16 @@ function Waypoint() {
       const stopTo = dayStop ? Math.min(parseInt(dayStop.dayEnd) || stopFrom, stopFrom + 60) : 1;
       const stopDayOptions = [];
       for (let n = stopFrom; n <= stopTo; n++) stopDayOptions.push(n);
-      const poolHighlights = (dayStop && dayStop.highlights || []).filter((h) => !h.day).map((h) => ({ id: h.id, name: h.text, time: "", price: "", _source: "highlight" }));
+      const poolHighlights = (dayStop && dayStop.highlights || []).filter((h) => !h.day).map((h) => ({ id: h.id, name: h.text, time: "", price: "", lat: h.lat, lng: h.lng, _source: "highlight" }));
       const poolActivities = (dayStop && dayStop.activities || []).filter((a) => !a.day).map((a) => ({ id: a.id, name: a.name, time: a.time, price: a.price, _source: "activity" }));
-      const poolStays = (dayStop && dayStop.stays || []).filter((st) => !st.day).map((st) => ({ id: st.id, name: st.name + (st.nights ? " \xB7 " + st.nights + " " + T.nights : ""), time: st.time, price: st.price, _source: "stay" }));
-      const poolMeals = (dayStop && dayStop.meals || []).filter((m) => !m.day).map((m) => ({ id: m.id, name: m.name, time: m.time, price: "", _source: "meal" }));
+      const poolStays = (dayStop && dayStop.stays || []).filter((st) => !st.day).map((st) => ({ id: st.id, name: st.name + (st.nights ? " \xB7 " + st.nights + " " + T.nights : ""), time: st.time, price: st.price, lat: st.lat, lng: st.lng, _source: "stay" }));
+      const poolMeals = (dayStop && dayStop.meals || []).filter((m) => !m.day).map((m) => ({ id: m.id, name: m.name, time: m.time, price: "", lat: m.lat, lng: m.lng, _source: "meal" }));
       const unassignedItems = [...poolHighlights, ...poolActivities, ...poolStays, ...poolMeals];
       const dayNoteActivities = (trip.days && trip.days[selectedDay] || []).map((a) => ({ ...a, _source: "day" }));
       const dayStopActivities = (dayStop && dayStop.activities || []).filter((a) => String(a.day) === String(selectedDay)).map((a) => ({ ...a, _source: "activity" }));
-      const dayHighlights = (dayStop && dayStop.highlights || []).filter((h) => String(h.day) === String(selectedDay)).map((h) => ({ id: h.id, name: h.text, time: h.time || "", price: "", _source: "highlight" }));
-      const dayStays = (dayStop && dayStop.stays || []).filter((st) => String(st.day) === String(selectedDay)).map((st) => ({ id: st.id, name: st.name + (st.nights ? " \xB7 " + st.nights + " " + T.nights : ""), time: st.time || "", price: st.price || "", _source: "stay" }));
-      const dayMeals = (dayStop && dayStop.meals || []).filter((m) => String(m.day) === String(selectedDay)).map((m) => ({ id: m.id, name: m.name, time: m.time || "", price: "", _source: "meal" }));
+      const dayHighlights = (dayStop && dayStop.highlights || []).filter((h) => String(h.day) === String(selectedDay)).map((h) => ({ id: h.id, name: h.text, time: h.time || "", price: "", lat: h.lat, lng: h.lng, _source: "highlight" }));
+      const dayStays = (dayStop && dayStop.stays || []).filter((st) => String(st.day) === String(selectedDay)).map((st) => ({ id: st.id, name: st.name + (st.nights ? " \xB7 " + st.nights + " " + T.nights : ""), time: st.time || "", price: st.price || "", lat: st.lat, lng: st.lng, _source: "stay" }));
+      const dayMeals = (dayStop && dayStop.meals || []).filter((m) => String(m.day) === String(selectedDay)).map((m) => ({ id: m.id, name: m.name, time: m.time || "", price: "", lat: m.lat, lng: m.lng, _source: "meal" }));
       const dayActivities = [...dayNoteActivities, ...dayStopActivities, ...dayHighlights, ...dayStays, ...dayMeals].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
       const dayDate = trip.startDate ? new Date(new Date(trip.startDate).getTime() + (selectedDay - 1) * 864e5) : null;
       const draft = activityDrafts[selectedDay] || {};
