@@ -2585,7 +2585,9 @@ function Waypoint() {
         .wp-trip-day-move-select { font-size: 0.76rem; padding: 0.3rem 0.5rem; border: 1px solid var(--hairline); border-radius: 8px; background: #fff; color: var(--ink-soft); flex-shrink: 0; max-width: 8rem; }
         .wp-trip-day-time-input { font-size: 0.76rem; padding: 0.3rem 0.4rem; border: 1px solid var(--hairline); border-radius: 8px; background: #fff; color: var(--ink-soft); flex-shrink: 0; width: 6.2rem; }
         .wp-trip-day-list-empty { margin: 0 0 0.8rem; font-size: 0.85rem; color: var(--ink-soft); }
-        .wp-trip-day-activity-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.55rem 0; border-bottom: 1px solid var(--parchment-deep); }
+        .wp-trip-day-activity-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.7rem; padding: 0.55rem 0; border-bottom: 1px solid var(--parchment-deep); }
+        .wp-trip-day-row-main { display: flex; align-items: center; gap: 0.6rem; flex: 1 1 auto; min-width: 60%; }
+        .wp-trip-day-row-controls { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; margin-left: auto; }
         .wp-trip-day-activity-time { font-size: 0.82rem; color: var(--gold); min-width: 3.2rem; }
         .wp-trip-day-activity-name { flex: 1; min-width: 0; font-size: 0.9rem; }
         .wp-day-map-empty-text { font-size: 0.82rem; color: var(--ink-soft); padding: 0 1rem; text-align: center; }
@@ -4321,11 +4323,15 @@ function Waypoint() {
                         <p className="wp-trip-day-pool-label">{T.unassignedForCity} {dayStop.city}</p>
                         {unassignedItems.map((item) => (
                           <div key={item._source + item.id} className="wp-trip-day-activity-row" draggable onDragStart={(e) => onItemDragStart(e, item)}>
-                            <span className="wp-trip-drag-handle" aria-hidden="true">⠿</span>
-                            <input type="time" className="wp-trip-day-time-input" value={item.time || ""} onChange={(e) => setItemTime(item, e.target.value)} aria-label={T.activityTimeLabel} />
-                            <span className="wp-trip-day-activity-name">{item.name}{(item._source === "activity" || item._source === "stay") && item.price ? " · " + item.price : ""}</span>
-                            <DayMoveSelect item={item} currentDay="" />
-                            <button className="wp-trip-remove-btn" onClick={() => removeItem(item)} aria-label="Remove"><X size={12} /></button>
+                            <div className="wp-trip-day-row-main">
+                              <span className="wp-trip-drag-handle" aria-hidden="true">⠿</span>
+                              <input type="time" className="wp-trip-day-time-input" value={item.time || ""} onChange={(e) => setItemTime(item, e.target.value)} aria-label={T.activityTimeLabel} />
+                              <span className="wp-trip-day-activity-name">{item.name}{(item._source === "activity" || item._source === "stay") && item.price ? " · " + item.price : ""}</span>
+                            </div>
+                            <div className="wp-trip-day-row-controls">
+                              <DayMoveSelect item={item} currentDay="" />
+                              <button className="wp-trip-remove-btn" onClick={() => removeItem(item)} aria-label="Remove"><X size={12} /></button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -4336,16 +4342,20 @@ function Waypoint() {
                         {dayActivities.length === 0 && <p className="wp-trip-day-list-empty">{T.dayListEmpty}</p>}
                         {dayActivities.map((a) => (
                           <div key={a._source + a.id} className="wp-trip-day-activity-row" draggable={a._source !== "day"} onDragStart={(e) => a._source !== "day" && onItemDragStart(e, a)}>
-                            {a._source !== "day" ? <span className="wp-trip-drag-handle" aria-hidden="true">⠿</span> : <span className="wp-trip-drag-handle-spacer" aria-hidden="true"></span>}
-                            <input type="time" className="wp-trip-day-time-input" value={a.time || ""} onChange={(e) => setItemTime(a, e.target.value)} aria-label={T.activityTimeLabel} />
-                            <span className="wp-trip-day-activity-name">{a.name}{(a._source === "activity" || a._source === "stay") && a.price ? " · " + a.price : ""}</span>
-                            <DayMoveSelect item={a} currentDay={String(selectedDay)} />
-                            <button
-                              className="wp-trip-remove-btn"
-                              onClick={() => a._source === "day" ? removeItem(a) : moveItem(a, "")}
-                              aria-label={a._source === "day" ? "Remove" : T.unassignBtn}
-                              title={a._source === "day" ? "" : T.unassignBtn}
-                            ><X size={12} /></button>
+                            <div className="wp-trip-day-row-main">
+                              {a._source !== "day" ? <span className="wp-trip-drag-handle" aria-hidden="true">⠿</span> : <span className="wp-trip-drag-handle-spacer" aria-hidden="true"></span>}
+                              <input type="time" className="wp-trip-day-time-input" value={a.time || ""} onChange={(e) => setItemTime(a, e.target.value)} aria-label={T.activityTimeLabel} />
+                              <span className="wp-trip-day-activity-name">{a.name}{(a._source === "activity" || a._source === "stay") && a.price ? " · " + a.price : ""}</span>
+                            </div>
+                            <div className="wp-trip-day-row-controls">
+                              <DayMoveSelect item={a} currentDay={String(selectedDay)} />
+                              <button
+                                className="wp-trip-remove-btn"
+                                onClick={() => a._source === "day" ? removeItem(a) : moveItem(a, "")}
+                                aria-label={a._source === "day" ? "Remove" : T.unassignBtn}
+                                title={a._source === "day" ? "" : T.unassignBtn}
+                              ><X size={12} /></button>
+                            </div>
                           </div>
                         ))}
                         <div className="wp-trip-add-highlight-row wp-trip-add-activity-row" style={{ marginTop: "0.7rem" }}>
