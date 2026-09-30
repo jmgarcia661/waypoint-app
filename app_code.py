@@ -1685,6 +1685,33 @@ function Waypoint() {
       stops: t.stops.map((s) => (s.id === stopId ? { ...s, activities: (s.activities || []).map((a) => (a.id === activityId ? { ...a, time: time || "" } : a)) } : s)),
     }));
   };
+  // "Where to sleep" and "where to eat" get the exact same day/time assignment as
+  // highlights and activities, so all four kinds of entry behave identically in
+  // the Days tab's unassigned pool and per-day list.
+  const setStayDay = (tripId, stopId, stayId, day) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: (s.stays || []).map((st) => (st.id === stayId ? { ...st, day: day || "" } : st)) } : s)),
+    }));
+  };
+  const setStayTime = (tripId, stopId, stayId, time) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: (s.stays || []).map((st) => (st.id === stayId ? { ...st, time: time || "" } : st)) } : s)),
+    }));
+  };
+  const setMealDay = (tripId, stopId, mealId, day) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: (s.meals || []).map((m) => (m.id === mealId ? { ...m, day: day || "" } : m)) } : s)),
+    }));
+  };
+  const setMealTime = (tripId, stopId, mealId, time) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: (s.meals || []).map((m) => (m.id === mealId ? { ...m, time: time || "" } : m)) } : s)),
+    }));
+  };
 
   const updateTransit = (tripId, afterStopId, field, value) => {
     updateTrip(tripId, (t) => ({
@@ -1693,14 +1720,14 @@ function Waypoint() {
     }));
   };
 
-  const addStay = (tripId, stopId, name, nights, price) => {
+  const addStay = (tripId, stopId, name, nights, price, day) => {
     if (!name.trim()) return;
     if (name.trim().length > LIMITS.shortTextLength) { window.alert(T.limitTextLength); return; }
     const stop = (trips[tripId] || {}).stops && trips[tripId].stops.find((s) => s.id === stopId);
     if (stop && (stop.stays || []).length >= LIMITS.staysPerStop) { window.alert(T.limitStays); return; }
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: [...s.stays, { id: "st_" + Date.now(), name: name.trim(), nights: nights || "", price: price || "" }] } : s)),
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: [...s.stays, { id: "st_" + Date.now(), name: name.trim(), nights: nights || "", price: price || "", day: day || "" }] } : s)),
     }));
   };
   const removeStay = (tripId, stopId, stayId) => {
@@ -1731,14 +1758,14 @@ function Waypoint() {
   const removeDocument = (tripId, docId) => {
     updateTrip(tripId, (t) => ({ ...t, documents: (t.documents || []).filter((d) => d.id !== docId) }));
   };
-  const addMeal = (tripId, stopId, name) => {
+  const addMeal = (tripId, stopId, name, day) => {
     if (!name.trim()) return;
     if (name.trim().length > LIMITS.shortTextLength) { window.alert(T.limitTextLength); return; }
     const stop = (trips[tripId] || {}).stops && trips[tripId].stops.find((s) => s.id === stopId);
     if (stop && (stop.meals || []).length >= LIMITS.mealsPerStop) { window.alert(T.limitMeals); return; }
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim() }] } : s)),
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim(), day: day || "" }] } : s)),
     }));
   };
   const removeMeal = (tripId, stopId, mealId) => {
@@ -3847,6 +3874,13 @@ function Waypoint() {
                 if (!aStop) return null;
                 const aTransit = trip.transits.find((tr) => tr.afterStopId === activeEditPanel.stopId);
                 const titleMap = { highlights: T.placesBtn, sleep: T.whereToSleep, eat: T.whereToEat, transit: T.transportTitle, activities: T.activitiesBtn };
+                // Shared by the sleep/eat/activities add-forms below, so a stay or a meal
+                // can be assigned a day right at creation, exactly like activities already
+                // could -- instead of always landing unassigned and needing a second step.
+                const panelDayFrom = parseInt(aStop.dayStart) || 1;
+                const panelDayTo = Math.min(parseInt(aStop.dayEnd) || panelDayFrom, panelDayFrom + 60);
+                const panelDayOptions = [];
+                for (let n = panelDayFrom; n <= panelDayTo; n++) panelDayOptions.push(n);
                 return (
                   <div className="wp-task-sheet-overlay" onClick={closeEditPanel}>
                     <div
@@ -3936,9 +3970,15 @@ function Waypoint() {
                               <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.transitPrice}
                                 value={(stayDrafts[aStop.id] || {}).price || ""}
                                 onChange={(e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...(stayDrafts[aStop.id] || {}), price: e.target.value } })} />
+                              <select className="wp-trip-highlight-input" style={{ flex: 1 }} aria-label={T.activityDayLabel}
+                                value={(stayDrafts[aStop.id] || {}).day || ""}
+                                onChange={(e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...(stayDrafts[aStop.id] || {}), day: e.target.value } })}>
+                                <option value="">{T.anyDay}</option>
+                                {panelDayOptions.map((n) => <option key={n} value={String(n)}>{formatTripDay(trip, n)}</option>)}
+                              </select>
                               <button className="wp-trip-add-btn" onClick={() => {
                                 const d = stayDrafts[aStop.id] || {};
-                                addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "");
+                                addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "", d.day || "");
                                 setStayDrafts({ ...stayDrafts, [aStop.id]: {} });
                               }}><PlusIcon size={14} /></button>
                             </div>
@@ -3955,18 +3995,24 @@ function Waypoint() {
                               </div>
                             ))}
                             <div className="wp-trip-add-highlight-row">
-                              <input type="text" className="wp-trip-highlight-input" placeholder={T.addMealPlaceholder}
+                              <input type="text" className="wp-trip-highlight-input" style={{ flex: 2 }} placeholder={T.addMealPlaceholder}
                                 value={(mealDrafts[aStop.id] || {}).name || ""}
                                 onChange={(e) => setMealDrafts({ ...mealDrafts, [aStop.id]: { ...(mealDrafts[aStop.id] || {}), name: e.target.value } })}
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter" && ((mealDrafts[aStop.id] || {}).name || "").trim()) {
-                                    addMeal(trip.id, aStop.id, mealDrafts[aStop.id].name);
+                                    addMeal(trip.id, aStop.id, mealDrafts[aStop.id].name, (mealDrafts[aStop.id] || {}).day || "");
                                     setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
                                   }
                                 }} />
+                              <select className="wp-trip-highlight-input" style={{ flex: 1 }} aria-label={T.activityDayLabel}
+                                value={(mealDrafts[aStop.id] || {}).day || ""}
+                                onChange={(e) => setMealDrafts({ ...mealDrafts, [aStop.id]: { ...(mealDrafts[aStop.id] || {}), day: e.target.value } })}>
+                                <option value="">{T.anyDay}</option>
+                                {panelDayOptions.map((n) => <option key={n} value={String(n)}>{formatTripDay(trip, n)}</option>)}
+                              </select>
                               <button className="wp-trip-add-btn" onClick={() => {
                                 const d = mealDrafts[aStop.id] || {};
-                                addMeal(trip.id, aStop.id, d.name || "");
+                                addMeal(trip.id, aStop.id, d.name || "", d.day || "");
                                 setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
                               }}><PlusIcon size={14} /></button>
                             </div>
@@ -4157,7 +4203,9 @@ function Waypoint() {
                 // just remove.
                 const poolHighlights = ((dayStop && dayStop.highlights) || []).filter((h) => !h.day).map((h) => ({ id: h.id, name: h.text, time: "", price: "", _source: "highlight" }));
                 const poolActivities = ((dayStop && dayStop.activities) || []).filter((a) => !a.day).map((a) => ({ id: a.id, name: a.name, time: a.time, price: a.price, _source: "activity" }));
-                const unassignedItems = [...poolHighlights, ...poolActivities];
+                const poolStays = ((dayStop && dayStop.stays) || []).filter((st) => !st.day).map((st) => ({ id: st.id, name: st.name + (st.nights ? " · " + st.nights + " " + T.nights : ""), time: st.time, price: st.price, _source: "stay" }));
+                const poolMeals = ((dayStop && dayStop.meals) || []).filter((m) => !m.day).map((m) => ({ id: m.id, name: m.name, time: m.time, price: "", _source: "meal" }));
+                const unassignedItems = [...poolHighlights, ...poolActivities, ...poolStays, ...poolMeals];
 
                 const dayNoteActivities = ((trip.days && trip.days[selectedDay]) || []).map((a) => ({ ...a, _source: "day" }));
                 const dayStopActivities = ((dayStop && dayStop.activities) || [])
@@ -4166,7 +4214,13 @@ function Waypoint() {
                 const dayHighlights = ((dayStop && dayStop.highlights) || [])
                   .filter((h) => String(h.day) === String(selectedDay))
                   .map((h) => ({ id: h.id, name: h.text, time: h.time || "", price: "", _source: "highlight" }));
-                const dayActivities = [...dayNoteActivities, ...dayStopActivities, ...dayHighlights].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+                const dayStays = ((dayStop && dayStop.stays) || [])
+                  .filter((st) => String(st.day) === String(selectedDay))
+                  .map((st) => ({ id: st.id, name: st.name + (st.nights ? " · " + st.nights + " " + T.nights : ""), time: st.time || "", price: st.price || "", _source: "stay" }));
+                const dayMeals = ((dayStop && dayStop.meals) || [])
+                  .filter((m) => String(m.day) === String(selectedDay))
+                  .map((m) => ({ id: m.id, name: m.name, time: m.time || "", price: "", _source: "meal" }));
+                const dayActivities = [...dayNoteActivities, ...dayStopActivities, ...dayHighlights, ...dayStays, ...dayMeals].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
                 const dayDate = trip.startDate ? new Date(new Date(trip.startDate).getTime() + (selectedDay - 1) * 86400000) : null;
                 const draft = activityDrafts[selectedDay] || {};
@@ -4174,16 +4228,22 @@ function Waypoint() {
                 const moveItem = (item, day) => {
                   if (item._source === "highlight") setHighlightDay(trip.id, dayStop.id, item.id, day);
                   else if (item._source === "activity") setActivityDay(trip.id, dayStop.id, item.id, day);
+                  else if (item._source === "stay") setStayDay(trip.id, dayStop.id, item.id, day);
+                  else if (item._source === "meal") setMealDay(trip.id, dayStop.id, item.id, day);
                   else if (item._source === "day" && day) moveDayActivity(trip.id, selectedDay, day, item.id);
                 };
                 const setItemTime = (item, time) => {
                   if (item._source === "highlight") setHighlightTime(trip.id, dayStop.id, item.id, time);
                   else if (item._source === "activity") setActivityTime(trip.id, dayStop.id, item.id, time);
+                  else if (item._source === "stay") setStayTime(trip.id, dayStop.id, item.id, time);
+                  else if (item._source === "meal") setMealTime(trip.id, dayStop.id, item.id, time);
                   else if (item._source === "day") setDayActivityTime(trip.id, selectedDay, item.id, time);
                 };
                 const removeItem = (item) => {
                   if (item._source === "highlight") removeHighlight(trip.id, dayStop.id, item.id);
                   else if (item._source === "activity") removeActivity(trip.id, dayStop.id, item.id);
+                  else if (item._source === "stay") removeStay(trip.id, dayStop.id, item.id);
+                  else if (item._source === "meal") removeMeal(trip.id, dayStop.id, item.id);
                   else removeDayActivity(trip.id, selectedDay, item.id);
                 };
                 const onItemDragStart = (e, item) => { e.dataTransfer.setData("text/plain", JSON.stringify({ id: item.id, source: item._source })); e.dataTransfer.effectAllowed = "move"; };
@@ -4262,7 +4322,8 @@ function Waypoint() {
                         {unassignedItems.map((item) => (
                           <div key={item._source + item.id} className="wp-trip-day-activity-row" draggable onDragStart={(e) => onItemDragStart(e, item)}>
                             <span className="wp-trip-drag-handle" aria-hidden="true">⠿</span>
-                            <span className="wp-trip-day-activity-name">{item.name}</span>
+                            <input type="time" className="wp-trip-day-time-input" value={item.time || ""} onChange={(e) => setItemTime(item, e.target.value)} aria-label={T.activityTimeLabel} />
+                            <span className="wp-trip-day-activity-name">{item.name}{(item._source === "activity" || item._source === "stay") && item.price ? " · " + item.price : ""}</span>
                             <DayMoveSelect item={item} currentDay="" />
                             <button className="wp-trip-remove-btn" onClick={() => removeItem(item)} aria-label="Remove"><X size={12} /></button>
                           </div>
@@ -4277,7 +4338,7 @@ function Waypoint() {
                           <div key={a._source + a.id} className="wp-trip-day-activity-row" draggable={a._source !== "day"} onDragStart={(e) => a._source !== "day" && onItemDragStart(e, a)}>
                             {a._source !== "day" ? <span className="wp-trip-drag-handle" aria-hidden="true">⠿</span> : <span className="wp-trip-drag-handle-spacer" aria-hidden="true"></span>}
                             <input type="time" className="wp-trip-day-time-input" value={a.time || ""} onChange={(e) => setItemTime(a, e.target.value)} aria-label={T.activityTimeLabel} />
-                            <span className="wp-trip-day-activity-name">{a.name}{a._source === "activity" && a.price ? " · " + a.price : ""}</span>
+                            <span className="wp-trip-day-activity-name">{a.name}{(a._source === "activity" || a._source === "stay") && a.price ? " · " + a.price : ""}</span>
                             <DayMoveSelect item={a} currentDay={String(selectedDay)} />
                             <button
                               className="wp-trip-remove-btn"

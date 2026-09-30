@@ -2121,13 +2121,37 @@ function Waypoint() {
       stops: t.stops.map((s) => s.id === stopId ? { ...s, activities: (s.activities || []).map((a) => a.id === activityId ? { ...a, time: time || "" } : a) } : s)
     }));
   };
+  const setStayDay = (tripId, stopId, stayId, day) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => s.id === stopId ? { ...s, stays: (s.stays || []).map((st) => st.id === stayId ? { ...st, day: day || "" } : st) } : s)
+    }));
+  };
+  const setStayTime = (tripId, stopId, stayId, time) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => s.id === stopId ? { ...s, stays: (s.stays || []).map((st) => st.id === stayId ? { ...st, time: time || "" } : st) } : s)
+    }));
+  };
+  const setMealDay = (tripId, stopId, mealId, day) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => s.id === stopId ? { ...s, meals: (s.meals || []).map((m) => m.id === mealId ? { ...m, day: day || "" } : m) } : s)
+    }));
+  };
+  const setMealTime = (tripId, stopId, mealId, time) => {
+    updateTrip(tripId, (t) => ({
+      ...t,
+      stops: t.stops.map((s) => s.id === stopId ? { ...s, meals: (s.meals || []).map((m) => m.id === mealId ? { ...m, time: time || "" } : m) } : s)
+    }));
+  };
   const updateTransit = (tripId, afterStopId, field, value) => {
     updateTrip(tripId, (t) => ({
       ...t,
       transits: t.transits.map((tr) => tr.afterStopId === afterStopId ? { ...tr, [field]: value } : tr)
     }));
   };
-  const addStay = (tripId, stopId, name, nights, price) => {
+  const addStay = (tripId, stopId, name, nights, price, day) => {
     if (!name.trim()) return;
     if (name.trim().length > LIMITS.shortTextLength) {
       window.alert(T.limitTextLength);
@@ -2140,7 +2164,7 @@ function Waypoint() {
     }
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => s.id === stopId ? { ...s, stays: [...s.stays, { id: "st_" + Date.now(), name: name.trim(), nights: nights || "", price: price || "" }] } : s)
+      stops: t.stops.map((s) => s.id === stopId ? { ...s, stays: [...s.stays, { id: "st_" + Date.now(), name: name.trim(), nights: nights || "", price: price || "", day: day || "" }] } : s)
     }));
   };
   const removeStay = (tripId, stopId, stayId) => {
@@ -2177,7 +2201,7 @@ function Waypoint() {
   const removeDocument = (tripId, docId) => {
     updateTrip(tripId, (t) => ({ ...t, documents: (t.documents || []).filter((d) => d.id !== docId) }));
   };
-  const addMeal = (tripId, stopId, name) => {
+  const addMeal = (tripId, stopId, name, day) => {
     if (!name.trim()) return;
     if (name.trim().length > LIMITS.shortTextLength) {
       window.alert(T.limitTextLength);
@@ -2190,7 +2214,7 @@ function Waypoint() {
     }
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim() }] } : s)
+      stops: t.stops.map((s) => s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim(), day: day || "" }] } : s)
     }));
   };
   const removeMeal = (tripId, stopId, mealId) => {
@@ -3600,6 +3624,10 @@ function Waypoint() {
       if (!aStop) return null;
       const aTransit = trip.transits.find((tr) => tr.afterStopId === activeEditPanel.stopId);
       const titleMap = { highlights: T.placesBtn, sleep: T.whereToSleep, eat: T.whereToEat, transit: T.transportTitle, activities: T.activitiesBtn };
+      const panelDayFrom = parseInt(aStop.dayStart) || 1;
+      const panelDayTo = Math.min(parseInt(aStop.dayEnd) || panelDayFrom, panelDayFrom + 60);
+      const panelDayOptions = [];
+      for (let n = panelDayFrom; n <= panelDayTo; n++) panelDayOptions.push(n);
       return /* @__PURE__ */ React.createElement("div", { className: "wp-task-sheet-overlay", onClick: closeEditPanel }, /* @__PURE__ */ React.createElement(
         "div",
         {
@@ -3668,28 +3696,51 @@ function Waypoint() {
             value: (stayDrafts[aStop.id] || {}).price || "",
             onChange: (e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...stayDrafts[aStop.id] || {}, price: e.target.value } })
           }
+        ), /* @__PURE__ */ React.createElement(
+          "select",
+          {
+            className: "wp-trip-highlight-input",
+            style: { flex: 1 },
+            "aria-label": T.activityDayLabel,
+            value: (stayDrafts[aStop.id] || {}).day || "",
+            onChange: (e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...stayDrafts[aStop.id] || {}, day: e.target.value } })
+          },
+          /* @__PURE__ */ React.createElement("option", { value: "" }, T.anyDay),
+          panelDayOptions.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: String(n) }, formatTripDay(trip, n)))
         ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-btn", onClick: () => {
           const d = stayDrafts[aStop.id] || {};
-          addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "");
+          addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "", d.day || "");
           setStayDrafts({ ...stayDrafts, [aStop.id]: {} });
         } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 })))), activeEditPanel.type === "eat" && /* @__PURE__ */ React.createElement(React.Fragment, null, (aStop.meals || []).map((m) => /* @__PURE__ */ React.createElement("div", { key: m.id, className: "wp-trip-highlight-row" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.85rem" } }, "\u{1F37D}"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-highlight-text" }, m.name), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeMeal(trip.id, aStop.id, m.id), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-add-highlight-row" }, /* @__PURE__ */ React.createElement(
           "input",
           {
             type: "text",
             className: "wp-trip-highlight-input",
+            style: { flex: 2 },
             placeholder: T.addMealPlaceholder,
             value: (mealDrafts[aStop.id] || {}).name || "",
             onChange: (e) => setMealDrafts({ ...mealDrafts, [aStop.id]: { ...mealDrafts[aStop.id] || {}, name: e.target.value } }),
             onKeyDown: (e) => {
               if (e.key === "Enter" && ((mealDrafts[aStop.id] || {}).name || "").trim()) {
-                addMeal(trip.id, aStop.id, mealDrafts[aStop.id].name);
+                addMeal(trip.id, aStop.id, mealDrafts[aStop.id].name, (mealDrafts[aStop.id] || {}).day || "");
                 setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
               }
             }
           }
+        ), /* @__PURE__ */ React.createElement(
+          "select",
+          {
+            className: "wp-trip-highlight-input",
+            style: { flex: 1 },
+            "aria-label": T.activityDayLabel,
+            value: (mealDrafts[aStop.id] || {}).day || "",
+            onChange: (e) => setMealDrafts({ ...mealDrafts, [aStop.id]: { ...mealDrafts[aStop.id] || {}, day: e.target.value } })
+          },
+          /* @__PURE__ */ React.createElement("option", { value: "" }, T.anyDay),
+          panelDayOptions.map((n) => /* @__PURE__ */ React.createElement("option", { key: n, value: String(n) }, formatTripDay(trip, n)))
         ), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-btn", onClick: () => {
           const d = mealDrafts[aStop.id] || {};
-          addMeal(trip.id, aStop.id, d.name || "");
+          addMeal(trip.id, aStop.id, d.name || "", d.day || "");
           setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
         } }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 14 }))), countryData && countryData.food && countryData.food.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-suggestions-label" }, T.suggestionsIn, " ", countryData.name), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-suggestions" }, countryData.food.filter((f) => !aStop.meals.some((m) => m.name === f.name)).slice(0, 3).map((f) => /* @__PURE__ */ React.createElement("button", { key: f.name, className: "wp-trip-suggestion-chip", onClick: () => addMeal(trip.id, aStop.id, f.name) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 11 }), " ", f.name))))), activeEditPanel.type === "activities" && (() => {
           const d = stopActivityDrafts[aStop.id] || {};
@@ -3824,26 +3875,36 @@ function Waypoint() {
       for (let n = stopFrom; n <= stopTo; n++) stopDayOptions.push(n);
       const poolHighlights = (dayStop && dayStop.highlights || []).filter((h) => !h.day).map((h) => ({ id: h.id, name: h.text, time: "", price: "", _source: "highlight" }));
       const poolActivities = (dayStop && dayStop.activities || []).filter((a) => !a.day).map((a) => ({ id: a.id, name: a.name, time: a.time, price: a.price, _source: "activity" }));
-      const unassignedItems = [...poolHighlights, ...poolActivities];
+      const poolStays = (dayStop && dayStop.stays || []).filter((st) => !st.day).map((st) => ({ id: st.id, name: st.name + (st.nights ? " \xB7 " + st.nights + " " + T.nights : ""), time: st.time, price: st.price, _source: "stay" }));
+      const poolMeals = (dayStop && dayStop.meals || []).filter((m) => !m.day).map((m) => ({ id: m.id, name: m.name, time: m.time, price: "", _source: "meal" }));
+      const unassignedItems = [...poolHighlights, ...poolActivities, ...poolStays, ...poolMeals];
       const dayNoteActivities = (trip.days && trip.days[selectedDay] || []).map((a) => ({ ...a, _source: "day" }));
       const dayStopActivities = (dayStop && dayStop.activities || []).filter((a) => String(a.day) === String(selectedDay)).map((a) => ({ ...a, _source: "activity" }));
       const dayHighlights = (dayStop && dayStop.highlights || []).filter((h) => String(h.day) === String(selectedDay)).map((h) => ({ id: h.id, name: h.text, time: h.time || "", price: "", _source: "highlight" }));
-      const dayActivities = [...dayNoteActivities, ...dayStopActivities, ...dayHighlights].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+      const dayStays = (dayStop && dayStop.stays || []).filter((st) => String(st.day) === String(selectedDay)).map((st) => ({ id: st.id, name: st.name + (st.nights ? " \xB7 " + st.nights + " " + T.nights : ""), time: st.time || "", price: st.price || "", _source: "stay" }));
+      const dayMeals = (dayStop && dayStop.meals || []).filter((m) => String(m.day) === String(selectedDay)).map((m) => ({ id: m.id, name: m.name, time: m.time || "", price: "", _source: "meal" }));
+      const dayActivities = [...dayNoteActivities, ...dayStopActivities, ...dayHighlights, ...dayStays, ...dayMeals].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
       const dayDate = trip.startDate ? new Date(new Date(trip.startDate).getTime() + (selectedDay - 1) * 864e5) : null;
       const draft = activityDrafts[selectedDay] || {};
       const moveItem = (item, day) => {
         if (item._source === "highlight") setHighlightDay(trip.id, dayStop.id, item.id, day);
         else if (item._source === "activity") setActivityDay(trip.id, dayStop.id, item.id, day);
+        else if (item._source === "stay") setStayDay(trip.id, dayStop.id, item.id, day);
+        else if (item._source === "meal") setMealDay(trip.id, dayStop.id, item.id, day);
         else if (item._source === "day" && day) moveDayActivity(trip.id, selectedDay, day, item.id);
       };
       const setItemTime = (item, time) => {
         if (item._source === "highlight") setHighlightTime(trip.id, dayStop.id, item.id, time);
         else if (item._source === "activity") setActivityTime(trip.id, dayStop.id, item.id, time);
+        else if (item._source === "stay") setStayTime(trip.id, dayStop.id, item.id, time);
+        else if (item._source === "meal") setMealTime(trip.id, dayStop.id, item.id, time);
         else if (item._source === "day") setDayActivityTime(trip.id, selectedDay, item.id, time);
       };
       const removeItem = (item) => {
         if (item._source === "highlight") removeHighlight(trip.id, dayStop.id, item.id);
         else if (item._source === "activity") removeActivity(trip.id, dayStop.id, item.id);
+        else if (item._source === "stay") removeStay(trip.id, dayStop.id, item.id);
+        else if (item._source === "meal") removeMeal(trip.id, dayStop.id, item.id);
         else removeDayActivity(trip.id, selectedDay, item.id);
       };
       const onItemDragStart = (e, item) => {
@@ -3881,7 +3942,7 @@ function Waypoint() {
           },
           dt ? dt.toLocaleDateString(lang === "pt" ? "pt-PT" : "en-GB", { day: "numeric", month: "short" }) : T.day + " " + d
         );
-      })), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-header-row" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-city" }, dayStop ? dayStop.city || T.cityPlaceholder : ""), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-view-toggle" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (dayView === "list" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setDayView("list") }, T.listViewLabel), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (dayView === "map" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setDayView("map") }, T.mapViewLabel))), dayStop && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-row", style: { marginBottom: "1.1rem" } }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-btn", onClick: (e) => openEditPanel(dayStop.id, "highlights", e.currentTarget) }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "10", r: "3" })), T.placesBtn), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-btn", onClick: (e) => openEditPanel(dayStop.id, "sleep", e.currentTarget) }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2M21 18v2M5 10V7a2 2 0 0 1 2-2h3v5" })), T.whereToSleepBtn), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-btn", onClick: (e) => openEditPanel(dayStop.id, "eat", e.currentTarget) }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11" })), T.whereToEatBtn), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-btn", onClick: (e) => openEditPanel(dayStop.id, "activities", e.currentTarget) }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" }), /* @__PURE__ */ React.createElement("path", { d: "M13 5v2M13 11v2M13 17v2" })), T.activitiesBtn)), dayStop && unassignedItems.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-pool", onDragOver: (e) => e.preventDefault(), onDrop: (e) => onDropToDay(e, "") }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-pool-label" }, T.unassignedForCity, " ", dayStop.city), unassignedItems.map((item) => /* @__PURE__ */ React.createElement("div", { key: item._source + item.id, className: "wp-trip-day-activity-row", draggable: true, onDragStart: (e) => onItemDragStart(e, item) }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-drag-handle", "aria-hidden": "true" }, "\u283F"), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-name" }, item.name), /* @__PURE__ */ React.createElement(DayMoveSelect, { item, currentDay: "" }), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeItem(item), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 }))))), dayView === "list" ? /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-list", onDragOver: (e) => e.preventDefault(), onDrop: (e) => onDropToDay(e, String(selectedDay)) }, dayActivities.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-list-empty" }, T.dayListEmpty), dayActivities.map((a) => /* @__PURE__ */ React.createElement("div", { key: a._source + a.id, className: "wp-trip-day-activity-row", draggable: a._source !== "day", onDragStart: (e) => a._source !== "day" && onItemDragStart(e, a) }, a._source !== "day" ? /* @__PURE__ */ React.createElement("span", { className: "wp-trip-drag-handle", "aria-hidden": "true" }, "\u283F") : /* @__PURE__ */ React.createElement("span", { className: "wp-trip-drag-handle-spacer", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("input", { type: "time", className: "wp-trip-day-time-input", value: a.time || "", onChange: (e) => setItemTime(a, e.target.value), "aria-label": T.activityTimeLabel }), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-name" }, a.name, a._source === "activity" && a.price ? " \xB7 " + a.price : ""), /* @__PURE__ */ React.createElement(DayMoveSelect, { item: a, currentDay: String(selectedDay) }), /* @__PURE__ */ React.createElement(
+      })), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-header-row" }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-city" }, dayStop ? dayStop.city || T.cityPlaceholder : ""), /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-view-toggle" }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (dayView === "list" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setDayView("list") }, T.listViewLabel), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-day-view-btn" + (dayView === "map" ? " wp-trip-day-view-btn-active" : ""), onClick: () => setDayView("map") }, T.mapViewLabel))), dayStop && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-panel-row", style: { marginBottom: "1.1rem" } }, /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-btn", onClick: (e) => openEditPanel(dayStop.id, "highlights", e.currentTarget) }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "10", r: "3" })), T.placesBtn), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-btn", onClick: (e) => openEditPanel(dayStop.id, "sleep", e.currentTarget) }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M3 18v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M3 18h18M3 18v2M21 18v2M5 10V7a2 2 0 0 1 2-2h3v5" })), T.whereToSleepBtn), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-btn", onClick: (e) => openEditPanel(dayStop.id, "eat", e.currentTarget) }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M6 3v7a3 3 0 0 0 6 0V3M9 10v11M18 3c-1.5 2-1.5 5 0 7v11" })), T.whereToEatBtn), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-panel-btn", onClick: (e) => openEditPanel(dayStop.id, "activities", e.currentTarget) }, /* @__PURE__ */ React.createElement("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "#586579", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" }), /* @__PURE__ */ React.createElement("path", { d: "M13 5v2M13 11v2M13 17v2" })), T.activitiesBtn)), dayStop && unassignedItems.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-pool", onDragOver: (e) => e.preventDefault(), onDrop: (e) => onDropToDay(e, "") }, /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-pool-label" }, T.unassignedForCity, " ", dayStop.city), unassignedItems.map((item) => /* @__PURE__ */ React.createElement("div", { key: item._source + item.id, className: "wp-trip-day-activity-row", draggable: true, onDragStart: (e) => onItemDragStart(e, item) }, /* @__PURE__ */ React.createElement("span", { className: "wp-trip-drag-handle", "aria-hidden": "true" }, "\u283F"), /* @__PURE__ */ React.createElement("input", { type: "time", className: "wp-trip-day-time-input", value: item.time || "", onChange: (e) => setItemTime(item, e.target.value), "aria-label": T.activityTimeLabel }), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-name" }, item.name, (item._source === "activity" || item._source === "stay") && item.price ? " \xB7 " + item.price : ""), /* @__PURE__ */ React.createElement(DayMoveSelect, { item, currentDay: "" }), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-remove-btn", onClick: () => removeItem(item), "aria-label": "Remove" }, /* @__PURE__ */ React.createElement(X, { size: 12 }))))), dayView === "list" ? /* @__PURE__ */ React.createElement("div", { className: "wp-trip-day-list", onDragOver: (e) => e.preventDefault(), onDrop: (e) => onDropToDay(e, String(selectedDay)) }, dayActivities.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-day-list-empty" }, T.dayListEmpty), dayActivities.map((a) => /* @__PURE__ */ React.createElement("div", { key: a._source + a.id, className: "wp-trip-day-activity-row", draggable: a._source !== "day", onDragStart: (e) => a._source !== "day" && onItemDragStart(e, a) }, a._source !== "day" ? /* @__PURE__ */ React.createElement("span", { className: "wp-trip-drag-handle", "aria-hidden": "true" }, "\u283F") : /* @__PURE__ */ React.createElement("span", { className: "wp-trip-drag-handle-spacer", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("input", { type: "time", className: "wp-trip-day-time-input", value: a.time || "", onChange: (e) => setItemTime(a, e.target.value), "aria-label": T.activityTimeLabel }), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-day-activity-name" }, a.name, (a._source === "activity" || a._source === "stay") && a.price ? " \xB7 " + a.price : ""), /* @__PURE__ */ React.createElement(DayMoveSelect, { item: a, currentDay: String(selectedDay) }), /* @__PURE__ */ React.createElement(
         "button",
         {
           className: "wp-trip-remove-btn",
