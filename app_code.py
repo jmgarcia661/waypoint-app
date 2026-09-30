@@ -1765,6 +1765,24 @@ function Waypoint() {
       return { ...t, days };
     });
   };
+  const moveDayActivity = (tripId, fromDay, toDay, activityId) => {
+    if (String(fromDay) === String(toDay)) return;
+    updateTrip(tripId, (t) => {
+      const days = { ...(t.days || {}) };
+      const item = (days[fromDay] || []).find((a) => a.id === activityId);
+      if (!item) return t;
+      days[fromDay] = (days[fromDay] || []).filter((a) => a.id !== activityId);
+      days[toDay] = [...(days[toDay] || []), item];
+      return { ...t, days };
+    });
+  };
+  const setDayActivityTime = (tripId, dayNum, activityId, time) => {
+    updateTrip(tripId, (t) => {
+      const days = { ...(t.days || {}) };
+      days[dayNum] = (days[dayNum] || []).map((a) => (a.id === activityId ? { ...a, time: time || "" } : a));
+      return { ...t, days };
+    });
+  };
   const stopForDay = (trip, dayNum) => trip.stops.find((s) => dayNum >= s.dayStart && dayNum <= s.dayEnd) || trip.stops[0];
 
   // Activities/tours per stop. `day` is a day number inside the stop's own range
@@ -2535,6 +2553,7 @@ function Waypoint() {
         .wp-trip-day-pool { background: var(--parchment-deep); border: 1px dashed var(--hairline); border-radius: 14px; padding: 1rem 1.3rem; margin-bottom: 1.1rem; }
         .wp-trip-day-pool-label { margin: 0 0 0.6rem; font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.02em; }
         .wp-trip-drag-handle { color: var(--ink-soft); cursor: grab; flex-shrink: 0; font-size: 0.9rem; opacity: 0.6; }
+        .wp-trip-drag-handle-spacer { display: inline-block; width: 0.9rem; flex-shrink: 0; }
         .wp-trip-drag-handle:active { cursor: grabbing; }
         .wp-trip-day-move-select { font-size: 0.76rem; padding: 0.3rem 0.5rem; border: 1px solid var(--hairline); border-radius: 8px; background: #fff; color: var(--ink-soft); flex-shrink: 0; max-width: 8rem; }
         .wp-trip-day-time-input { font-size: 0.76rem; padding: 0.3rem 0.4rem; border: 1px solid var(--hairline); border-radius: 8px; background: #fff; color: var(--ink-soft); flex-shrink: 0; width: 6.2rem; }
@@ -4155,10 +4174,12 @@ function Waypoint() {
                 const moveItem = (item, day) => {
                   if (item._source === "highlight") setHighlightDay(trip.id, dayStop.id, item.id, day);
                   else if (item._source === "activity") setActivityDay(trip.id, dayStop.id, item.id, day);
+                  else if (item._source === "day" && day) moveDayActivity(trip.id, selectedDay, day, item.id);
                 };
                 const setItemTime = (item, time) => {
                   if (item._source === "highlight") setHighlightTime(trip.id, dayStop.id, item.id, time);
                   else if (item._source === "activity") setActivityTime(trip.id, dayStop.id, item.id, time);
+                  else if (item._source === "day") setDayActivityTime(trip.id, selectedDay, item.id, time);
                 };
                 const removeItem = (item) => {
                   if (item._source === "highlight") removeHighlight(trip.id, dayStop.id, item.id);
@@ -4182,7 +4203,7 @@ function Waypoint() {
                     onChange={(e) => moveItem(item, e.target.value)}
                     aria-label={T.moveToDayLabel}
                   >
-                    <option value="">{T.unassignedLabel}</option>
+                    {item._source !== "day" && <option value="">{T.unassignedLabel}</option>}
                     {stopDayOptions.map((n) => (
                       <option key={n} value={String(n)}>{formatTripDay(trip, n)}</option>
                     ))}
@@ -4254,14 +4275,10 @@ function Waypoint() {
                         {dayActivities.length === 0 && <p className="wp-trip-day-list-empty">{T.dayListEmpty}</p>}
                         {dayActivities.map((a) => (
                           <div key={a._source + a.id} className="wp-trip-day-activity-row" draggable={a._source !== "day"} onDragStart={(e) => a._source !== "day" && onItemDragStart(e, a)}>
-                            {a._source !== "day" && <span className="wp-trip-drag-handle" aria-hidden="true">⠿</span>}
-                            {a._source === "day" ? (
-                              a.time && <span className="wp-trip-day-activity-time">{a.time}</span>
-                            ) : (
-                              <input type="time" className="wp-trip-day-time-input" value={a.time || ""} onChange={(e) => setItemTime(a, e.target.value)} aria-label={T.activityTimeLabel} />
-                            )}
+                            {a._source !== "day" ? <span className="wp-trip-drag-handle" aria-hidden="true">⠿</span> : <span className="wp-trip-drag-handle-spacer" aria-hidden="true"></span>}
+                            <input type="time" className="wp-trip-day-time-input" value={a.time || ""} onChange={(e) => setItemTime(a, e.target.value)} aria-label={T.activityTimeLabel} />
                             <span className="wp-trip-day-activity-name">{a.name}{a._source === "activity" && a.price ? " · " + a.price : ""}</span>
-                            {a._source !== "day" && <DayMoveSelect item={a} currentDay={String(selectedDay)} />}
+                            <DayMoveSelect item={a} currentDay={String(selectedDay)} />
                             <button
                               className="wp-trip-remove-btn"
                               onClick={() => a._source === "day" ? removeItem(a) : moveItem(a, "")}
