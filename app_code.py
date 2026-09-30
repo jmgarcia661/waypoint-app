@@ -145,7 +145,7 @@ const UI_STRINGS = {
     transportModeLabel: "Mode of transport", transportDurationLabel: "Duration", transportCostLabel: "Cost",
     activitiesBtn: "Activities", activitiesCountSuffix: "activities", addActivityBtn: "Add activity",
     activityNameLabel: "Activity or tour", activityNamePlaceholder: "e.g. Sintra day trip",
-    activityDayLabel: "Day", activityTimeLabel: "Time", anyDay: "Any day",
+    activityDayLabel: "Day", activityTimeLabel: "Time", anyDay: "Any day", searchingPlaces: "Searching…",
     bookingsActivities: "Activities", noActivitiesYet: "No activities added yet — add one with \"Activities\" in Route.",
     pdfSleepPrefix: "Stay", pdfEatPrefix: "Eat", pdfActivityPrefix: "Activity",
     daysUnitLabel: "days", hoursUnitLabel: "hours", minutesUnitLabel: "min",
@@ -276,7 +276,7 @@ const UI_STRINGS = {
     transportModeLabel: "Meio de transporte", transportDurationLabel: "Duração", transportCostLabel: "Custo",
     activitiesBtn: "Atividades", activitiesCountSuffix: "atividades", addActivityBtn: "Adicionar atividade",
     activityNameLabel: "Atividade ou excursão", activityNamePlaceholder: "ex: Excursão a Sintra",
-    activityDayLabel: "Dia", activityTimeLabel: "Hora", anyDay: "Qualquer dia",
+    activityDayLabel: "Dia", activityTimeLabel: "Hora", anyDay: "Qualquer dia", searchingPlaces: "A procurar…",
     bookingsActivities: "Atividades", noActivitiesYet: "Ainda sem atividades — adiciona uma em \"Atividades\" no Percurso.",
     pdfSleepPrefix: "Dormir", pdfEatPrefix: "Comer", pdfActivityPrefix: "Atividade",
     daysUnitLabel: "dias", hoursUnitLabel: "horas", minutesUnitLabel: "min",
@@ -625,14 +625,23 @@ function DayMap({ activities, cityName, countryName, geocodeCache, geocodeCity, 
   const mapRef = useRef(null);
 
   const locationContext = [cityName, countryName].filter(Boolean).join(", ");
+  // An item picked from the place-search autocomplete already carries its own
+  // coordinates -- use them directly instead of re-geocoding by name, which is
+  // exactly what used to fail silently for informally-typed names.
   const points = activities.map((a, i) => {
+    if (typeof a.lat === "number" && typeof a.lng === "number") {
+      return { activity: a, index: i, hit: { lat: a.lat, lng: a.lng }, key: "coords:" + a.id };
+    }
     const key = ((a.name || "") + "|" + locationContext).toLowerCase();
     const hit = geocodeCache[key];
     return { activity: a, index: i, hit, key };
   });
 
   useEffect(() => {
-    activities.forEach((a) => { if (a.name && a.name.trim()) geocodeCity(a.name.trim(), locationContext); });
+    activities.forEach((a) => {
+      if (typeof a.lat === "number" && typeof a.lng === "number") return;
+      if (a.name && a.name.trim()) geocodeCity(a.name.trim(), locationContext);
+    });
     // eslint-disable-next-line
   }, [JSON.stringify(activities.map((a) => a.name)), locationContext]);
 
@@ -949,6 +958,35 @@ function Waypoint() {
   }, [view, activeTripId]);
 
   const [geocodeCache, setGeocodeCache] = useState({});
+  // Shared by the Places/Where to sleep/Where to eat add-forms: only one of
+  // these fields can realistically be focused at a time (they live in the same
+  // panel, one type at a time), so one piece of state is enough rather than
+  // duplicating it three times. `field` records which input is "live" right
+  // now, so a stale response from a field the person already left can't
+  // clobber what they're currently looking at.
+  const [placeSuggest, setPlaceSuggest] = useState({ field: "", query: "", results: [], loading: false });
+  const placeSearchTimer = useRef(null);
+  const searchPlaces = (field, query, countryName) => {
+    if (placeSearchTimer.current) clearTimeout(placeSearchTimer.current);
+    if (!query || query.trim().length < 3) { setPlaceSuggest({ field, query, results: [], loading: false }); return; }
+    setPlaceSuggest({ field, query, results: [], loading: true });
+    placeSearchTimer.current = setTimeout(() => {
+      const q = encodeURIComponent(query.trim() + (countryName ? ", " + countryName : ""));
+      fetch("https://nominatim.openstreetmap.org/search?format=json&limit=5&q=" + q)
+        .then((r) => r.json())
+        .then((results) => {
+          setPlaceSuggest((cur) => (cur.field === field && cur.query === query ? { field, query, results: results || [], loading: false } : cur));
+        })
+        .catch(() => setPlaceSuggest((cur) => (cur.field === field && cur.query === query ? { field, query, results: [], loading: false } : cur)));
+    }, 450);
+  };
+  const clearPlaceSuggest = () => setPlaceSuggest({ field: "", query: "", results: [], loading: false });
+  // Nominatim's display_name is a full comma-separated address; only the
+  // first segment is a usable "name" to save, the rest is shown as context.
+  const splitSuggestion = (r) => {
+    const parts = (r.display_name || "").split(",").map((p) => p.trim()).filter(Boolean);
+    return { name: parts[0] || r.display_name || "", context: parts.slice(1, 3).join(", ") };
+  };
   const geocodeCity = (query, countryName) => {
     const key = (query + "|" + (countryName || "")).toLowerCase();
     if (!query || geocodeCache[key]) return;
@@ -1637,14 +1675,19 @@ function Waypoint() {
     }));
   };
 
-  const addHighlight = (tripId, stopId, text, source) => {
+  // `place` is the chosen autocomplete suggestion, if any (see searchPlaces):
+  // {lat, lng}. Saving it alongside the text means the map never has to guess
+  // this item's location from a possibly-informal name later -- autocomplete
+  // guarantees the pin; free-typed text still works exactly as before, just
+  // without that guarantee.
+  const addHighlight = (tripId, stopId, text, source, place) => {
     if (!text.trim()) return;
     if (text.trim().length > LIMITS.shortTextLength) { window.alert(T.limitTextLength); return; }
     const stop = (trips[tripId] || {}).stops && trips[tripId].stops.find((s) => s.id === stopId);
     if (stop && stop.highlights.length >= LIMITS.highlightsPerStop) { window.alert(T.limitHighlights); return; }
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => (s.id === stopId ? { ...s, highlights: [...s.highlights, { id: "h_" + Date.now(), text: text.trim(), source: source || "" }] } : s)),
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, highlights: [...s.highlights, { id: "h_" + Date.now(), text: text.trim(), source: source || "", ...(place ? { lat: place.lat, lng: place.lng } : {}) }] } : s)),
     }));
   };
 
@@ -1720,14 +1763,14 @@ function Waypoint() {
     }));
   };
 
-  const addStay = (tripId, stopId, name, nights, price, day) => {
+  const addStay = (tripId, stopId, name, nights, price, day, place) => {
     if (!name.trim()) return;
     if (name.trim().length > LIMITS.shortTextLength) { window.alert(T.limitTextLength); return; }
     const stop = (trips[tripId] || {}).stops && trips[tripId].stops.find((s) => s.id === stopId);
     if (stop && (stop.stays || []).length >= LIMITS.staysPerStop) { window.alert(T.limitStays); return; }
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: [...s.stays, { id: "st_" + Date.now(), name: name.trim(), nights: nights || "", price: price || "", day: day || "" }] } : s)),
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, stays: [...s.stays, { id: "st_" + Date.now(), name: name.trim(), nights: nights || "", price: price || "", day: day || "", ...(place ? { lat: place.lat, lng: place.lng } : {}) }] } : s)),
     }));
   };
   const removeStay = (tripId, stopId, stayId) => {
@@ -1758,14 +1801,14 @@ function Waypoint() {
   const removeDocument = (tripId, docId) => {
     updateTrip(tripId, (t) => ({ ...t, documents: (t.documents || []).filter((d) => d.id !== docId) }));
   };
-  const addMeal = (tripId, stopId, name, day) => {
+  const addMeal = (tripId, stopId, name, day, place) => {
     if (!name.trim()) return;
     if (name.trim().length > LIMITS.shortTextLength) { window.alert(T.limitTextLength); return; }
     const stop = (trips[tripId] || {}).stops && trips[tripId].stops.find((s) => s.id === stopId);
     if (stop && (stop.meals || []).length >= LIMITS.mealsPerStop) { window.alert(T.limitMeals); return; }
     updateTrip(tripId, (t) => ({
       ...t,
-      stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim(), day: day || "" }] } : s)),
+      stops: t.stops.map((s) => (s.id === stopId ? { ...s, meals: [...s.meals, { id: "ml_" + Date.now(), name: name.trim(), day: day || "", ...(place ? { lat: place.lat, lng: place.lng } : {}) }] } : s)),
     }));
   };
   const removeMeal = (tripId, stopId, mealId) => {
@@ -2651,6 +2694,13 @@ function Waypoint() {
         .wp-trip-add-btn { background: var(--parchment); border: 1px solid var(--hairline); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; }
         .wp-trip-time-input { flex: 0 0 130px; }
         .wp-trip-suggestions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+        .wp-trip-place-suggest-dropdown { position: absolute; top: calc(100% + 0.3rem); left: 0; right: 0; background: #fff; border: 1px solid var(--hairline); border-radius: 10px; box-shadow: 0 6px 18px rgba(20,32,53,0.12); z-index: 20; max-height: 14rem; overflow-y: auto; }
+        .wp-trip-place-suggest-item { display: flex; align-items: flex-start; gap: 0.5rem; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid var(--parchment-deep); padding: 0.6rem 0.75rem; cursor: pointer; font-size: 0.85rem; color: var(--ink); }
+        .wp-trip-place-suggest-item:last-child { border-bottom: none; }
+        .wp-trip-place-suggest-item:hover { background: var(--navy-subtle); }
+        .wp-trip-place-suggest-item svg { flex-shrink: 0; margin-top: 0.15rem; color: var(--ink-soft); }
+        .wp-trip-place-suggest-context { color: var(--ink-soft); font-weight: 400; }
+        .wp-trip-place-suggest-loading { padding: 0.6rem 0.75rem; font-size: 0.8rem; color: var(--ink-soft); }
         .wp-trip-suggestions-label { margin: 0.9rem 0 0.4rem; font-size: 0.72rem; color: var(--ink-soft); }
         .wp-trip-suggestion-chip { display: flex; align-items: center; gap: 0.25rem; font-size: 0.76rem; background: var(--parchment); border: 1px solid var(--hairline); border-radius: 999px; padding: 0.25rem 0.6rem; cursor: pointer; color: var(--ink-soft); }
         .wp-trip-suggestion-chip:hover { border-color: var(--gold); color: var(--ink); }
@@ -3914,17 +3964,21 @@ function Waypoint() {
                                 ))}
                               </div>
                             )}
-                            <div className="wp-trip-add-highlight-row">
+                            <div className="wp-trip-add-highlight-row" style={{ position: "relative" }}>
                               <input
                                 type="text"
                                 className="wp-trip-highlight-input"
                                 placeholder={T.addHighlightPlaceholder}
                                 value={highlightDrafts[aStop.id] || ""}
-                                onChange={(e) => setHighlightDrafts({ ...highlightDrafts, [aStop.id]: e.target.value })}
+                                onChange={(e) => {
+                                  setHighlightDrafts({ ...highlightDrafts, [aStop.id]: e.target.value });
+                                  searchPlaces("highlight", e.target.value, countryData ? countryData.name : (trip.countryName || ""));
+                                }}
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter" && (highlightDrafts[aStop.id] || "").trim()) {
                                     addHighlight(trip.id, aStop.id, highlightDrafts[aStop.id], "custom");
                                     setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+                                    clearPlaceSuggest();
                                   }
                                 }}
                               />
@@ -3934,9 +3988,32 @@ function Waypoint() {
                                   if ((highlightDrafts[aStop.id] || "").trim()) {
                                     addHighlight(trip.id, aStop.id, highlightDrafts[aStop.id], "custom");
                                     setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+                                    clearPlaceSuggest();
                                   }
                                 }}
                               ><PlusIcon size={14} /></button>
+                              {placeSuggest.field === "highlight" && placeSuggest.query === (highlightDrafts[aStop.id] || "") && (placeSuggest.loading || placeSuggest.results.length > 0) && (
+                                <div className="wp-trip-place-suggest-dropdown">
+                                  {placeSuggest.loading && <div className="wp-trip-place-suggest-loading">{T.searchingPlaces}</div>}
+                                  {placeSuggest.results.map((r, i) => {
+                                    const { name, context } = splitSuggestion(r);
+                                    return (
+                                      <button
+                                        key={i}
+                                        className="wp-trip-place-suggest-item"
+                                        onClick={() => {
+                                          addHighlight(trip.id, aStop.id, name, "custom", { lat: parseFloat(r.lat), lng: parseFloat(r.lon) });
+                                          setHighlightDrafts({ ...highlightDrafts, [aStop.id]: "" });
+                                          clearPlaceSuggest();
+                                        }}
+                                      >
+                                        <MapPinIcon size={13} />
+                                        <span><b>{name}</b>{context ? <span className="wp-trip-place-suggest-context"> · {context}</span> : null}</span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
                             </div>
                             {suggestions.length > 0 && (
                               <>
@@ -3963,9 +4040,31 @@ function Waypoint() {
                               </div>
                             ))}
                             <div className="wp-trip-add-highlight-row">
-                              <input type="text" className="wp-trip-highlight-input" style={{ flex: 2 }} placeholder={T.stayNamePlaceholder}
-                                value={(stayDrafts[aStop.id] || {}).name || ""}
-                                onChange={(e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...(stayDrafts[aStop.id] || {}), name: e.target.value } })} />
+                              <div className="wp-trip-place-input-wrap" style={{ flex: 2, position: "relative" }}>
+                                <input type="text" className="wp-trip-highlight-input" style={{ width: "100%" }} placeholder={T.stayNamePlaceholder}
+                                  value={(stayDrafts[aStop.id] || {}).name || ""}
+                                  onChange={(e) => {
+                                    setStayDrafts({ ...stayDrafts, [aStop.id]: { ...(stayDrafts[aStop.id] || {}), name: e.target.value } });
+                                    searchPlaces("stay", e.target.value, countryData ? countryData.name : (trip.countryName || ""));
+                                  }} />
+                                {placeSuggest.field === "stay" && placeSuggest.query === ((stayDrafts[aStop.id] || {}).name || "") && (placeSuggest.loading || placeSuggest.results.length > 0) && (
+                                  <div className="wp-trip-place-suggest-dropdown">
+                                    {placeSuggest.loading && <div className="wp-trip-place-suggest-loading">{T.searchingPlaces}</div>}
+                                    {placeSuggest.results.map((r, i) => {
+                                      const { name, context } = splitSuggestion(r);
+                                      return (
+                                        <button key={i} className="wp-trip-place-suggest-item" onClick={() => {
+                                          setStayDrafts({ ...stayDrafts, [aStop.id]: { ...(stayDrafts[aStop.id] || {}), name, lat: parseFloat(r.lat), lng: parseFloat(r.lon) } });
+                                          clearPlaceSuggest();
+                                        }}>
+                                          <MapPinIcon size={13} />
+                                          <span><b>{name}</b>{context ? <span className="wp-trip-place-suggest-context"> · {context}</span> : null}</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
                               <input type="text" className="wp-trip-highlight-input" style={{ flex: 1 }} placeholder={T.nightsPlaceholder}
                                 value={(stayDrafts[aStop.id] || {}).nights || ""}
                                 onChange={(e) => setStayDrafts({ ...stayDrafts, [aStop.id]: { ...(stayDrafts[aStop.id] || {}), nights: e.target.value } })} />
@@ -3980,7 +4079,7 @@ function Waypoint() {
                               </select>
                               <button className="wp-trip-add-btn" onClick={() => {
                                 const d = stayDrafts[aStop.id] || {};
-                                addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "", d.day || "");
+                                addStay(trip.id, aStop.id, d.name || "", d.nights || "", d.price || "", d.day || "", (d.lat != null ? { lat: d.lat, lng: d.lng } : null));
                                 setStayDrafts({ ...stayDrafts, [aStop.id]: {} });
                               }}><PlusIcon size={14} /></button>
                             </div>
@@ -3997,15 +4096,39 @@ function Waypoint() {
                               </div>
                             ))}
                             <div className="wp-trip-add-highlight-row">
-                              <input type="text" className="wp-trip-highlight-input" style={{ flex: 2 }} placeholder={T.addMealPlaceholder}
-                                value={(mealDrafts[aStop.id] || {}).name || ""}
-                                onChange={(e) => setMealDrafts({ ...mealDrafts, [aStop.id]: { ...(mealDrafts[aStop.id] || {}), name: e.target.value } })}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter" && ((mealDrafts[aStop.id] || {}).name || "").trim()) {
-                                    addMeal(trip.id, aStop.id, mealDrafts[aStop.id].name, (mealDrafts[aStop.id] || {}).day || "");
-                                    setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
-                                  }
-                                }} />
+                              <div className="wp-trip-place-input-wrap" style={{ flex: 2, position: "relative" }}>
+                                <input type="text" className="wp-trip-highlight-input" style={{ width: "100%" }} placeholder={T.addMealPlaceholder}
+                                  value={(mealDrafts[aStop.id] || {}).name || ""}
+                                  onChange={(e) => {
+                                    setMealDrafts({ ...mealDrafts, [aStop.id]: { ...(mealDrafts[aStop.id] || {}), name: e.target.value } });
+                                    searchPlaces("meal", e.target.value, countryData ? countryData.name : (trip.countryName || ""));
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && ((mealDrafts[aStop.id] || {}).name || "").trim()) {
+                                      const d = mealDrafts[aStop.id] || {};
+                                      addMeal(trip.id, aStop.id, d.name, d.day || "", (d.lat != null ? { lat: d.lat, lng: d.lng } : null));
+                                      setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
+                                      clearPlaceSuggest();
+                                    }
+                                  }} />
+                                {placeSuggest.field === "meal" && placeSuggest.query === ((mealDrafts[aStop.id] || {}).name || "") && (placeSuggest.loading || placeSuggest.results.length > 0) && (
+                                  <div className="wp-trip-place-suggest-dropdown">
+                                    {placeSuggest.loading && <div className="wp-trip-place-suggest-loading">{T.searchingPlaces}</div>}
+                                    {placeSuggest.results.map((r, i) => {
+                                      const { name, context } = splitSuggestion(r);
+                                      return (
+                                        <button key={i} className="wp-trip-place-suggest-item" onClick={() => {
+                                          setMealDrafts({ ...mealDrafts, [aStop.id]: { ...(mealDrafts[aStop.id] || {}), name, lat: parseFloat(r.lat), lng: parseFloat(r.lon) } });
+                                          clearPlaceSuggest();
+                                        }}>
+                                          <MapPinIcon size={13} />
+                                          <span><b>{name}</b>{context ? <span className="wp-trip-place-suggest-context"> · {context}</span> : null}</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
                               <select className="wp-trip-highlight-input" style={{ flex: 1 }} aria-label={T.activityDayLabel}
                                 value={(mealDrafts[aStop.id] || {}).day || ""}
                                 onChange={(e) => setMealDrafts({ ...mealDrafts, [aStop.id]: { ...(mealDrafts[aStop.id] || {}), day: e.target.value } })}>
@@ -4014,7 +4137,7 @@ function Waypoint() {
                               </select>
                               <button className="wp-trip-add-btn" onClick={() => {
                                 const d = mealDrafts[aStop.id] || {};
-                                addMeal(trip.id, aStop.id, d.name || "", d.day || "");
+                                addMeal(trip.id, aStop.id, d.name || "", d.day || "", (d.lat != null ? { lat: d.lat, lng: d.lng } : null));
                                 setMealDrafts({ ...mealDrafts, [aStop.id]: {} });
                               }}><PlusIcon size={14} /></button>
                             </div>
@@ -4203,10 +4326,10 @@ function Waypoint() {
                 // "unassign first" step needed. Day notes typed directly in Days
                 // (trip.days[n]) have no stop of their own, so they stay simple: no pool,
                 // just remove.
-                const poolHighlights = ((dayStop && dayStop.highlights) || []).filter((h) => !h.day).map((h) => ({ id: h.id, name: h.text, time: "", price: "", _source: "highlight" }));
+                const poolHighlights = ((dayStop && dayStop.highlights) || []).filter((h) => !h.day).map((h) => ({ id: h.id, name: h.text, time: "", price: "", lat: h.lat, lng: h.lng, _source: "highlight" }));
                 const poolActivities = ((dayStop && dayStop.activities) || []).filter((a) => !a.day).map((a) => ({ id: a.id, name: a.name, time: a.time, price: a.price, _source: "activity" }));
-                const poolStays = ((dayStop && dayStop.stays) || []).filter((st) => !st.day).map((st) => ({ id: st.id, name: st.name + (st.nights ? " · " + st.nights + " " + T.nights : ""), time: st.time, price: st.price, _source: "stay" }));
-                const poolMeals = ((dayStop && dayStop.meals) || []).filter((m) => !m.day).map((m) => ({ id: m.id, name: m.name, time: m.time, price: "", _source: "meal" }));
+                const poolStays = ((dayStop && dayStop.stays) || []).filter((st) => !st.day).map((st) => ({ id: st.id, name: st.name + (st.nights ? " · " + st.nights + " " + T.nights : ""), time: st.time, price: st.price, lat: st.lat, lng: st.lng, _source: "stay" }));
+                const poolMeals = ((dayStop && dayStop.meals) || []).filter((m) => !m.day).map((m) => ({ id: m.id, name: m.name, time: m.time, price: "", lat: m.lat, lng: m.lng, _source: "meal" }));
                 const unassignedItems = [...poolHighlights, ...poolActivities, ...poolStays, ...poolMeals];
 
                 const dayNoteActivities = ((trip.days && trip.days[selectedDay]) || []).map((a) => ({ ...a, _source: "day" }));
@@ -4215,13 +4338,13 @@ function Waypoint() {
                   .map((a) => ({ ...a, _source: "activity" }));
                 const dayHighlights = ((dayStop && dayStop.highlights) || [])
                   .filter((h) => String(h.day) === String(selectedDay))
-                  .map((h) => ({ id: h.id, name: h.text, time: h.time || "", price: "", _source: "highlight" }));
+                  .map((h) => ({ id: h.id, name: h.text, time: h.time || "", price: "", lat: h.lat, lng: h.lng, _source: "highlight" }));
                 const dayStays = ((dayStop && dayStop.stays) || [])
                   .filter((st) => String(st.day) === String(selectedDay))
-                  .map((st) => ({ id: st.id, name: st.name + (st.nights ? " · " + st.nights + " " + T.nights : ""), time: st.time || "", price: st.price || "", _source: "stay" }));
+                  .map((st) => ({ id: st.id, name: st.name + (st.nights ? " · " + st.nights + " " + T.nights : ""), time: st.time || "", price: st.price || "", lat: st.lat, lng: st.lng, _source: "stay" }));
                 const dayMeals = ((dayStop && dayStop.meals) || [])
                   .filter((m) => String(m.day) === String(selectedDay))
-                  .map((m) => ({ id: m.id, name: m.name, time: m.time || "", price: "", _source: "meal" }));
+                  .map((m) => ({ id: m.id, name: m.name, time: m.time || "", price: "", lat: m.lat, lng: m.lng, _source: "meal" }));
                 const dayActivities = [...dayNoteActivities, ...dayStopActivities, ...dayHighlights, ...dayStays, ...dayMeals].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
                 const dayDate = trip.startDate ? new Date(new Date(trip.startDate).getTime() + (selectedDay - 1) * 86400000) : null;
