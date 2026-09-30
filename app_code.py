@@ -3810,7 +3810,20 @@ function Waypoint() {
                 </div>
               );})}
 
-              {activeEditPanel && (() => {
+              
+              <button className="wp-trip-add-stop-btn" onClick={() => addStop(trip.id)}>
+                <PlusIcon size={15} /> {T.addStop}
+              </button>
+
+              </div>
+              <TripMap trip={trip} countryName={countryData ? countryData.name : (trip.countryName || "")} geocodeCache={geocodeCache} geocodeCity={geocodeCity} accentColor={(countryData && countryData.continentColor) || "#2F5D62"} T={T} />
+              </div>
+              )}
+
+              {/* Rendered once, outside any single tab's conditional block, so opening
+                 Places/Where to sleep/Where to eat/Activities from the Days tab (not
+                 just Route) actually shows the panel instead of silently doing nothing. */}
+{activeEditPanel && (() => {
                 const aStop = trip.stops.find((s) => s.id === activeEditPanel.stopId);
                 if (!aStop) return null;
                 const aTransit = trip.transits.find((tr) => tr.afterStopId === activeEditPanel.stopId);
@@ -4108,15 +4121,6 @@ function Waypoint() {
                   </div>
                 );
               })()}
-
-              <button className="wp-trip-add-stop-btn" onClick={() => addStop(trip.id)}>
-                <PlusIcon size={15} /> {T.addStop}
-              </button>
-
-              </div>
-              <TripMap trip={trip} countryName={countryData ? countryData.name : (trip.countryName || "")} geocodeCache={geocodeCache} geocodeCity={geocodeCity} accentColor={(countryData && countryData.continentColor) || "#2F5D62"} T={T} />
-              </div>
-              )}
 
               {activeTripTab === "days" && (() => {
                 const dayStop = stopForDay(trip, selectedDay);

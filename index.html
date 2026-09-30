@@ -3576,7 +3576,7 @@ function Waypoint() {
           openEditPanel(stop.id, "transit", e.currentTarget);
         }
       }, role: "button", tabIndex: 0 }, /* @__PURE__ */ React.createElement("svg", { width: "15", height: "15", viewBox: "0 0 24 24", fill: "none", stroke: "#FF8A3D", strokeWidth: "1.8" }, /* @__PURE__ */ React.createElement("path", { d: "M4 16h16M4 16l3-3M4 16l3 3M20 16a2 2 0 1 0-4 0" })), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-summary-text" }, transit.mode ? (formatTransitDuration(transit) ? formatTransitDuration(transit) + " \xB7 " : "") + (T["transit" + transit.mode.charAt(0).toUpperCase() + transit.mode.slice(1)] || transit.mode) : T.transitAddBtn), /* @__PURE__ */ React.createElement("span", { className: "wp-trip-transit-summary-edit" }, transit.mode ? T.transitEditBtn : T.transitAddBtn)), i < trip.stops.length - 1 && transit && transit.mode && /* @__PURE__ */ React.createElement("p", { className: "wp-trip-typical-hint" }, T.typicalRange, ": ", TRANSIT_TYPICAL[transit.mode]));
-    }), activeEditPanel && (() => {
+    }), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-stop-btn", onClick: () => addStop(trip.id) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 15 }), " ", T.addStop)), /* @__PURE__ */ React.createElement(TripMap, { trip, countryName: countryData ? countryData.name : trip.countryName || "", geocodeCache, geocodeCity, accentColor: countryData && countryData.continentColor || "#2F5D62", T })), activeEditPanel && (() => {
       const aStop = trip.stops.find((s) => s.id === activeEditPanel.stopId);
       if (!aStop) return null;
       const aTransit = trip.transits.find((tr) => tr.afterStopId === activeEditPanel.stopId);
@@ -3797,7 +3797,7 @@ function Waypoint() {
           T.doneEditingLabel
         ))
       ));
-    })(), /* @__PURE__ */ React.createElement("button", { className: "wp-trip-add-stop-btn", onClick: () => addStop(trip.id) }, /* @__PURE__ */ React.createElement(PlusIcon, { size: 15 }), " ", T.addStop)), /* @__PURE__ */ React.createElement(TripMap, { trip, countryName: countryData ? countryData.name : trip.countryName || "", geocodeCache, geocodeCity, accentColor: countryData && countryData.continentColor || "#2F5D62", T })), activeTripTab === "days" && (() => {
+    })(), activeTripTab === "days" && (() => {
       const dayStop = stopForDay(trip, selectedDay);
       const stopFrom = dayStop ? parseInt(dayStop.dayStart) || 1 : 1;
       const stopTo = dayStop ? Math.min(parseInt(dayStop.dayEnd) || stopFrom, stopFrom + 60) : 1;
